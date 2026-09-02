@@ -22,7 +22,7 @@ import { FailureCard } from "./FailureCard";
 import { ErrorCard } from "./ErrorCard";
 import { SuggestionChips } from "./SuggestionChips";
 import { SettingsModal } from "./SettingsModal";
-import { SettingsIcon, CheckIcon } from "@/components/ui/Icon";
+import { SettingsIcon, CheckIcon, ShieldIcon } from "@/components/ui/Icon";
 import styles from "./ChatContainer.module.css";
 
 const TIMEOUT_MS = 30_000;
@@ -38,8 +38,9 @@ const WELCOME =
    the URL, so a snapshot that re-read `window.location` would return null on
    the next render and the confirmation would flash and disappear.
    --------------------------------------------------------------- */
+const subscribeNever = () => () => {};
+
 let paidSnapshot: string | null | undefined;
-const subscribePaid = () => () => {};
 const getPaid = () => {
   if (paidSnapshot === undefined) {
     paidSnapshot = new URLSearchParams(window.location.search).get("paid");
@@ -48,26 +49,29 @@ const getPaid = () => {
 };
 const getPaidServer = () => null;
 
+/* The session id, read the same way. It has to be reactive rather than a ref
+   because the audit-trail link in the header is built from it — a ref would
+   leave that href stale on first paint. */
+let sessionSnapshot: string | undefined;
+const getSession = () => {
+  if (sessionSnapshot === undefined) sessionSnapshot = readSessionId(window.localStorage);
+  return sessionSnapshot;
+};
+const getSessionServer = () => "";
+
 export function ChatContainer() {
   const [state, dispatch] = useReducer(chatReducer, initialChatState);
   const [spendLimit, setSpendLimit] = useState(DEFAULT_SPEND);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  const sessionRef = useRef<string>("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  /* Read once on the client. localStorage does not exist during SSR, and
-     reading it during render would desync the first paint. */
-  useEffect(() => {
-    sessionRef.current = readSessionId(window.localStorage);
-  }, []);
-
-  /* Razorpay returns the buyer here after payment with ?paid=<productId>.
-     Read through useSyncExternalStore, the same pattern Modal uses for
-     client-only state: it reports server-vs-client without a setState in an
-     effect, so there is no cascading render. The snapshot is cached at module
-     scope so stripping the param below cannot make the banner vanish. */
-  const paidFor = useSyncExternalStore(subscribePaid, getPaid, getPaidServer);
+  /* Both read through useSyncExternalStore — the same pattern Modal uses for
+     client-only state. It reports server-vs-client without a setState in an
+     effect, so there is no cascading render, and the snapshots are cached at
+     module scope so a later URL rewrite cannot make them change underneath. */
+  const sessionId = useSyncExternalStore(subscribeNever, getSession, getSessionServer);
+  const paidFor = useSyncExternalStore(subscribeNever, getPaid, getPaidServer);
 
   /* Remove the query param once seen. A refresh or a shared link should not
      replay a payment confirmation. This is a write to an external system —
@@ -95,7 +99,7 @@ export function ChatContainer() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             message,
-            session_id: sessionRef.current || readSessionId(window.localStorage),
+            session_id: sessionId,
             guardrails: { max_spend: spendLimit },
           }),
           signal: controller.signal,
@@ -120,7 +124,7 @@ export function ChatContainer() {
         clearTimeout(timer);
       }
     },
-    [spendLimit],
+    [spendLimit, sessionId],
   );
 
   const send = useCallback(
@@ -280,6 +284,16 @@ export function ChatContainer() {
             </span>
           </span>
         </div>
+
+        {/* Without this the audit trail is unreachable in a live demo, and the
+            guardrail evidence never gets seen. */}
+        <a
+          className={styles.auditLink}
+          href={sessionId ? `/dashboard?session_id=${encodeURIComponent(sessionId)}` : "/dashboard"}
+        >
+          <ShieldIcon size={15} />
+          <span className={styles.auditLabel}>Audit trail</span>
+        </a>
 
         <button
           type="button"

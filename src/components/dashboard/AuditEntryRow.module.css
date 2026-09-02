@@ -1,0 +1,165 @@
+/* ==========================================================================
+   One audit entry.
+
+   Developer-console density, but built from the same cloth as the chat — a
+   judge moving between the two should recognise one system, not two.
+
+   Tone is carried by the woven band across the head of the row and by the
+   clock colour. Never a thick coloured bar down one side (DESIGN.md).
+   ========================================================================== */
+
+.row {
+  position: relative;
+  overflow: hidden;
+  list-style: none;
+  background-color: var(--bg-surface);
+  background-image: var(--weave-warp), var(--weave-weft);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+}
+
+.band {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    currentColor 0 1px,
+    transparent 1px 4px
+  );
+  opacity: 0.85;
+}
+
+/* Tones. `color` is set on the row so the band, clock and caret inherit it —
+   one declaration per tone instead of four. */
+.row[data-tone="success"] { color: var(--color-success); }
+.row[data-tone="warning"] { color: var(--color-warning); }
+.row[data-tone="accent"]  { color: var(--accent-primary); }
+.row[data-tone="handled"] { color: var(--color-handled); }
+.row[data-tone="info"]    { color: var(--color-info); }
+.row[data-tone="neutral"] { color: var(--text-secondary); }
+
+.row[data-tone="warning"] { border-color: rgba(245, 158, 11, 0.28); }
+.row[data-tone="success"] { border-color: rgba(34, 197, 94, 0.22); }
+
+/* --- Head --- */
+
+.head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-4) var(--space-1);
+  text-align: left;
+}
+
+.head:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.head:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.caret,
+.caretOpen {
+  flex: none;
+  align-self: center;
+  transition: transform var(--dur-fast) var(--ease-standard);
+}
+
+.caretOpen {
+  transform: rotate(90deg);
+}
+
+/* Monospace here is for data, not costume — these are timestamps in a log. */
+.clock {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+  color: currentColor;
+  opacity: 0.9;
+}
+
+.label {
+  flex: none;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.blocked {
+  flex: none;
+  padding: 1px var(--space-2);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  color: var(--color-warning);
+  background-color: var(--color-warning-wash);
+  border-radius: var(--radius-full);
+}
+
+.summary {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- Reasoning: the thing that makes this evidence --- */
+
+.reasoning {
+  max-width: none;
+  padding: 0 var(--space-4) var(--space-3) calc(var(--space-4) + 22px);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  color: var(--text-primary);
+}
+
+/* --- Expanded JSON --- */
+
+.detail {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  padding: 0 var(--space-4) var(--space-4);
+  animation: messageIn var(--dur-fast) var(--ease-out-expo) both;
+}
+
+.pane {
+  min-width: 0;
+}
+
+.paneLabel {
+  max-width: none;
+  margin-bottom: var(--space-1);
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+}
+
+.json {
+  max-height: 260px;
+  overflow: auto;
+  padding: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  line-height: 1.55;
+  color: var(--text-primary);
+  background-color: var(--bg-sunken);
+  border-radius: var(--radius-xs);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 720px) {
+  .detail {
+    grid-template-columns: 1fr;
+  }
+  .summary {
+    display: none;
+  }
+}
