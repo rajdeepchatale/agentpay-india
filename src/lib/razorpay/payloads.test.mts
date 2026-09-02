@@ -76,3 +76,45 @@ describe("buildPaymentLinkPayload", () => {
     assert.equal(buildPaymentLinkPayload(saree).notes.session_id, "sess_abc123");
   });
 });
+
+describe("callback_url — the buyer's return trip", () => {
+  const input = {
+    productId: "prod_001",
+    productName: "Handloom Cotton Saree",
+    amountInr: 599,
+    sessionId: "s1",
+  };
+
+  test("omits callback_url when no public origin exists", () => {
+    /* Locally there is nowhere for Razorpay to send her. A callback_url
+       pointing at localhost would strand the buyer on a dead page. */
+    delete process.env.NEXT_PUBLIC_SITE_URL;
+    delete process.env.VERCEL_PROJECT_PRODUCTION_URL;
+    const p = buildPaymentLinkPayload(input);
+    assert.equal(p.callback_url, undefined);
+  });
+
+  test("uses VERCEL_PROJECT_PRODUCTION_URL when deployed", () => {
+    process.env.VERCEL_PROJECT_PRODUCTION_URL = "agentpay-india.vercel.app";
+    const p = buildPaymentLinkPayload(input);
+    assert.equal(p.callback_url, "https://agentpay-india.vercel.app/chat?paid=prod_001");
+    assert.equal(p.callback_method, "get");
+    delete process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  });
+
+  test("an explicit NEXT_PUBLIC_SITE_URL wins, trailing slash trimmed", () => {
+    process.env.VERCEL_PROJECT_PRODUCTION_URL = "ignored.vercel.app";
+    process.env.NEXT_PUBLIC_SITE_URL = "https://agentpay.example.com/";
+    const p = buildPaymentLinkPayload(input);
+    assert.equal(p.callback_url, "https://agentpay.example.com/chat?paid=prod_001");
+    delete process.env.NEXT_PUBLIC_SITE_URL;
+    delete process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  });
+
+  test("the product id is url-encoded, never interpolated raw", () => {
+    process.env.NEXT_PUBLIC_SITE_URL = "https://x.com";
+    const p = buildPaymentLinkPayload({ ...input, productId: "a b&c=d" });
+    assert.ok(p.callback_url?.endsWith("paid=a%20b%26c%3Dd"), p.callback_url);
+    delete process.env.NEXT_PUBLIC_SITE_URL;
+  });
+});

@@ -15,10 +15,24 @@
 
 | | |
 |---|---|
-| ✅ Complete | **Steps 1–5** of 14 |
-| 👉 Next | **Step 6 — Chat UI** |
+| ✅ Complete | **Steps 1–7** of 14 — every 🔴 Tier 1 item except the final verify |
+| 🌐 Live | **https://agentpay-india.vercel.app** — agent, guardrails and audit trail all verified in production |
+| 📦 Public | **github.com/rajdeepchatale/agentpay-india** |
+| 👉 Next | **Step 8 — Audit Dashboard** |
 | 🟢 Blockers | None |
-| 🟡 Pending | 16 saree images in `public/products/` (non-blocking) |
+| 🟡 Pending | 5 of 16 saree images (non-blocking — every missing file renders an authored woven placeholder) |
+
+**Verified in production, not asserted:** `/` → `/chat`; catalog API; the agent
+replying in Hinglish; the ₹8,999 guardrail block firing against a ₹1,000 cap on
+four separate phrasings; Supabase persisting the audit trail with reasoning.
+
+> [!NOTE]
+> **Added to the plan after Step 7, not in the original scope.**
+> **Payment webhook + `callback_url`.** Orders are created and reach Razorpay,
+> but nothing flips the local row from `created` to `paid` after payment
+> completes, and the buyer is left on Razorpay's page rather than returned to
+> the chat. Needed the public URL to exist, which it now does. Do this before
+> Step 9 — it closes the only loop that is currently open.
 
 ---
 

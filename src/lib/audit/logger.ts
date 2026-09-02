@@ -120,3 +120,32 @@ export async function recordOrder(params: {
 
   if (error) console.warn("[orders] write failed:", error.message);
 }
+
+/**
+ * Flip an order's status when Razorpay reports the payment outcome.
+ *
+ * Only ever moves a `created` order forward. A webhook can arrive late,
+ * out of order, or more than once — Razorpay retries — so this must be
+ * idempotent, and a replayed `payment.captured` must not overwrite a
+ * subsequent refund or failure.
+ */
+export async function markOrderStatus(
+  razorpayOrderId: string,
+  status: "paid" | "failed",
+): Promise<"updated" | "unchanged" | "unavailable"> {
+  const db = supabase();
+  if (!db) return "unavailable";
+
+  const { data, error } = await db
+    .from("orders")
+    .update({ status })
+    .eq("razorpay_order_id", razorpayOrderId)
+    .eq("status", "created")
+    .select("id");
+
+  if (error) {
+    console.warn("[orders] status update failed:", error.message);
+    return "unavailable";
+  }
+  return data && data.length > 0 ? "updated" : "unchanged";
+}

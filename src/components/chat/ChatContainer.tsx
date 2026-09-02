@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useReducer,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import type { AgentResponse, Product } from "@/types";
 import { chatReducer, initialChatState } from "@/lib/chat/machine";
 import { readSessionId } from "@/lib/chat/session";
@@ -15,7 +22,7 @@ import { FailureCard } from "./FailureCard";
 import { ErrorCard } from "./ErrorCard";
 import { SuggestionChips } from "./SuggestionChips";
 import { SettingsModal } from "./SettingsModal";
-import { SettingsIcon } from "@/components/ui/Icon";
+import { SettingsIcon, CheckIcon } from "@/components/ui/Icon";
 import styles from "./ChatContainer.module.css";
 
 const TIMEOUT_MS = 30_000;
@@ -23,6 +30,23 @@ const DEFAULT_SPEND = 1000;
 
 const WELCOME =
   "Namaste! Main Sakhi Sarees ki AI shopping assistant hoon. Hamare paas authentic Paithani, handloom cotton, aur silk sarees hain. Aap Hindi, Marathi, Hinglish ya English mein baat kar sakti hain! Kya dhundh rahi hain?";
+
+/* ---------------------------------------------------------------
+   The post-payment return, read once.
+
+   Cached at module scope on purpose: the effect below strips `?paid=` from
+   the URL, so a snapshot that re-read `window.location` would return null on
+   the next render and the confirmation would flash and disappear.
+   --------------------------------------------------------------- */
+let paidSnapshot: string | null | undefined;
+const subscribePaid = () => () => {};
+const getPaid = () => {
+  if (paidSnapshot === undefined) {
+    paidSnapshot = new URLSearchParams(window.location.search).get("paid");
+  }
+  return paidSnapshot;
+};
+const getPaidServer = () => null;
 
 export function ChatContainer() {
   const [state, dispatch] = useReducer(chatReducer, initialChatState);
@@ -37,6 +61,20 @@ export function ChatContainer() {
   useEffect(() => {
     sessionRef.current = readSessionId(window.localStorage);
   }, []);
+
+  /* Razorpay returns the buyer here after payment with ?paid=<productId>.
+     Read through useSyncExternalStore, the same pattern Modal uses for
+     client-only state: it reports server-vs-client without a setState in an
+     effect, so there is no cascading render. The snapshot is cached at module
+     scope so stripping the param below cannot make the banner vanish. */
+  const paidFor = useSyncExternalStore(subscribePaid, getPaid, getPaidServer);
+
+  /* Remove the query param once seen. A refresh or a shared link should not
+     replay a payment confirmation. This is a write to an external system —
+     the URL — which is what effects are actually for. */
+  useEffect(() => {
+    if (paidFor) window.history.replaceState({}, "", window.location.pathname);
+  }, [paidFor]);
 
   /* Follow the conversation as it grows. */
   useEffect(() => {
@@ -277,6 +315,24 @@ export function ChatContainer() {
                   renderAgent(m.response, i === state.messages.length - 1)}
               </div>
             ),
+          )}
+
+          {paidFor && (
+            <div className={styles.panel}>
+              <div className={styles.paid}>
+                <span className={styles.paidKaath} aria-hidden="true" />
+                <span className={styles.paidTick}>
+                  <CheckIcon size={14} />
+                </span>
+                <div>
+                  <p className={styles.paidTitle}>Payment received</p>
+                  <p className={styles.paidBody}>
+                    Dhanyavaad! Aapka order confirm ho gaya hai. Sakhi Sarees se
+                    jald hi update milega.
+                  </p>
+                </div>
+              </div>
+            </div>
           )}
 
           {isBusy && <TypingIndicator />}

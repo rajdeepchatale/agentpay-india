@@ -33,6 +33,28 @@ export interface RazorpayPaymentLinkPayload {
   notify: { sms: boolean; email: boolean };
   reminder_enable: boolean;
   notes: Record<string, string>;
+  /** Where Razorpay sends the buyer once she has paid. Omitted if unset. */
+  callback_url?: string;
+  callback_method?: "get";
+}
+
+/**
+ * The public origin of this deployment, for the post-payment return trip.
+ *
+ * Vercel sets VERCEL_PROJECT_PRODUCTION_URL on every deployment, so the
+ * production URL does not have to be hard-coded or kept in sync by hand.
+ * Returns undefined locally, which is correct — Razorpay cannot redirect a
+ * buyer to localhost, and a callback_url pointing there would strand her on
+ * a dead page.
+ */
+function publicOrigin(): string | undefined {
+  const explicit = process.env.NEXT_PUBLIC_SITE_URL;
+  if (explicit) return explicit.replace(/\/$/, "");
+
+  const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  if (vercel) return `https://${vercel}`;
+
+  return undefined;
 }
 
 function traceNotes(input: OrderInput): Record<string, string> {
@@ -64,6 +86,8 @@ export function buildPaymentLinkPayload(
     MAX_DESCRIPTION,
   );
 
+  const origin = publicOrigin();
+
   return {
     amount: toPaise(input.amountInr),
     currency: "INR",
@@ -72,5 +96,14 @@ export function buildPaymentLinkPayload(
     notify: { sms: false, email: false },
     reminder_enable: false,
     notes: traceNotes(input),
+    /* Bring her back to the conversation she was already in, rather than
+       leaving her on Razorpay's receipt page wondering what happened. Only
+       set when a real public origin exists — see publicOrigin(). */
+    ...(origin
+      ? {
+          callback_url: `${origin}/chat?paid=${encodeURIComponent(input.productId)}`,
+          callback_method: "get" as const,
+        }
+      : {}),
   };
 }
