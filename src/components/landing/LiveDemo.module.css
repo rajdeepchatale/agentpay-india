@@ -44,7 +44,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  min-height: 300px;
+  min-height: 380px;
   padding: var(--space-4);
 }
 
@@ -112,7 +112,11 @@
    it, so a missing file reveals cloth rather than a gap. */
 .figure {
   display: block;
-  height: 96px;
+  /* The source photographs are 3:4 portrait. A 96px-tall box cropped them to a
+     letterbox strip through the model's chest — head and border both gone.
+     Match the source and the whole saree survives. */
+  aspect-ratio: 3 / 4;
+  width: 100%;
   overflow: hidden;
 }
 

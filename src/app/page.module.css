@@ -18,6 +18,21 @@
   background-color: var(--bg-primary);
 }
 
+/* A bolt of cloth is an object, not wallpaper. Past ~1600 it stops growing and
+   centres, kaath still attached — the selvedge belongs to the cloth, so
+   centring the content while pinning the border to the viewport edge would
+   leave the two floating apart.
+
+   Measured before this existed: at 3300px the content sat in 1080px hard left
+   with 2164px of empty ground to its right. */
+@media (min-width: 1600px) {
+  .bolt {
+    max-width: 1600px;
+    margin-inline: auto;
+    border-inline: 1px solid var(--border-subtle);
+  }
+}
+
 /* --- The selvedge --- */
 
 .kaath {
@@ -65,8 +80,15 @@
 
 .cloth {
   grid-column: 2;
-  width: min(1080px, 100%);
+  /* Fills the column. Reading measure is owned per-section (68ch on body copy),
+     which is where it belongs — capping the whole page instead left the right
+     of a wide screen empty. */
+  width: 100%;
   padding: 0 var(--space-8);
+}
+
+@media (min-width: 1400px) {
+  .cloth { padding-inline: var(--space-12); }
 }
 
 /* --- Hero --- */
@@ -141,6 +163,10 @@
   /* No margin: the hero grid's own gap owns the spacing. Both together
      double it, which read as a hole between the CTA and the proof. */
   max-width: 620px;
+}
+
+@media (min-width: 1400px) {
+  .demo { max-width: 720px; }
 }
 
 /* The proof column. On desktop it leaves the flow and sits beside the

@@ -1,0 +1,124 @@
+/* ==========================================================================
+   The guided path.
+
+   Numbered because a request genuinely travels 1 → 2 → 3 here, which is the
+   only condition under which numbered markers earn their place. Step two
+   carries the zari edge: it is the one that matters, and the composition
+   should say so before anyone reads a word.
+   ========================================================================== */
+
+.tour {
+  animation: messageIn var(--dur-base) var(--ease-out-expo) both;
+}
+
+.lead {
+  max-width: none;
+  margin-bottom: var(--space-3);
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  background-color: var(--bg-elevated);
+  background-image: var(--weave-warp), var(--weave-weft);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  transition: border-color var(--dur-fast) var(--ease-standard),
+    background-color var(--dur-fast) var(--ease-standard);
+}
+
+.step:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  background-color: var(--bg-surface);
+}
+
+.step:disabled {
+  opacity: 0.5;
+}
+
+.step:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+/* Step two: the guardrail. The one moment this surface raises its voice. */
+.step[data-key="true"] {
+  border-color: rgba(245, 158, 11, 0.32);
+}
+
+.step[data-key="true"] .num {
+  color: var(--color-warning);
+  background-color: var(--color-warning-wash);
+}
+
+.step[data-done="true"] {
+  opacity: 0.55;
+}
+
+.step[data-done="true"] .num {
+  color: var(--color-success);
+  background-color: var(--color-success-wash);
+}
+
+.num {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-full);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.label {
+  font-size: var(--fs-base);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.outcome {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+}
+
+/* The exact words that will be sent. Nothing hidden — a judge can see this is
+   the ordinary chat, not a special path. */
+.phrase {
+  flex: none;
+  max-width: 42%;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .phrase {
+    display: none;
+  }
+}

@@ -20,7 +20,7 @@ import { ConsentPrompt } from "./ConsentPrompt";
 import { OrderConfirmation } from "./OrderConfirmation";
 import { FailureCard } from "./FailureCard";
 import { ErrorCard } from "./ErrorCard";
-import { SuggestionChips } from "./SuggestionChips";
+import { DemoTour } from "./DemoTour";
 import { SettingsModal } from "./SettingsModal";
 import { GuardrailRail } from "./GuardrailRail";
 import { SettingsIcon, CheckIcon, ShieldIcon } from "@/components/ui/Icon";
@@ -28,6 +28,14 @@ import styles from "./ChatContainer.module.css";
 
 const TIMEOUT_MS = 30_000;
 const DEFAULT_SPEND = 1000;
+
+/* Kept beside the tour so the two cannot drift: if a step's wording changes,
+   the "all done" check changes with it. */
+const TOUR_SENDS = [
+  "1000 ke under cotton saree dikhao",
+  "Authentic Paithani silk saree",
+  "मला पैठणी सिल्क साडी दाखवा",
+];
 
 const WELCOME =
   "Namaste! Main Sakhi Sarees ki AI shopping assistant hoon. Hamare paas authentic Paithani, handloom cotton, aur silk sarees hain. Aap Hindi, Marathi, Hinglish ya English mein baat kar sakti hain! Kya dhundh rahi hain?";
@@ -147,12 +155,13 @@ export function ChatContainer() {
   }, [request, state.lastSent]);
 
   const isBusy = state.status === "sending";
-  const isEmpty = state.messages.length === 0;
 
   /* Both derived from the transcript rather than tracked separately — one
      source of truth, and they cannot drift out of step with what is on screen.
      `turn` bumps whenever a reply lands, which is when the rail refetches. */
   const turn = state.messages.filter((m) => m.role === "agent").length;
+  const sentTexts = state.messages.filter((m) => m.role === "user").map((m) => m.text);
+  const allStepsDone = TOUR_SENDS.every((t) => sentTexts.includes(t));
   const attempted = state.messages.reduce<number | null>((max, m) => {
     const asked = m.response?.data?.guardrail?.attempted;
     return typeof asked === "number" && asked > (max ?? 0) ? asked : max;
@@ -322,9 +331,12 @@ export function ChatContainer() {
             {WELCOME}
           </MessageBubble>
 
-          {isEmpty && (
+          {/* Stays until every step has been walked, rather than vanishing
+              after the first message — the guardrail is step two, and a tour
+              that disappears before it is reached is not a tour. */}
+          {!allStepsDone && (
             <div className={styles.chips}>
-              <SuggestionChips onPick={send} disabled={isBusy} />
+              <DemoTour onPick={send} sent={sentTexts} disabled={isBusy} />
             </div>
           )}
 
