@@ -162,6 +162,38 @@ labelled, moves focus inside, closes on Escape. Impeccable detector: 0 findings.
 saffron ring and keep their own corner radius. The composer does not steal
 focus on mount.
 
+## The landing page — a second surface, one world
+
+`/` is **Persuade**; everything else is Operate. Same cloth, same zari, same
+saffron rule — turned up rather than swapped out. Seed `185ba334`, form
+**The Bolt of Cloth**, dealt by the structure roll and locked over two
+alternates.
+
+**The page is one saree unrolled.** A single zari *kaath* runs the full left
+edge, floor to ceiling — one grid element spanning every row, so it is
+genuinely continuous rather than a border repeated per section. That is the
+difference between cloth and cards, and it is what the page is recognisable by
+with every word removed.
+
+**Where the guardrail sits, the kaath thickens** and turns amber, reaching back
+into the spine. A kaath reinforces a saree exactly where it would otherwise
+unravel; this page raises its voice in one place, on the material rather than
+on the type.
+
+**The hero demonstrates rather than claims.** A replay of a real session runs
+beside the headline and ends on the ₹8,999 block — the same proportional-bar
+device the chat ships, at hero scale. It is labelled *"replay of a real
+session"*: a replay dressed as a live socket is the same lie as claiming a
+feature that is not built.
+
+Two composition facts learned in review:
+
+- **Persuade needs the action in the first viewport.** Single-column put the
+  CTA below the fold and left half of a 1440 viewport empty. Two columns from
+  1000px — argument left, proof right — fixed both at once.
+- **A grid gap and a child margin do not add up to spacing, they add up to a
+  hole.** Let the container own it.
+
 ## Two rules that keep catching people
 
 **One committing action per view.** Saffron marks the button that spends

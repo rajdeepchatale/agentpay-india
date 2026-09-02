@@ -1,0 +1,276 @@
+/* ==========================================================================
+   The hero's replay.
+
+   Same cloth, same zari, same guardrail geometry as the real product — a judge
+   who clicks through must land somewhere they recognise. The block's
+   proportional bar is the identical device the chat ships, at hero scale.
+   ========================================================================== */
+
+.frame {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--bg-surface);
+  background-image: var(--weave-warp), var(--weave-weft);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+.chrome {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.shop {
+  font-family: var(--font-display);
+  font-size: var(--fs-base);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Says what this is. A replay dressed as a live socket is the same lie as
+   claiming a feature that is not built. */
+.replay {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+}
+
+.thread {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: 300px;
+  padding: var(--space-4);
+}
+
+.user,
+.agent {
+  max-width: 86%;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  animation: messageIn var(--dur-base) var(--ease-out-expo) both;
+}
+
+.user {
+  align-self: flex-end;
+  color: var(--text-primary);
+  background-color: var(--bg-sunken);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md) var(--radius-md) var(--radius-xs) var(--radius-md);
+}
+
+.agent {
+  align-self: flex-start;
+  color: var(--text-primary);
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md) var(--radius-md) var(--radius-md) var(--radius-xs);
+}
+
+.thinking {
+  display: flex;
+  gap: 4px;
+  align-self: flex-start;
+  padding: var(--space-3);
+}
+
+.thinking i {
+  width: 5px;
+  height: 5px;
+  border-radius: var(--radius-full);
+  background-color: var(--text-secondary);
+  animation: typingDot 1.3s var(--ease-standard) infinite;
+}
+.thinking i:nth-child(2) { animation-delay: 0.16s; }
+.thinking i:nth-child(3) { animation-delay: 0.32s; }
+
+/* --- Product rail --- */
+
+.rail {
+  display: flex;
+  gap: var(--space-2);
+  animation: messageIn var(--dur-base) var(--ease-out-expo) both;
+}
+
+.card {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: var(--space-2);
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+/* The woven fallback, at card scale — body colour plus its kaath. */
+.cloth {
+  display: block;
+  height: 62px;
+  background-color: var(--body);
+  background-image: linear-gradient(0deg, var(--edge) 0 9px, transparent 9px),
+    var(--weave-warp), var(--weave-weft);
+}
+
+.cardName {
+  max-width: none;
+  padding: var(--space-2) var(--space-2) 0;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text-primary);
+}
+
+.cardDeva {
+  max-width: none;
+  padding: 0 var(--space-2);
+  font-size: var(--fs-xs);
+  line-height: 1.3;
+  color: var(--text-primary);
+  opacity: 0.7;
+}
+
+.cardPrice {
+  max-width: none;
+  padding: var(--space-1) var(--space-2) 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--zari-bright);
+}
+
+/* --- The block: the reason this replay exists --- */
+
+.block {
+  position: relative;
+  overflow: hidden;
+  padding: var(--space-4);
+  background-color: var(--bg-elevated);
+  background-image: var(--weave-warp), var(--weave-weft);
+  border: 1px solid rgba(245, 158, 11, 0.24);
+  border-radius: var(--radius-md);
+  animation: snapIn var(--dur-base) var(--ease-out-expo) both;
+}
+
+.blockEdge {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background-color: var(--color-warning);
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(10, 10, 15, 0.55) 0 1px,
+    transparent 1px 4px
+  );
+}
+
+.blockHead {
+  max-width: none;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--color-warning);
+}
+
+.blockSubject {
+  max-width: none;
+  margin-top: 2px;
+  font-size: var(--fs-sm);
+  color: var(--text-primary);
+}
+
+.meter {
+  position: relative;
+  height: 9px;
+  margin-top: var(--space-3);
+  border-radius: var(--radius-xs);
+  background-color: var(--bg-sunken);
+}
+
+.within {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 11.1%;
+  border-radius: var(--radius-xs) 0 0 var(--radius-xs);
+  background-color: var(--zari);
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.16) 0 1px,
+    transparent 1px 3px
+  );
+}
+
+/* Hatching over the sunken ground, not a second filled bar — solid-to-solid
+   at the same luminance merges the two segments into one run. */
+.over {
+  position: absolute;
+  inset: 0 0 0 11.1%;
+  transform-origin: left center;
+  animation: overshoot var(--dur-slow) var(--ease-out-expo) 200ms both;
+  border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+  background-color: rgba(245, 158, 11, 0.07);
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(245, 158, 11, 0.42) 0 2px,
+    transparent 2px 7px
+  );
+}
+
+@keyframes overshoot {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* Where her limit ends. Stands proud of the track so the eye lands here. */
+.edgeMark {
+  position: absolute;
+  inset: -4px auto -4px 11.1%;
+  width: 2px;
+  background-color: var(--zari-bright);
+  box-shadow: 0 0 0 1.5px var(--bg-elevated), 0 0 8px rgba(242, 217, 138, 0.5);
+}
+
+.scale {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+}
+
+.money {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: var(--zari-bright);
+}
+
+.attempted {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.attempted .money {
+  color: var(--color-warning);
+}
+
+.ratio {
+  padding: 1px var(--space-2);
+  font-size: var(--fs-xs);
+  font-style: normal;
+  color: var(--color-warning);
+  background-color: var(--color-warning-wash);
+  border-radius: var(--radius-full);
+}
+
+@media (max-width: 520px) {
+  .thread { min-height: 260px; padding: var(--space-3); }
+  .cardDeva { display: none; }
+}

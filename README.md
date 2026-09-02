@@ -58,9 +58,9 @@ This section exists so every other claim in this README can be checked and found
 | Design-system specimen sheet | ✅ Built — `/design` |
 | 16-saree catalog + search API | ✅ Built |
 | **Voice in / out (Sarvam AI)** | ⬜ **Not built** — planned |
-| **Audit dashboard UI** | ⬜ **Not built** — the `/api/audit` endpoint exists and returns the data; there is no page rendering it yet |
-| **Landing page** | ⬜ **Not built** — `/` currently redirects to `/chat` |
-| **Payment webhook** | ⬜ **Not built** — orders are created and reach Razorpay; nothing yet flips their local status to `paid` after payment completes |
+| Audit dashboard | ✅ Built — `/dashboard?session_id=…` |
+| Landing page | ✅ Built — `/` |
+| Payment webhook (signed) | ✅ Built — orders move `created → paid` on a verified `payment.captured` |
 
 **Razorpay runs in test mode.** `src/lib/razorpay/client.ts` refuses to start with any key that does not begin with `rzp_test_`. No real money moves.
 
@@ -109,7 +109,7 @@ The design rule that makes prompt injection structurally irrelevant:
 ### 📊 Immutable Audit Trail
 - Every search, guardrail decision, consent request and order creation is logged to Supabase with the reasoning behind it
 - Retrievable via `GET /api/audit?session_id=…`
-- Note: the API is built; a UI to render it is not — see [status](#-status--what-is-and-is-not-built)
+- Rendered at `/dashboard?session_id=…` — grouped into conversational turns, each entry expandable to its exact input/output JSON
 
 ---
 
@@ -153,12 +153,14 @@ unravelling, which is precisely what a spending guardrail does.
 ```mermaid
 flowchart TB
     subgraph Client["Next.js 16 Client"]
+        Land["Landing - /"]
         UI["Chat Interface - /chat"]
-        Spec["Design System - /design"]
+        Dash["Audit Trail - /dashboard"]
     end
 
     subgraph API["Next.js API Routes"]
         ChatRoute["POST /api/agent/chat"]
+        Hook["POST /api/razorpay/webhook"]
         CatalogRoute["GET /api/catalog"]
         AuditRoute["GET /api/audit"]
     end
@@ -181,6 +183,9 @@ flowchart TB
         Supabase["Supabase PostgreSQL"]
     end
 
+    Land --> UI
+    Dash --> AuditRoute
+    Hook --> Supabase
     UI --> ChatRoute --> State --> Prompt --> LLM
     LLM --> Guard
     Guard --> CatalogRoute
@@ -199,10 +204,11 @@ agentpay-india/
 ├── src/
 │   ├── app/
 │   │   ├── layout.tsx               # Root layout, Devanagari fonts, metadata
-│   │   ├── page.tsx                 # Redirects to /chat until the landing page ships
+│   │   ├── page.tsx                 # Landing page — the merchant story + live replay
 │   │   ├── globals.css              # Full CSS design system (no Tailwind)
 │   │   ├── chat/page.tsx            # Full-screen conversational commerce UI
 │   │   ├── design/page.tsx          # Design-system specimen sheet
+│   │   ├── dashboard/page.tsx       # Audit trail viewer
 │   │   └── api/
 │   │       ├── agent/chat/route.ts  # Agent reasoning + tool calling
 │   │       ├── catalog/route.ts     # Product search & filtering
@@ -278,7 +284,7 @@ npm test        # 134 tests, no test dependencies
 |------|-----|
 | Chat | `/chat` |
 | Design system | `/design` |
-| `/` | redirects to `/chat` until the landing page ships |
+| Landing | `/` |
 
 ---
 
@@ -345,8 +351,7 @@ Returns the decision timeline with per-entry reasoning and guardrail status.
 > sixty million, and why guardrails-as-architecture is what lets a regulated payments
 > company ship agentic commerce at all.
 
-**Next, in order:** payment webhook (orders → `paid`), audit dashboard UI, landing page,
-voice in/out via Sarvam AI.
+**Next:** voice in and out via Sarvam AI — the one planned capability still unbuilt.
 
 **Beyond:**
 1. **NPCI Unified Agentic Protocol (UAP)** — a universal AI-buyer protocol when the standard lands

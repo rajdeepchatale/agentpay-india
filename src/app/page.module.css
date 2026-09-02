@@ -1,0 +1,541 @@
+/* ==========================================================================
+   The Bolt of Cloth — landing (seed 185ba334, mode persuade)
+
+   The page is one saree unrolled. A single zari kaath runs the full left edge,
+   floor to ceiling, and every claim is a motif woven into it. The kaath is one
+   element spanning every grid row — genuinely continuous, not a border
+   repeated per section, which is the difference between cloth and cards.
+
+   Where the guardrail sits, the kaath thickens: the border reinforces exactly
+   where the spend is stopped. That is what a kaath is for on a real saree, and
+   it is the one place this page raises its voice.
+   ========================================================================== */
+
+.bolt {
+  display: grid;
+  grid-template-columns: var(--kaath-w, 56px) minmax(0, 1fr);
+  min-height: 100dvh;
+  background-color: var(--bg-primary);
+}
+
+/* --- The selvedge --- */
+
+.kaath {
+  position: relative;
+  grid-column: 1;
+  grid-row: 1 / -1;
+  background-color: var(--bg-sunken);
+  /* Warp threads running the length of the cloth, in zari. */
+  background-image:
+    repeating-linear-gradient(0deg, var(--zari-dim) 0 2px, transparent 2px 7px),
+    repeating-linear-gradient(90deg, rgba(201, 162, 39, 0.14) 0 1px, transparent 1px 4px);
+  border-right: 1px solid rgba(201, 162, 39, 0.22);
+}
+
+/* Light travelling down the thread — the page's one ambient motion, on the
+   material itself rather than scattered across the content. */
+.kaath::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(242, 217, 138, 0.5) 45%,
+    rgba(242, 217, 138, 0.75) 50%,
+    rgba(242, 217, 138, 0.5) 55%,
+    transparent 100%
+  );
+  background-size: 100% 30%;
+  background-repeat: no-repeat;
+  animation: sheenDown 14s linear infinite;
+  mix-blend-mode: screen;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+@keyframes sheenDown {
+  from { background-position: 0 -40%; }
+  to { background-position: 0 140%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kaath::after { animation: none; opacity: 0.28; }
+}
+
+.cloth {
+  grid-column: 2;
+  width: min(1080px, 100%);
+  padding: 0 var(--space-8);
+}
+
+/* --- Hero --- */
+
+/* Two columns from 1000px: argument left, proof right.
+   Single-column pushed the CTA below the fold and left the right half of a
+   1440 viewport empty — on a Persuade surface the primary action has to be
+   visible in the first viewport, and the demonstration has to sit beside the
+   claim rather than under it. */
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-10);
+  padding: var(--space-12) 0;
+}
+
+@media (min-width: 1000px) {
+  .hero {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    gap: var(--space-12);
+    min-height: 100dvh;
+    padding-block: var(--space-10);
+  }
+}
+
+.merchant {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: none;
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+}
+
+.merchantDot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background-color: var(--zari);
+}
+
+/* Stated inline, not buried in a footnote. */
+.demoTag {
+  padding: 1px var(--space-2);
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+}
+
+.headline {
+  margin-top: var(--space-5);
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 5.2vw, 4.2rem);
+  font-weight: 600;
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  color: var(--text-primary);
+}
+
+.sub {
+  max-width: 56ch;
+  margin-top: var(--space-5);
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+  color: var(--text-secondary);
+}
+
+.demo {
+  /* No margin: the hero grid's own gap owns the spacing. Both together
+     double it, which read as a hole between the CTA and the proof. */
+  max-width: 620px;
+}
+
+/* The proof column. On desktop it leaves the flow and sits beside the
+   argument; the replay is the second thing the eye lands on, not the last. */
+@media (min-width: 1000px) {
+  .copy { grid-column: 1; }
+  .demo {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+    max-width: none;
+    margin-top: 0;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+/* The only saffron on the page besides its twin at the close. */
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-6);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--text-on-accent);
+  background-color: var(--accent-primary);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-accent);
+  transition: background-color var(--dur-fast) var(--ease-standard),
+    transform var(--dur-fast) var(--ease-out-expo);
+}
+
+.cta:hover {
+  background-color: var(--accent-primary-hover);
+  transform: translateY(-1px);
+}
+
+.cta:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.ghost {
+  font-size: var(--fs-base);
+  color: var(--text-secondary);
+  text-underline-offset: 4px;
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+}
+
+.ghost:hover {
+  color: var(--text-primary);
+  text-decoration-color: var(--zari);
+}
+
+.ghost:focus-visible {
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-xs);
+}
+
+/* --- Motifs --- */
+
+.motif {
+  position: relative;
+  padding: var(--space-12) 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.motifHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+}
+
+.motifBody {
+  max-width: 68ch;
+  margin-top: var(--space-4);
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+  color: var(--text-secondary);
+}
+
+/* --- The guardrail: where the border reinforces --- */
+
+.guardrail .shield {
+  color: var(--color-warning);
+}
+
+/* The kaath thickens here, reaching into the spine. This is the one moment the
+   page raises its voice, and it is on the material rather than the type. */
+.thicken {
+  position: absolute;
+  top: -1px;
+  bottom: 0;
+  left: calc(var(--space-8) * -1 - 56px);
+  width: 56px;
+  background-color: rgba(245, 158, 11, 0.1);
+  background-image: repeating-linear-gradient(
+      0deg,
+      var(--color-warning) 0 3px,
+      transparent 3px 8px
+    ),
+    repeating-linear-gradient(90deg, rgba(245, 158, 11, 0.3) 0 1px, transparent 1px 4px);
+  border-right: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.rule {
+  max-width: 62ch;
+  margin-top: var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  font-size: var(--fs-base);
+  line-height: var(--lh-base);
+  color: var(--text-primary);
+  background-color: var(--bg-surface);
+  background-image: var(--weave-warp), var(--weave-weft);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+}
+
+.rule code {
+  color: var(--zari-bright);
+}
+
+.rails {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 68ch;
+  margin-top: var(--space-5);
+  list-style: none;
+}
+
+.rails li {
+  padding-left: var(--space-5);
+  font-size: var(--fs-base);
+  line-height: var(--lh-snug);
+  color: var(--text-secondary);
+  border-left: 1px solid var(--zari-dim);
+}
+
+.rails b {
+  color: var(--text-primary);
+}
+
+/* --- Receipt --- */
+
+.receipt {
+  position: relative;
+  overflow: hidden;
+  max-width: 460px;
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  background-color: var(--bg-elevated);
+  background-image: var(--weave-warp), var(--weave-weft);
+  border: 1px solid rgba(34, 197, 94, 0.22);
+  border-radius: var(--radius-md);
+}
+
+.receiptEdge {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background-color: var(--color-success);
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(10, 10, 15, 0.55) 0 1px,
+    transparent 1px 4px
+  );
+}
+
+.receiptHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-base);
+  font-weight: 600;
+  color: var(--color-success);
+}
+
+.tick {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  background-color: var(--color-success-wash);
+  border-radius: var(--radius-full);
+}
+
+.receiptAmount {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: var(--fs-md);
+  color: var(--text-primary);
+}
+
+.receiptMeta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-1) var(--space-4);
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  background-color: var(--bg-sunken);
+  border-radius: var(--radius-sm);
+}
+
+.receiptMeta dt {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+}
+
+.receiptMeta dd {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--zari-bright);
+  overflow-wrap: anywhere;
+}
+
+.receiptMeta dd.paid {
+  color: var(--color-success);
+}
+
+.receiptNote {
+  max-width: none;
+  margin-top: var(--space-3);
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+}
+
+.receiptNote code {
+  color: var(--text-primary);
+}
+
+/* --- Code --- */
+
+.code {
+  max-width: 720px;
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  line-height: 1.7;
+  color: var(--text-primary);
+  background-color: var(--bg-sunken);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+}
+
+.prompt {
+  color: var(--zari);
+}
+
+/* --- Trail excerpt --- */
+
+.trail {
+  display: grid;
+  gap: var(--space-2);
+  max-width: 76ch;
+  margin-top: var(--space-5);
+  list-style: none;
+}
+
+.trail li {
+  position: relative;
+  overflow: hidden;
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  color: var(--text-secondary);
+  background-color: var(--bg-surface);
+  background-image: var(--weave-warp), var(--weave-weft);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+}
+
+/* Tone in the woven band, never a thick bar down one side. */
+.trail li::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    currentColor 0 1px,
+    transparent 1px 4px
+  );
+}
+
+.trail li[data-tone="info"] { color: var(--color-info); }
+.trail li[data-tone="warning"] { color: var(--color-warning); }
+.trail li[data-tone="success"] { color: var(--color-success); }
+
+.trail b {
+  display: block;
+  margin-bottom: 2px;
+  font-size: var(--fs-xs);
+  color: currentColor;
+}
+
+.trail li { color: var(--text-secondary); }
+.trail li[data-tone="info"] b { color: var(--color-info); }
+.trail li[data-tone="warning"] b { color: var(--color-warning); }
+.trail li[data-tone="success"] b { color: var(--color-success); }
+
+.inline {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: var(--space-5);
+  font-size: var(--fs-base);
+  color: var(--zari-bright);
+  text-underline-offset: 4px;
+}
+
+.inline:hover {
+  text-decoration: underline;
+}
+
+.inline:focus-visible {
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-xs);
+}
+
+/* --- Close --- */
+
+.close {
+  padding: var(--space-16) 0 var(--space-12);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.closeHead {
+  /* 24ch broke "AI-transactable" across a line at the hyphen. The measure has
+     to clear the longest word in the sentence, not just read comfortably. */
+  max-width: 30ch;
+  text-wrap: balance;
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 3.4vw, 2.6rem);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+}
+
+.close .cta {
+  margin-top: var(--space-6);
+}
+
+.colophon {
+  max-width: 70ch;
+  margin-top: var(--space-10);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-base);
+  color: var(--text-secondary);
+}
+
+.colophon a {
+  color: var(--zari);
+  text-underline-offset: 3px;
+  text-decoration: underline;
+}
+
+/* The honesty boundary, on the page rather than only in the README. */
+.honest {
+  display: block;
+  margin-top: var(--space-2);
+  color: var(--text-muted);
+}
+
+/* --- Responsive --- */
+
+@media (max-width: 900px) {
+  .cloth { padding-inline: var(--space-6); }
+  .thicken { left: calc(var(--space-6) * -1 - 56px); }
+}
+
+@media (max-width: 620px) {
+  .bolt { --kaath-w: 20px; }
+  .cloth { padding-inline: var(--space-4); }
+  .hero { padding-top: var(--space-10); }
+  .motif { padding: var(--space-10) 0; }
+  .close { padding-top: var(--space-12); }
+  .thicken {
+    left: calc(var(--space-4) * -1 - 20px);
+    width: 20px;
+  }
+  .actions { gap: var(--space-3); }
+  .cta { width: 100%; justify-content: center; }
+}
