@@ -9,13 +9,28 @@
 .shell {
   display: grid;
   grid-template-rows: auto 1fr auto;
+  grid-template-areas: "header" "thread" "composer";
   height: 100dvh;
   background-color: var(--bg-primary);
+}
+
+/* From 1280 a guardrail rail runs beside the conversation. Below that it is
+   not rendered at all — the phone is this product's primary scene and must not
+   inherit desktop furniture. */
+@media (min-width: 1280px) {
+  .shell {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    grid-template-areas:
+      "header   header"
+      "thread   rail"
+      "composer rail";
+  }
 }
 
 /* --- Masthead --- */
 
 .header {
+  grid-area: header;
   position: relative;
   display: flex;
   align-items: center;
@@ -103,6 +118,7 @@
 /* --- Thread --- */
 
 .scroll {
+  grid-area: thread;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -118,7 +134,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  width: min(760px, 100%);
+  width: min(var(--thread-w, 760px), 100%);
   margin: auto auto 0;
   padding: var(--space-6) var(--space-5) var(--space-8);
 }
@@ -156,14 +172,24 @@
 /* --- Composer --- */
 
 .composer {
+  grid-area: composer;
   padding: var(--space-3) var(--space-5) var(--space-5);
   background-color: var(--bg-primary);
   border-top: 1px solid var(--border-subtle);
 }
 
 .composer > * {
-  width: min(760px, 100%);
+  width: min(var(--thread-w, 760px), 100%);
   margin: 0 auto;
+}
+
+/* The photography is the product. At 760px on a 1920 screen it renders as a
+   thumbnail inside a void — 40% of the viewport used, measured. */
+@media (min-width: 1024px) {
+  .shell { --thread-w: 860px; }
+}
+@media (min-width: 1440px) {
+  .shell { --thread-w: 980px; }
 }
 
 @media (max-width: 520px) {
@@ -271,5 +297,17 @@
 @media (max-width: 520px) {
   .auditLabel {
     display: none;
+  }
+}
+
+/* The rail is desktop-only. Rendering it below 1280 would put a second column
+   of chrome on the phone, which is this product's primary scene. */
+.shell > aside {
+  display: none;
+}
+
+@media (min-width: 1280px) {
+  .shell > aside {
+    display: flex;
   }
 }

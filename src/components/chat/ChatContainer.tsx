@@ -22,6 +22,7 @@ import { FailureCard } from "./FailureCard";
 import { ErrorCard } from "./ErrorCard";
 import { SuggestionChips } from "./SuggestionChips";
 import { SettingsModal } from "./SettingsModal";
+import { GuardrailRail } from "./GuardrailRail";
 import { SettingsIcon, CheckIcon, ShieldIcon } from "@/components/ui/Icon";
 import styles from "./ChatContainer.module.css";
 
@@ -147,6 +148,15 @@ export function ChatContainer() {
 
   const isBusy = state.status === "sending";
   const isEmpty = state.messages.length === 0;
+
+  /* Both derived from the transcript rather than tracked separately — one
+     source of truth, and they cannot drift out of step with what is on screen.
+     `turn` bumps whenever a reply lands, which is when the rail refetches. */
+  const turn = state.messages.filter((m) => m.role === "agent").length;
+  const attempted = state.messages.reduce<number | null>((max, m) => {
+    const asked = m.response?.data?.guardrail?.attempted;
+    return typeof asked === "number" && asked > (max ?? 0) ? asked : max;
+  }, null);
 
   /**
    * Render one agent turn according to its response type.
@@ -367,6 +377,13 @@ export function ChatContainer() {
           onEditLimit={() => setSettingsOpen(true)}
         />
       </div>
+
+      <GuardrailRail
+        sessionId={sessionId}
+        spendLimit={spendLimit}
+        turn={turn}
+        attempted={attempted}
+      />
 
       <SettingsModal
         open={settingsOpen}

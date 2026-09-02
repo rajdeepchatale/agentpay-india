@@ -1,0 +1,97 @@
+/* ==========================================================================
+   The catalog, unrolled sideways.
+
+   The page is a bolt of cloth running top to bottom; this is the one band that
+   runs across it, bleeding past the reading column to the viewport edge. The
+   cloth turning a corner.
+   ========================================================================== */
+
+.strip {
+  padding: var(--space-12) 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.lead {
+  max-width: 68ch;
+}
+
+.head {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+}
+
+.body {
+  max-width: 68ch;
+  margin-top: var(--space-4);
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+  color: var(--text-secondary);
+}
+
+/* Bleeds right, out past the page padding. The bolt has no right edge — it
+   continues off screen, which is what a bolt of cloth does. */
+.rail {
+  display: flex;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+  margin-right: calc(var(--space-8) * -1);
+  padding-bottom: var(--space-3);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  list-style: none;
+  scrollbar-width: thin;
+}
+
+.item {
+  flex: 0 0 auto;
+  width: 168px;
+  scroll-snap-align: start;
+}
+
+/* SareeThumb sizes itself for a row; this is a display context, so it is
+   overridden to the catalog's own 3:4 frame. */
+.photo {
+  width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 3 / 4;
+  border-radius: var(--radius-sm) !important;
+}
+
+.name {
+  max-width: none;
+  margin-top: var(--space-2);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  line-height: var(--lh-snug);
+  color: var(--text-primary);
+}
+
+.deva {
+  max-width: none;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  color: var(--text-primary);
+  opacity: 0.68;
+}
+
+.price {
+  max-width: none;
+  margin-top: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--zari-bright);
+}
+
+@media (max-width: 900px) {
+  .rail { margin-right: calc(var(--space-6) * -1); }
+}
+
+@media (max-width: 620px) {
+  .strip { padding: var(--space-10) 0; }
+  .rail { margin-right: calc(var(--space-4) * -1); }
+  .item { width: 140px; }
+}

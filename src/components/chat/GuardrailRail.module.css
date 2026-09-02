@@ -1,0 +1,287 @@
+/* ==========================================================================
+   The guardrail rail — desktop only, ≥1280.
+
+   At 1920 the conversation used 40% of the screen and the rest was black.
+   This fills it with the one thing the conversation cannot show: the engine
+   deciding. Same cloth, same zari, same tones as the dashboard, because it is
+   reading the same trail.
+   ========================================================================== */
+
+.rail {
+  grid-area: rail;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: var(--space-4);
+  background-color: var(--bg-surface);
+  background-image: var(--weave-warp), var(--weave-weft);
+}
+
+/* Zari down the joining edge — the seam between the conversation and the
+   machinery that governs it. */
+.selvedge {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(201, 162, 39, 0.5) 18%,
+    rgba(242, 217, 138, 0.75) 50%,
+    rgba(201, 162, 39, 0.5) 82%,
+    transparent 100%
+  );
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.shield {
+  flex: none;
+  color: var(--zari);
+}
+
+.title {
+  flex: 1;
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: normal;
+  color: var(--text-primary);
+}
+
+.live {
+  padding: 1px var(--space-2);
+  font-size: var(--fs-xs);
+  color: var(--color-success);
+  background-color: var(--color-success-wash);
+  border-radius: var(--radius-full);
+}
+
+/* --- Cap --- */
+
+.capBlock {
+  margin-top: var(--space-5);
+}
+
+.capLabel {
+  max-width: none;
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+}
+
+.track {
+  position: relative;
+  height: 8px;
+  margin-top: var(--space-2);
+  border-radius: var(--radius-xs);
+  background-color: var(--bg-sunken);
+}
+
+.within {
+  position: absolute;
+  inset: 0;
+  /* Scaled, not sized. Transitioning `width` animates a layout property and
+     thrashes; transform is composited and costs nothing. */
+  transform: scaleX(var(--pct, 1));
+  transform-origin: left center;
+  transition: transform var(--dur-slow) var(--ease-out-expo);
+  border-radius: var(--radius-xs);
+  background-color: var(--zari);
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.16) 0 1px,
+    transparent 1px 3px
+  );
+}
+
+/* Hatching over the ground, not a second filled bar — two solids at the same
+   luminance merge into one run and the limit disappears. */
+.over {
+  position: absolute;
+  inset: 0 0 0 auto;
+  right: 0;
+  border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+  background-color: rgba(245, 158, 11, 0.07);
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(245, 158, 11, 0.42) 0 2px,
+    transparent 2px 7px
+  );
+}
+
+.mark {
+  position: absolute;
+  inset: -3px auto -3px auto;
+  width: 2px;
+  background-color: var(--zari-bright);
+  box-shadow: 0 0 0 1.5px var(--bg-surface), 0 0 8px rgba(242, 217, 138, 0.5);
+}
+
+.capScale {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.money {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--zari-bright);
+}
+
+.attempted {
+  font-size: var(--fs-xs);
+  color: var(--color-warning);
+}
+
+/* --- Counts --- */
+
+.counts {
+  display: flex;
+  gap: var(--space-6);
+  margin: var(--space-5) 0;
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.countKey {
+  max-width: none;
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+}
+
+.countValue {
+  max-width: none;
+  margin-top: 1px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-lg);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--text-primary);
+}
+
+.counts [data-blocked="true"] .countValue {
+  color: var(--color-warning);
+}
+
+/* --- Feed --- */
+
+.feed {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.idle {
+  max-width: none;
+  font-size: var(--fs-xs);
+  line-height: var(--lh-base);
+  color: var(--text-secondary);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
+}
+
+.entry {
+  position: relative;
+  overflow: hidden;
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  animation: messageIn var(--dur-base) var(--ease-out-expo) both;
+}
+
+/* Tone in the woven band across the head, never a bar down one side. */
+.entry::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    currentColor 0 1px,
+    transparent 1px 4px
+  );
+}
+
+.entry[data-tone="success"] { color: var(--color-success); }
+.entry[data-tone="warning"] { color: var(--color-warning); }
+.entry[data-tone="accent"]  { color: var(--accent-primary); }
+.entry[data-tone="handled"] { color: var(--color-handled); }
+.entry[data-tone="info"]    { color: var(--color-info); }
+.entry[data-tone="neutral"] { color: var(--text-secondary); }
+
+.entryHead {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  max-width: none;
+  margin-top: 2px;
+}
+
+.entryHead time {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+  color: currentColor;
+}
+
+.entryHead b {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.blockedTag {
+  margin-left: auto;
+  padding: 0 var(--space-2);
+  font-size: var(--fs-xs);
+  color: var(--color-warning);
+  background-color: var(--color-warning-wash);
+  border-radius: var(--radius-full);
+}
+
+.entrySummary {
+  max-width: none;
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  line-height: 1.45;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.more {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  font-size: var(--fs-xs);
+  color: var(--zari-bright);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.more:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.more:focus-visible {
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-xs);
+}

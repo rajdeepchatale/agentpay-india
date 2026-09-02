@@ -1,7 +1,7 @@
 "use client";
 
 import type { Product } from "@/types";
-import { swatchFor } from "@/lib/chat/swatch";
+import { SareeThumb } from "@/components/ui/SareeThumb";
 import styles from "./ConsentPrompt.module.css";
 
 export interface ConsentPromptProps {
@@ -36,21 +36,11 @@ export function ConsentPrompt({
   disabled = false,
   spent = false,
 }: ConsentPromptProps) {
-  const swatch = swatchFor(product);
-
   return (
     <div className={spent ? styles.promptSpent : styles.prompt}>
       <div className={styles.summary}>
-        <span
-          className={styles.swatch}
-          style={
-            {
-              "--swatch-body": swatch.body,
-              "--swatch-selvedge": swatch.selvedge,
-            } as React.CSSProperties
-          }
-          aria-hidden="true"
-        />
+        {/* The actual saree, at the moment she is asked to pay for it. */}
+        <SareeThumb product={product} size="md" />
         <div className={styles.detail}>
           <p className={styles.name}>{product.name}</p>
           <p className={styles.nameDeva} lang="mr">

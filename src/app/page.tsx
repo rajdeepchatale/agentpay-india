@@ -31,6 +31,7 @@
 
 import type { Metadata } from "next";
 import { LiveDemo } from "@/components/landing/LiveDemo";
+import { CatalogStrip } from "@/components/landing/CatalogStrip";
 import { ShieldIcon, CheckIcon, ChevronRightIcon } from "@/components/ui/Icon";
 import styles from "./page.module.css";
 
@@ -103,6 +104,65 @@ export default function LandingPage() {
           <p className={styles.motifBody}>
             AgentPay turns her catalog into an endpoint that answers all of them,
             in the language each buyer actually typed in.
+          </p>
+        </section>
+
+        {/* ---- The cloth itself. Photographs, always on the page rather than
+             only inside a replay beat that may have scrolled past. ---- */}
+        <CatalogStrip />
+
+        {/* ---- Motif: how it works. The hardest idea, drawn. ---- */}
+        <section className={`${styles.motif} ${styles.flowSection}`}>
+          <h2 className={styles.motifHead}>How it works</h2>
+          <p className={styles.motifBody}>
+            The model proposes. It never disposes. Every tool call it asks for is
+            checked by a deterministic engine before anything reaches Razorpay.
+          </p>
+
+          <ol className={styles.flow}>
+            <li className={styles.step} data-step="1">
+              <p className={styles.stepHead}>She types</p>
+              <p className={styles.stepBody}>
+                Hindi, Marathi, Hinglish or English — often mixed mid-sentence.
+              </p>
+              <code className={styles.stepCode}>&ldquo;पैठणी साडी दाखवा&rdquo;</code>
+            </li>
+
+            <li className={styles.step} data-step="2">
+              <p className={styles.stepHead}>The agent proposes</p>
+              <p className={styles.stepBody}>
+                Gemini picks a tool and a <code>product_id</code>. It never names a
+                price — there is no parameter for one.
+              </p>
+              <code className={styles.stepCode}>search_products(&quot;paithani&quot;)</code>
+            </li>
+
+            <li className={`${styles.step} ${styles.gate}`} data-step="3">
+              <span className={styles.gateEdge} aria-hidden="true" />
+              <p className={styles.stepHead}>The engine decides</p>
+              <p className={styles.stepBody}>
+                Deterministic code, outside the model. Reads the price from the
+                catalog, checks the cap, the consent, the rate limit.
+              </p>
+              <span className={styles.verdicts}>
+                <span className={styles.pass}>passes →</span>
+                <span className={styles.refuse}>or refuses, and says why</span>
+              </span>
+            </li>
+
+            <li className={styles.step} data-step="4">
+              <p className={styles.stepHead}>Razorpay</p>
+              <p className={styles.stepBody}>
+                A real order and payment link. A signed webhook marks it paid.
+              </p>
+              <code className={styles.stepCode}>order_TXB1BtoaX8629G</code>
+            </li>
+          </ol>
+
+          <p className={styles.flowNote}>
+            Step 3 is the whole submission. An LLM that hallucinates a discount
+            still cannot spend money, because it was never the thing holding the
+            wallet.
           </p>
         </section>
 
@@ -226,6 +286,49 @@ export default function LandingPage() {
             Open the live audit trail
             <ChevronRightIcon size={15} />
           </a>
+        </section>
+
+        {/* ---- Motif: check the work ---- */}
+        <section className={styles.motif}>
+          <h2 className={styles.motifHead}>Verify it yourself</h2>
+          <p className={styles.motifBody}>
+            Three checks, about a minute. Nothing here asks to be taken on trust.
+          </p>
+
+          <ol className={styles.checks}>
+            <li>
+              <p className={styles.checkHead}>The catalog is machine-readable</p>
+              <p className={styles.checkBody}>
+                Run the curl above. It answers with real JSON, right now.
+              </p>
+            </li>
+            <li>
+              <p className={styles.checkHead}>The order is real</p>
+              <p className={styles.checkBody}>
+                Paste <code>order_TXB1BtoaX8629G</code> into the Razorpay test
+                dashboard. It is there, at ₹499, marked paid by a signed webhook.
+              </p>
+            </li>
+            <li>
+              <p className={styles.checkHead}>The reasoning was logged</p>
+              <p className={styles.checkBody}>
+                Open the chat, ask for a Paithani, then open the audit trail. The
+                refusal is written there with the rule and both amounts — recorded
+                as it happened, not narrated afterwards.
+              </p>
+            </li>
+          </ol>
+
+          <div className={styles.checkActions}>
+            <a className={styles.inline} href="/chat">
+              Open the chat
+              <ChevronRightIcon size={15} />
+            </a>
+            <a className={styles.inline} href="/dashboard">
+              Open the audit trail
+              <ChevronRightIcon size={15} />
+            </a>
+          </div>
         </section>
 
         {/* ---- Close ---- */}

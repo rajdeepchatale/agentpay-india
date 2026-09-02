@@ -1,8 +1,8 @@
 "use client";
 
 import type { GuardrailData, Product } from "@/types";
-import { swatchFor } from "@/lib/chat/swatch";
 import { ShieldIcon } from "@/components/ui/Icon";
+import { SareeThumb } from "@/components/ui/SareeThumb";
 import styles from "./GuardrailAlert.module.css";
 
 export interface GuardrailAlertProps {
@@ -88,32 +88,20 @@ export function GuardrailAlert({
         <div className={styles.alts}>
           <p className={styles.altsLead}>Within {rupees(limit)}</p>
           <ul className={styles.altList}>
-            {alternatives.slice(0, 3).map((p) => {
-              const s = swatchFor(p);
-              return (
-                <li key={p.id}>
-                  <button
-                    type="button"
-                    className={styles.alt}
-                    onClick={() => onSelect(p)}
-                    disabled={disabled}
-                  >
-                    <span
-                      className={styles.altSwatch}
-                      style={
-                        {
-                          "--swatch-body": s.body,
-                          "--swatch-selvedge": s.selvedge,
-                        } as React.CSSProperties
-                      }
-                      aria-hidden="true"
-                    />
-                    <span className={styles.altName}>{p.name.split("—")[0].trim()}</span>
-                    <span className={styles.altPrice}>{rupees(p.price)}</span>
-                  </button>
-                </li>
-              );
-            })}
+            {alternatives.slice(0, 3).map((p) => (
+              <li key={p.id}>
+                <button
+                  type="button"
+                  className={styles.alt}
+                  onClick={() => onSelect(p)}
+                  disabled={disabled}
+                >
+                  <SareeThumb product={p} />
+                  <span className={styles.altName}>{p.name.split("—")[0].trim()}</span>
+                  <span className={styles.altPrice}>{rupees(p.price)}</span>
+                </button>
+              </li>
+            ))}
           </ul>
         </div>
       ) : (

@@ -108,13 +108,18 @@
   overflow: hidden;
 }
 
-/* The woven fallback, at card scale — body colour plus its kaath. */
-.cloth {
+/* The photograph, at card scale. SareeThumb carries the woven fallback under
+   it, so a missing file reveals cloth rather than a gap. */
+.figure {
   display: block;
-  height: 62px;
-  background-color: var(--body);
-  background-image: linear-gradient(0deg, var(--edge) 0 9px, transparent 9px),
-    var(--weave-warp), var(--weave-weft);
+  height: 96px;
+  overflow: hidden;
+}
+
+.photo {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 0;
 }
 
 .cardName {

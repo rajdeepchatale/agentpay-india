@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useReducer, useRef, useState } from "react";
+import { SareeThumb } from "@/components/ui/SareeThumb";
 import styles from "./LiveDemo.module.css";
 
 /**
@@ -36,10 +37,34 @@ const SCRIPT: Beat[] = [
   { kind: "block" },
 ];
 
+/* Real catalog rows, with the real photographs. Colours stay as the fallback
+   for any file not yet generated — the same two-layer behaviour the chat uses,
+   so the landing page never shows a hole where a saree should be. */
 const PRODUCTS = [
-  { name: "Handloom Cotton — Mango Motif", deva: "हातमाग कॉटन साडी", price: 599, body: "#3f7d4e", edge: "#d9a520" },
-  { name: "Chanderi Cotton Silk", deva: "चंदेरी कॉटन सिल्क साडी", price: 799, body: "#31407a", edge: "#e6e3dc" },
-  { name: "Paithani Print", deva: "पैठणी प्रिंट साडी", price: 899, body: "#553272", edge: "#c9a227" },
+  {
+    id: "prod_001",
+    name: "Handloom Cotton — Mango Motif",
+    deva: "हातमाग कॉटन साडी",
+    price: 599,
+    colors: ["Green", "Yellow Border"],
+    image_url: "/products/cotton-mango-saree.jpg",
+  },
+  {
+    id: "prod_002",
+    name: "Chanderi Cotton Silk",
+    deva: "चंदेरी कॉटन सिल्क साडी",
+    price: 799,
+    colors: ["Maroon", "Gold Border"],
+    image_url: "/products/chanderi-peacock-saree.jpg",
+  },
+  {
+    id: "prod_005",
+    name: "Paithani Print",
+    deva: "पैठणी प्रिंट साडी",
+    price: 899,
+    colors: ["Purple", "Gold Print"],
+    image_url: "/products/paithani-print-cotton.jpg",
+  },
 ];
 
 /** How long each beat holds before the next arrives. */
@@ -111,14 +136,10 @@ export function LiveDemo() {
               return (
                 <div key={i} className={styles.rail}>
                   {PRODUCTS.map((p) => (
-                    <article
-                      key={p.name}
-                      className={styles.card}
-                      style={
-                        { "--body": p.body, "--edge": p.edge } as React.CSSProperties
-                      }
-                    >
-                      <span className={styles.cloth} aria-hidden="true" />
+                    <article key={p.id} className={styles.card}>
+                      <span className={styles.figure}>
+                        <SareeThumb product={p} className={styles.photo} />
+                      </span>
                       <p className={styles.cardName}>{p.name}</p>
                       <p className={styles.cardDeva} lang="mr">
                         {p.deva}

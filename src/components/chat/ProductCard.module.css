@@ -10,12 +10,21 @@
   display: flex;
   flex-direction: column;
   flex: 0 0 auto;
-  width: 176px;
+  width: var(--card-w, 176px);
   background-color: var(--bg-elevated);
   background-image: var(--weave-warp), var(--weave-weft);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   overflow: hidden;
+}
+
+/* The card grows with the screen. A saree photograph at 176px is a thumbnail;
+   these are real model shots and they carry the product. */
+@media (min-width: 1024px) {
+  .card { --card-w: 200px; }
+}
+@media (min-width: 1440px) {
+  .card { --card-w: 240px; }
 }
 
 /* --- The figure: photo on top, woven cloth underneath --- */

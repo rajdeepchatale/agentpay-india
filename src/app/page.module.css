@@ -539,3 +539,207 @@
   .actions { gap: var(--space-3); }
   .cta { width: 100%; justify-content: center; }
 }
+
+/* ==========================================================================
+   How it works — the flow
+
+   Four steps, and step three is a gate. It is drawn wider, carries the amber
+   kaath, and holds both verdicts, because that step is the submission and the
+   other three are context for it.
+   ========================================================================== */
+
+.flow {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+  list-style: none;
+  counter-reset: step;
+}
+
+@media (min-width: 900px) {
+  .flow {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: stretch;
+  }
+}
+
+.step {
+  position: relative;
+  overflow: hidden;
+  padding: var(--space-4);
+  background-color: var(--bg-surface);
+  background-image: var(--weave-warp), var(--weave-weft);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+/* The numbers are a real sequence — a request genuinely travels 1 → 4 — which
+   is the only condition under which numbered markers earn their place. */
+.step::after {
+  content: attr(data-step);
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+
+.stepHead {
+  max-width: none;
+  padding-right: var(--space-5);
+  font-size: var(--fs-base);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.stepBody {
+  max-width: none;
+  margin-top: var(--space-2);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  color: var(--text-secondary);
+}
+
+.stepCode {
+  display: block;
+  margin-top: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--zari-bright);
+  overflow-wrap: anywhere;
+}
+
+/* Step three: the gate. */
+.gate {
+  border-color: rgba(245, 158, 11, 0.32);
+  background-color: var(--bg-elevated);
+}
+
+.gateEdge {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background-color: var(--color-warning);
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(10, 10, 15, 0.55) 0 1px,
+    transparent 1px 4px
+  );
+}
+
+.verdicts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: var(--space-3);
+  font-size: var(--fs-xs);
+}
+
+.pass {
+  color: var(--color-success);
+}
+
+.refuse {
+  color: var(--color-warning);
+}
+
+.flowNote {
+  max-width: 68ch;
+  margin-top: var(--space-5);
+  font-size: var(--fs-base);
+  line-height: var(--lh-base);
+  color: var(--text-primary);
+}
+
+/* --- Verify it yourself --- */
+
+.checks {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 72ch;
+  margin-top: var(--space-5);
+  padding-left: var(--space-5);
+  list-style: decimal;
+}
+
+.checks li::marker {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--zari);
+}
+
+.checkHead {
+  max-width: none;
+  font-size: var(--fs-base);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.checkBody {
+  max-width: none;
+  margin-top: var(--space-1);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-base);
+  color: var(--text-secondary);
+}
+
+.checkBody code {
+  font-size: 0.92em;
+  color: var(--zari-bright);
+}
+
+.checkActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+}
+
+/* ==========================================================================
+   Motion — one system, scroll-linked
+
+   The kaath is woven as the page is read: the zari brightens from the top in
+   step with scroll position. Native scroll timelines, so there is no listener
+   and no jank. Browsers without support keep the ambient sheen already
+   declared above — a graceful floor, not a broken feature.
+   ========================================================================== */
+
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .kaath::after {
+      /* Replace the ambient loop with the scroll thread. */
+      animation: weaveDown linear both;
+      animation-timeline: scroll(root block);
+      opacity: 1;
+    }
+
+    @keyframes weaveDown {
+      from {
+        background-position: 0 -30%;
+      }
+      to {
+        background-position: 0 130%;
+      }
+    }
+
+    /* The guardrail bar fills as its section enters the viewport, rather than
+       on a timer that may have finished before anyone scrolled to it. */
+    .thicken {
+      transform-origin: top center;
+      animation: reinforce linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 40%;
+    }
+
+    @keyframes reinforce {
+      from {
+        opacity: 0.25;
+        clip-path: inset(0 0 100% 0);
+      }
+      to {
+        opacity: 1;
+        clip-path: inset(0 0 0 0);
+      }
+    }
+  }
+}
