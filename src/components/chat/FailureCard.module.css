@@ -1,0 +1,38 @@
+/* Handled orange (#fb923c), never error red. The agent recovered. */
+
+.card {
+  position: relative;
+  overflow: hidden;
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--bg-elevated);
+  background-image: var(--weave-warp), var(--weave-weft);
+  border: 1px solid rgba(251, 146, 60, 0.2);
+  border-radius: var(--radius-md);
+}
+
+.kaath {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background-color: var(--color-handled);
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(10, 10, 15, 0.55) 0 1px,
+    transparent 1px 4px
+  );
+}
+
+.heading {
+  font-family: var(--font-ui);
+  font-size: var(--fs-base);
+  font-weight: 600;
+  letter-spacing: normal;
+  color: var(--color-handled);
+}
+
+.recovery {
+  max-width: none;
+  margin-top: var(--space-1);
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+}

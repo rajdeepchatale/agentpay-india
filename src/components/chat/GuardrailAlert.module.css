@@ -1,0 +1,263 @@
+/* ==========================================================================
+   GuardrailAlert — the selvedge
+
+   The most important four seconds of the demo. A judge cannot read the engine;
+   they can read this.
+
+   The metaphor is not decoration. In a handloom saree the kaath is the
+   reinforced woven border that stops the cloth unravelling along its length —
+   which is exactly what a spending guardrail does. So the block is built as an
+   edge the spend runs into, in the merchant's own material.
+
+   The bar is the whole argument: the track is what she asked to spend, and the
+   limit is a marked fraction of it. ₹1,000 against ₹8,999 becomes a ratio you
+   see rather than two numbers you compare.
+   ========================================================================== */
+
+.alert {
+  position: relative;
+  overflow: hidden;
+  padding: var(--space-4) var(--space-4) var(--space-4);
+  background-color: var(--bg-elevated);
+  background-image: var(--weave-warp), var(--weave-weft);
+  border: 1px solid rgba(245, 158, 11, 0.22);
+  border-radius: var(--radius-md);
+}
+
+/* The woven selvedge across the head of the panel. */
+.kaath {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background-color: var(--color-warning);
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(10, 10, 15, 0.55) 0 1px,
+    transparent 1px 4px
+  );
+}
+
+/* --- Head --- */
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.shield {
+  flex: none;
+  color: var(--color-warning);
+}
+
+.heading {
+  font-family: var(--font-ui);
+  font-size: var(--fs-base);
+  font-weight: 600;
+  letter-spacing: normal;
+  color: var(--color-warning);
+}
+
+.subject {
+  max-width: none;
+  margin-top: var(--space-1);
+  font-size: var(--fs-base);
+  color: var(--text-primary);
+}
+
+/* --- The meter --- */
+
+.meter {
+  margin-top: var(--space-4);
+}
+
+/* Not clipped: the selvedge stands proud of the track on both edges, the way
+   a real kaath sits raised off the cloth. */
+.track {
+  position: relative;
+  height: 10px;
+  border-radius: var(--radius-xs);
+  background-color: var(--bg-sunken);
+}
+
+/* What she could have spent. Zari — this part is hers. */
+.within {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--limit-pct);
+  /* The track no longer clips, so each segment carries its own outer corners. */
+  border-radius: var(--radius-xs) 0 0 var(--radius-xs);
+  background-color: var(--zari);
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.16) 0 1px,
+    transparent 1px 3px
+  );
+}
+
+/* The overshoot. Deliberately NOT a filled bar: it is hatching over the
+   sunken ground, so it reads as territory beyond the edge rather than as more
+   of the same gold. Solid-to-solid at similar luminance made the limit
+   invisible — the two segments merged into one run.
+
+   This is the only element on the surface that animates on arrival — one
+   authored moment, conveying the verdict as it lands. */
+.over {
+  position: absolute;
+  inset: 0 0 0 var(--limit-pct);
+  transform-origin: left center;
+  animation: overshoot var(--dur-slow) var(--ease-out-expo) both;
+  border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+  background-color: rgba(245, 158, 11, 0.07);
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(245, 158, 11, 0.42) 0 2px,
+    transparent 2px 7px
+  );
+}
+
+@keyframes overshoot {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* The edge itself — where her limit ends. It stands proud of the track top and
+   bottom and carries a dark halo, so the eye lands here first and the two
+   segments cannot read as one continuous run. */
+.selvedge {
+  position: absolute;
+  inset: -4px auto -4px var(--limit-pct);
+  width: 2px;
+  background-color: var(--zari-bright);
+  box-shadow: 0 0 0 1.5px var(--bg-elevated), 0 0 8px rgba(242, 217, 138, 0.5);
+}
+
+.scale {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+}
+
+.money {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.limitLabel .money {
+  color: var(--zari-bright);
+}
+
+.attemptedLabel {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.attemptedLabel .money {
+  color: var(--color-warning);
+}
+
+.ratio {
+  padding: 1px var(--space-2);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  color: var(--color-warning);
+  background-color: var(--color-warning-wash);
+  border-radius: var(--radius-full);
+}
+
+/* --- Alternatives --- */
+/* Rows, not cards. A card inside a card is the lazy container twice over. */
+
+.alts {
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.altsLead {
+  max-width: none;
+  margin-bottom: var(--space-2);
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+}
+
+.altList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  list-style: none;
+}
+
+.alt {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-2);
+  text-align: left;
+  border-radius: var(--radius-sm);
+  transition: background-color var(--dur-fast) var(--ease-standard);
+}
+
+.alt:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.alt:disabled {
+  opacity: 0.5;
+}
+
+.alt:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+/* A thumbnail of the cloth, in that saree's own colours — the same language
+   as ProductCard's fallback, at row scale. */
+.altSwatch {
+  flex: none;
+  width: 26px;
+  height: 34px;
+  border-radius: var(--radius-xs);
+  background-color: var(--swatch-body);
+  background-image: linear-gradient(
+      0deg,
+      var(--swatch-selvedge) 0 6px,
+      transparent 6px
+    ),
+    var(--weave-warp), var(--weave-weft);
+}
+
+.altName {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-sm);
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.altPrice {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--zari-bright);
+}
+
+.suggestion {
+  max-width: none;
+  margin-top: var(--space-3);
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+}

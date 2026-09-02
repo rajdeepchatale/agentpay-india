@@ -1,0 +1,465 @@
+/* ==========================================================================
+   AgentPay India — Design System
+   Owner: 🟠 Claude Code (frontend)
+
+   WORLD: woven / zari.
+   Surfaces are cloth, not glass. Every panel carries a warp-and-weft micro
+   texture. Hairlines behave like zari — the gold-wrapped thread woven into a
+   Paithani border — so they catch light along their length instead of sitting
+   flat. Gold is a material (thread). Saffron is a decision (the committing
+   action). They never do each other's job.
+
+   Two rules donated from directions this one beat:
+   - State lives in the weave. Controls and faults express through structure
+     and relief, not only through a colored badge.
+   - Motion snaps, overshoots, settles. Nothing glides.
+   ========================================================================== */
+
+/* ---------------------------------------------------------------
+   1. TOKENS
+   --------------------------------------------------------------- */
+
+:root {
+  /* --- Ground & surfaces (pinned by the brief) --- */
+  --bg-primary: #0a0a0f;
+  --bg-surface: #141419;
+  --bg-elevated: #1c1c24;
+  --bg-sunken: #07070b;
+
+  /* --- Saffron: reserved for the committing action --- */
+  --accent-primary: #f97316;
+  --accent-primary-hover: #fb8a3c;
+  --accent-primary-press: #e26310;
+  --accent-primary-glow: rgba(249, 115, 22, 0.15);
+  --accent-primary-wash: rgba(249, 115, 22, 0.08);
+
+  /* --- Zari: real gold thread. A material, never a status color. --- */
+  --zari: #c9a227;
+  --zari-bright: #f2d98a;
+  --zari-dim: rgba(201, 162, 39, 0.42);
+
+  /* --- Type --- */
+  --text-primary: #f0f0f5;
+  --text-secondary: #8b8b9e;
+  --text-muted: #5a5a6e;
+  --text-on-accent: #1a0d02;
+
+  /* --- Semantic --- */
+  --color-success: #22c55e;
+  --color-success-wash: rgba(34, 197, 94, 0.1);
+  --color-warning: #f59e0b;
+  --color-warning-wash: rgba(245, 158, 11, 0.1);
+  --color-error: #ef4444;
+  --color-error-wash: rgba(239, 68, 68, 0.1);
+  --color-info: #3b82f6;
+  --color-info-wash: rgba(59, 130, 246, 0.1);
+  --color-handled: #fb923c;
+  --color-handled-wash: rgba(251, 146, 60, 0.1);
+
+  /* --- Edges --- */
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.11);
+  --border-accent: rgba(249, 115, 22, 0.3);
+
+  /* --- Cloth: warp and weft, crossing. The surface material. --- */
+  --weave-warp: repeating-linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.032) 0 1px,
+    transparent 1px 3px
+  );
+  --weave-weft: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.022) 0 1px,
+    transparent 1px 3px
+  );
+  /* Zari thread: dim at the selvedge, bright where it catches light.
+     The peak carries most of the alpha — below ~0.8 it stops reading as
+     metal and turns into a grey hairline. */
+  --zari-thread: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(201, 162, 39, 0.18) 12%,
+    rgba(242, 217, 138, 0.92) 50%,
+    rgba(201, 162, 39, 0.18) 88%,
+    transparent 100%
+  );
+
+  /* --- Space --- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  /* --- Radius: assigned by role, not sprayed evenly --- */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+  --radius-full: 9999px;
+
+  /* --- Type families (wired to next/font in layout.tsx) --- */
+  --font-display: var(--font-anek), "Noto Sans Devanagari", system-ui, sans-serif;
+  --font-ui: var(--font-mukta), "Noto Sans Devanagari", system-ui, sans-serif;
+  --font-mono: var(--font-mono-jb), ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* --- Type scale --- */
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.8125rem;
+  --fs-base: 0.9375rem;
+  --fs-md: 1.0625rem;
+  --fs-lg: 1.25rem;
+  --fs-xl: 1.5rem;
+  --fs-2xl: 2rem;
+  --fs-3xl: 2.75rem;
+  --fs-4xl: 3.75rem;
+
+  --lh-tight: 1.15;
+  --lh-snug: 1.35;
+  --lh-base: 1.6;
+  --lh-loose: 1.75;
+
+  --tracking-tight: -0.02em;
+  --tracking-display: -0.03em;
+  --tracking-wide: 0.01em;
+
+  /* --- Depth: every shadow carries an offset and a soft blur --- */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.24);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.32);
+  --shadow-lg: 0 4px 10px rgba(0, 0, 0, 0.45), 0 20px 48px rgba(0, 0, 0, 0.4);
+  --shadow-accent: 0 2px 6px rgba(0, 0, 0, 0.35), 0 8px 28px var(--accent-primary-glow);
+
+  /* --- Motion: snap, overshoot, settle --- */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  /* The overshoot lives in the snapIn keyframes, never in the timing
+     function — an elastic bezier on top of them double-bounces. */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast: 120ms;
+  --dur-base: 220ms;
+  --dur-slow: 420ms;
+
+  --focus-ring: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--accent-primary);
+
+  color-scheme: dark;
+}
+
+/* ---------------------------------------------------------------
+   2. RESET
+   --------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  height: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100%;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: var(--fs-base);
+  line-height: var(--lh-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+img,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ---------------------------------------------------------------
+   3. BASE TYPE
+   Devanagari and Latin share one baseline and one texture.
+   --------------------------------------------------------------- */
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-display);
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: var(--fs-3xl);
+}
+h2 {
+  font-size: var(--fs-2xl);
+}
+h3 {
+  font-size: var(--fs-xl);
+}
+h4 {
+  font-size: var(--fs-lg);
+  letter-spacing: var(--tracking-tight);
+}
+
+p {
+  max-width: 68ch;
+  text-wrap: pretty;
+}
+
+code,
+kbd,
+samp {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Money and IDs never reflow between frames. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------
+   4. BROWSER SURFACES
+   The parts we did not draw still belong to the design.
+   --------------------------------------------------------------- */
+
+::selection {
+  background: rgba(249, 115, 22, 0.28);
+  color: var(--text-primary);
+}
+
+/* No border-radius here — the ring follows each element's own corner radius.
+   Forcing one would square off the round send button on keyboard focus. */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+}
+
+/* WebKit */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.12);
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Placeholders are read, so they clear 4.5:1 like body copy.
+   --text-muted sits at 3.03:1 on this ground and is reserved for
+   non-essential micro-labels only. */
+::placeholder {
+  color: var(--text-secondary);
+  opacity: 1;
+}
+
+/* ---------------------------------------------------------------
+   5. MATERIALS
+   Reusable cloth and thread. Components compose these.
+   --------------------------------------------------------------- */
+
+/* Woven surface — warp and weft crossing over a base color. */
+.weave {
+  background-image: var(--weave-warp), var(--weave-weft);
+}
+
+/* A zari hairline along the top edge of a surface. */
+.zari-edge {
+  position: relative;
+}
+.zari-edge::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--zari-thread);
+  pointer-events: none;
+}
+
+/* The kaath — a woven selvedge band, the saree's structural border.
+   A material, not a status stripe. */
+.kaath {
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--zari-dim) 0 1px,
+    transparent 1px 4px
+  );
+  height: 3px;
+  opacity: 0.7;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------------------------------------------------------------
+   6. KEYFRAMES
+   --------------------------------------------------------------- */
+
+/* A message arriving. Exponential ease-out from a visible default. */
+@keyframes messageIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* The snap: overshoot, then settle. Used for state commits. */
+@keyframes snapIn {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.985);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.004);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Three dots, staggered — the agent is composing. */
+@keyframes typingDot {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+/* Light travelling along a gold thread. The system's signature. */
+@keyframes zariSheen {
+  from {
+    background-position: -180% 0;
+  }
+  to {
+    background-position: 280% 0;
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: -200% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
+}
+
+/* Recording. A pulse that reads at a glance. */
+@keyframes recPulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(0.88);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes overlayIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ---------------------------------------------------------------
+   7. REDUCED MOTION
+   --------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

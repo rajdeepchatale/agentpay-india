@@ -1,0 +1,99 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.shell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  /* No weave here. The panel is cloth; a well cut into it is not, and
+     horizontal weft on a short field reads as banding. */
+  background-color: var(--bg-sunken);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0 var(--space-3);
+  transition:
+    border-color var(--dur-fast) var(--ease-standard),
+    box-shadow var(--dur-base) var(--ease-out-expo);
+}
+
+.shell:hover:not(.disabled) {
+  border-color: var(--border-strong);
+}
+
+/* The ring is drawn on the shell so the caret and prefix sit inside it. */
+.shell:focus-within {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-primary-glow);
+}
+
+.invalid {
+  border-color: var(--color-error);
+}
+
+.invalid:focus-within {
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px var(--color-error-wash);
+}
+
+.disabled {
+  opacity: 0.5;
+}
+
+.prefix,
+.suffix {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+  font-size: var(--fs-base);
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  height: 42px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-base);
+  color: var(--text-primary);
+  caret-color: var(--accent-primary);
+  outline: none;
+}
+
+/* The focus ring belongs to the shell, so the inner element must not draw one. */
+.input:focus-visible {
+  box-shadow: none;
+}
+
+.input[type="number"] {
+  font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.input[type="number"]::-webkit-outer-spin-button,
+.input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.hint {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  line-height: var(--lh-snug);
+}
+
+.errorText {
+  font-size: var(--fs-xs);
+  color: var(--color-error);
+  line-height: var(--lh-snug);
+}

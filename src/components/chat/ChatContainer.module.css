@@ -1,0 +1,192 @@
+/* ==========================================================================
+   ChatContainer — full screen, not a widget
+
+   Three rows: masthead, thread, composer. The thread is the only thing that
+   scrolls, so the merchant's name and the spending limit are always on screen.
+   Both of those are claims the product makes; they should never scroll away.
+   ========================================================================== */
+
+.shell {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100dvh;
+  background-color: var(--bg-primary);
+}
+
+/* --- Masthead --- */
+
+.header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-5);
+  background-color: var(--bg-surface);
+  background-image: var(--weave-warp), var(--weave-weft);
+}
+
+/* The zari thread along the foot of the masthead — the same edge that runs
+   down a Paithani border, here separating the shop from the conversation. */
+.selvedge {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 1px;
+  background: var(--zari-thread);
+}
+
+.masthead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex: 1;
+  min-width: 0;
+}
+
+.wordmark {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  letter-spacing: var(--tracking-tight);
+  color: var(--text-secondary);
+}
+
+.divider {
+  width: 1px;
+  height: 22px;
+  background-color: var(--border-strong);
+}
+
+/* The shop. This is what makes the surface hers rather than a generic bot. */
+.merchant {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.shopName {
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: var(--tracking-tight);
+  color: var(--text-primary);
+}
+
+.shopDeva {
+  font-family: var(--font-display);
+  font-size: var(--fs-sm);
+  line-height: 1.25;
+  color: var(--zari);
+}
+
+.gear {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 38px;
+  height: 38px;
+  color: var(--text-secondary);
+  border-radius: var(--radius-full);
+  transition: color var(--dur-fast) var(--ease-standard),
+    background-color var(--dur-fast) var(--ease-standard);
+}
+
+.gear:hover {
+  color: var(--text-primary);
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.gear:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+/* --- Thread --- */
+
+.scroll {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* `margin-top: auto` bottom-anchors the thread. Without it the opening frame
+   is a welcome bubble at the top and 600px of void above the composer — and
+   that frame is the first three seconds of the demo. Conversations grow
+   upward from the composer, which is also how every messaging app she uses
+   behaves. */
+.thread {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: min(760px, 100%);
+  margin: auto auto 0;
+  padding: var(--space-6) var(--space-5) var(--space-8);
+}
+
+/* One agent turn: a bubble plus whatever panel it carries. */
+.turn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* Panels align with the agent's bubble and stop short of full width, so a
+   verdict still reads as something the agent said. */
+.panel {
+  max-width: min(72ch, 82%);
+  animation: snapIn var(--dur-base) var(--ease-out-expo) both;
+}
+
+.chips {
+  animation: messageIn var(--dur-base) var(--ease-out-expo) both;
+}
+
+/* Product rail — horizontal, escaping the thread's padding so cards bleed to
+   the edge rather than stopping short of it. */
+.rail {
+  display: flex;
+  gap: var(--space-3);
+  overflow-x: auto;
+  padding: var(--space-1) var(--space-5);
+  margin: 0 calc(var(--space-5) * -1);
+  scroll-padding-inline: var(--space-5);
+  scrollbar-width: thin;
+}
+
+/* --- Composer --- */
+
+.composer {
+  padding: var(--space-3) var(--space-5) var(--space-5);
+  background-color: var(--bg-primary);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.composer > * {
+  width: min(760px, 100%);
+  margin: 0 auto;
+}
+
+@media (max-width: 520px) {
+  .header {
+    padding: var(--space-3) var(--space-4);
+  }
+  .thread {
+    padding: var(--space-5) var(--space-4) var(--space-6);
+  }
+  .rail {
+    padding-inline: var(--space-4);
+    margin-inline: calc(var(--space-4) * -1);
+  }
+  .composer {
+    padding: var(--space-3) var(--space-4) var(--space-4);
+  }
+  .panel {
+    max-width: 100%;
+  }
+  .wordmark {
+    display: none;
+  }
+  .divider {
+    display: none;
+  }
+}

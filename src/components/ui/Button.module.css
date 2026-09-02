@@ -1,0 +1,172 @@
+.button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  letter-spacing: var(--tracking-wide);
+  white-space: nowrap;
+  border-radius: var(--radius-sm);
+  transition:
+    background-color var(--dur-fast) var(--ease-standard),
+    border-color var(--dur-fast) var(--ease-standard),
+    color var(--dur-fast) var(--ease-standard),
+    box-shadow var(--dur-base) var(--ease-out-expo),
+    transform var(--dur-base) var(--ease-out-expo);
+}
+
+/* The focus ring MUST be declared here, not only in globals.css.
+   `:focus-visible` and `.primary` have identical specificity (0,1,0), and
+   CSS modules are injected after globals — so the variant's elevation shadow
+   would win and silently swallow the ring. `.button:focus-visible` is (0,2,0)
+   and beats every variant. */
+.button:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+/* Loading is not disabled. A button waiting on the agent keeps its full
+   colour and shows a spinner; only a genuinely unavailable action dims. */
+.button:disabled:not([aria-busy="true"]) {
+  opacity: 0.42;
+  box-shadow: none;
+}
+
+.button:disabled {
+  transform: none !important;
+}
+
+/* --- Sizes --- */
+
+.sm {
+  height: 34px;
+  padding: 0 var(--space-3);
+  font-size: var(--fs-sm);
+}
+
+.md {
+  height: 42px;
+  padding: 0 var(--space-5);
+  font-size: var(--fs-base);
+}
+
+.lg {
+  height: 50px;
+  padding: 0 var(--space-6);
+  font-size: var(--fs-md);
+}
+
+/* --- Primary: saffron. The action that commits. One per view. --- */
+
+.primary {
+  background-color: var(--accent-primary);
+  color: var(--text-on-accent);
+  box-shadow: var(--shadow-accent);
+}
+
+.primary:hover:not(:disabled) {
+  background-color: var(--accent-primary-hover);
+  transform: translateY(-1px);
+  box-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.38),
+    0 12px 34px rgba(249, 115, 22, 0.22);
+}
+
+.primary:active:not(:disabled) {
+  background-color: var(--accent-primary-press);
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+/* --- Secondary: cloth. Woven surface under a zari hairline. --- */
+
+.secondary {
+  background-color: var(--bg-elevated);
+  background-image: var(--weave-warp), var(--weave-weft);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-sm);
+}
+
+.secondary::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--zari-thread);
+  opacity: 0.55;
+  transition: opacity var(--dur-base) var(--ease-out-expo);
+  pointer-events: none;
+}
+
+.secondary:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.secondary:hover:not(:disabled)::before {
+  opacity: 1;
+}
+
+.secondary:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+/* --- Ghost: tertiary. Takes no dye until touched. --- */
+
+.ghost {
+  background-color: transparent;
+  color: var(--text-secondary);
+}
+
+.ghost:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.ghost:active:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* --- Icon-only: square, centred, no text padding. --- */
+
+.iconOnly {
+  padding: 0;
+  aspect-ratio: 1;
+}
+
+.iconOnly.sm {
+  width: 34px;
+}
+.iconOnly.md {
+  width: 42px;
+}
+.iconOnly.lg {
+  width: 50px;
+}
+
+.round {
+  border-radius: var(--radius-full);
+}
+
+/* --- Loading: the label holds its width so the button cannot resize. --- */
+
+.spinner {
+  animation: spin 780ms linear infinite;
+}
+
+.labelHidden {
+  visibility: hidden;
+}
+
+.spinnerSlot {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}

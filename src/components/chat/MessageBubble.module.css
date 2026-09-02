@@ -1,0 +1,51 @@
+.rowUser,
+.rowAgent {
+  display: flex;
+  animation: messageIn var(--dur-base) var(--ease-out-expo) both;
+}
+
+.rowUser {
+  justify-content: flex-end;
+}
+
+.rowAgent {
+  justify-content: flex-start;
+}
+
+.user,
+.agent {
+  max-width: min(72ch, 82%);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--fs-base);
+  line-height: var(--lh-base);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* Hers: sunken and darker. She already knows what she said. */
+.user {
+  color: var(--text-primary);
+  background-color: var(--bg-sunken);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg) var(--radius-lg) var(--radius-xs) var(--radius-lg);
+}
+
+/* The agent's: cloth, raised, with the zari hairline along its head. This is
+   the surface that carries the work. */
+.agent {
+  position: relative;
+  color: var(--text-primary);
+  background-color: var(--bg-surface);
+  background-image: var(--weave-warp), var(--weave-weft);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) var(--radius-xs);
+}
+
+.agent::before {
+  content: "";
+  position: absolute;
+  inset: 0 var(--space-4) auto;
+  height: 1px;
+  background: var(--zari-thread);
+  pointer-events: none;
+}

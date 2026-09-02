@@ -1,0 +1,271 @@
+/* Design-system specimen sheet.
+   TEMPORARY — Step 9 replaces this route with the landing page. */
+
+.page {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.scroll {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.inner {
+  max-width: 940px;
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-5) var(--space-16);
+}
+
+@media (max-width: 640px) {
+  .inner {
+    padding: var(--space-8) var(--space-4) var(--space-12);
+  }
+}
+
+/* --- Masthead --- */
+
+.masthead {
+  margin-bottom: var(--space-12);
+}
+
+.wordmark {
+  font-family: var(--font-display);
+  font-size: var(--fs-3xl);
+  font-weight: 700;
+  letter-spacing: var(--tracking-display);
+  line-height: var(--lh-tight);
+}
+
+.mastheadMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.lede {
+  margin-top: var(--space-4);
+  color: var(--text-secondary);
+  font-size: var(--fs-md);
+  max-width: 60ch;
+}
+
+/* --- Sections --- */
+
+.section {
+  margin-top: var(--space-12);
+}
+
+.sectionHead {
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  letter-spacing: var(--tracking-tight);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: var(--space-6);
+}
+
+.note {
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  margin-top: var(--space-4);
+  max-width: 62ch;
+}
+
+/* --- Generic layout helpers --- */
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(228px, 1fr));
+  gap: var(--space-4);
+}
+
+.subLabel {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-3);
+}
+
+/* --- Materials --- */
+
+.swatchGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: var(--space-4);
+}
+
+.swatch {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.swatchBody {
+  height: 88px;
+}
+
+.swatchCloth {
+  background-color: var(--bg-surface);
+  background-image: var(--weave-warp), var(--weave-weft);
+}
+
+.swatchGround {
+  background-color: var(--bg-primary);
+}
+
+.swatchSaffron {
+  background-color: var(--accent-primary);
+}
+
+.swatchZari {
+  background-color: var(--bg-surface);
+  display: grid;
+  align-content: center;
+  gap: 10px;
+  padding: 0 var(--space-4);
+}
+
+.threadLine {
+  height: 1px;
+  background: var(--zari-thread);
+}
+
+.swatchCaption {
+  padding: var(--space-3);
+  border-top: 1px solid var(--border-subtle);
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+}
+
+.swatchCaption b {
+  display: block;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.swatchCaption code {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+/* --- Type specimens --- */
+
+.specimen {
+  padding: var(--space-5) 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.specimen:last-child {
+  border-bottom: none;
+}
+
+.specDisplay {
+  font-family: var(--font-display);
+  font-size: var(--fs-2xl);
+  font-weight: 600;
+  letter-spacing: var(--tracking-display);
+  line-height: var(--lh-tight);
+}
+
+.specDevanagari {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: 500;
+  line-height: 1.5;
+  margin-top: var(--space-2);
+  color: var(--text-primary);
+}
+
+.specBody {
+  font-size: var(--fs-base);
+  color: var(--text-secondary);
+  margin-top: var(--space-2);
+}
+
+.specMono {
+  font-family: var(--font-mono);
+  font-size: var(--fs-md);
+  font-variant-numeric: tabular-nums;
+  color: var(--zari-bright);
+  margin-top: var(--space-2);
+}
+
+.mixed {
+  font-size: var(--fs-md);
+  line-height: 1.7;
+  margin-top: var(--space-2);
+}
+
+/* --- Card demo contents --- */
+
+.cardTitle {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  letter-spacing: var(--tracking-tight);
+}
+
+.cardHindi {
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.cardFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.price {
+  font-family: var(--font-mono);
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+/* --- Sent-message log, proving the composer works --- */
+
+.log {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.logEmpty {
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+}
+
+.logItem {
+  align-self: flex-start;
+  max-width: 100%;
+  padding: var(--space-2) var(--space-4);
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-base);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  animation: snapIn var(--dur-slow) var(--ease-out-expo);
+}

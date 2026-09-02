@@ -1,0 +1,73 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 3px var(--space-3);
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: var(--tracking-wide);
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.badge svg {
+  flex-shrink: 0;
+}
+
+.neutral {
+  background-color: rgba(255, 255, 255, 0.055);
+  border-color: var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+.success {
+  background-color: var(--color-success-wash);
+  border-color: rgba(34, 197, 94, 0.3);
+  color: var(--color-success);
+}
+
+.warning {
+  background-color: var(--color-warning-wash);
+  border-color: rgba(245, 158, 11, 0.3);
+  color: var(--color-warning);
+}
+
+.error {
+  background-color: var(--color-error-wash);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: var(--color-error);
+}
+
+.handled {
+  background-color: var(--color-handled-wash);
+  border-color: rgba(251, 146, 60, 0.3);
+  color: var(--color-handled);
+}
+
+.info {
+  background-color: var(--color-info-wash);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: var(--color-info);
+}
+
+.accent {
+  background-color: var(--accent-primary-wash);
+  border-color: var(--border-accent);
+  color: var(--accent-primary-hover);
+}
+
+/* Zari: the merchant's own mark. Gold thread, not a status. */
+.zari {
+  background-color: rgba(201, 162, 39, 0.09);
+  border-color: var(--zari-dim);
+  color: var(--zari-bright);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}

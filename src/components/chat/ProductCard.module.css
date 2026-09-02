@@ -1,0 +1,164 @@
+/* ==========================================================================
+   ProductCard
+
+   The photograph is the product. When it is missing, the fallback is that
+   saree woven from its own catalog colours — body cloth plus a kaath band —
+   not a grey box with a letter dropped on it.
+   ========================================================================== */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  width: 176px;
+  background-color: var(--bg-elevated);
+  background-image: var(--weave-warp), var(--weave-weft);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+/* --- The figure: photo on top, woven cloth underneath --- */
+
+.figure {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  background-color: var(--swatch-body);
+  overflow: hidden;
+}
+
+.photo {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Cloth: the body colour, given warp and weft so it reads as woven rather
+   than as a flat fill. */
+.cloth {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  background-image: var(--weave-warp), var(--weave-weft),
+    linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--swatch-body) 100%, white 8%),
+      var(--swatch-body) 62%,
+      color-mix(in srgb, var(--swatch-body) 100%, black 16%)
+    );
+}
+
+.initial {
+  font-family: var(--font-display);
+  font-size: var(--fs-3xl);
+  font-weight: 500;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.34);
+  letter-spacing: var(--tracking-display);
+  user-select: none;
+}
+
+/* The kaath — the woven selvedge running along the saree's edge. Real
+   Paithani borders are the thing you recognise the cloth by, so the
+   placeholder carries one in the product's actual border colour. */
+.kaath {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 22px;
+  background-color: var(--swatch-selvedge);
+  background-image: repeating-linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.22) 0 1px,
+      transparent 1px 4px
+    ),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.14) 0 1px, transparent 1px 3px);
+}
+
+.sold {
+  position: absolute;
+  z-index: 3;
+  inset: auto var(--space-2) var(--space-2) auto;
+  padding: 2px var(--space-2);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  color: var(--text-primary);
+  background-color: rgba(10, 10, 15, 0.82);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-xs);
+}
+
+/* --- Text --- */
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+}
+
+.name {
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  line-height: var(--lh-snug);
+  letter-spacing: normal;
+  color: var(--text-primary);
+}
+
+/* Same size and colour as the Latin name. Devanagari is a first-class script
+   in this product, so it is not shrunk or greyed into a caption. */
+.nameDeva {
+  max-width: none;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  color: var(--text-primary);
+  opacity: 0.72;
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.price {
+  font-family: var(--font-mono);
+  font-size: var(--fs-base);
+  font-variant-numeric: tabular-nums;
+  color: var(--zari-bright);
+}
+
+.select {
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+  background-color: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  transition: background-color var(--dur-fast) var(--ease-standard),
+    border-color var(--dur-fast) var(--ease-standard);
+}
+
+.select:hover:not(:disabled) {
+  background-color: var(--accent-primary-wash);
+  border-color: var(--border-accent);
+}
+
+.select:disabled {
+  opacity: 0.45;
+}
+
+/* The card sits on a woven panel and declares no shadow of its own, so the
+   global ring applies — but stating it here keeps the component honest if a
+   shadow is ever added. See DESIGN.md, the focus-ring cascade trap. */
+.select:focus-visible {
+  box-shadow: var(--focus-ring);
+}
