@@ -55,6 +55,15 @@ export interface AgentVoice {
   silence: () => void;
   /** Call on the first real gesture; unlocks audio and greets her once. */
   unlock: (greeting: string, language: SupportedLanguage) => void;
+  /**
+   * Fetch a line's audio now so it can play the instant it is wanted.
+   *
+   * Browsers block PLAYBACK before a gesture; they do not block the fetch.
+   * The greeting is a fixed string known at load, so waiting for the tap to
+   * even start asking Sarvam for it costs the buyer the whole round trip —
+   * measured at 1.54s of a 1.62s delay — for no reason.
+   */
+  prime: (text: string, language: SupportedLanguage) => void;
 }
 
 export function useAgentVoice(): AgentVoice {
@@ -188,6 +197,21 @@ export function useAgentVoice(): AgentVoice {
     [play],
   );
 
+  /* Warms the cache and, incidentally, the serverless function — the first
+     call of a session is about 0.9s slower than the rest, and this spends
+     that penalty while she is still reading the page. */
+  const prime = useCallback(
+    (text: string, language: SupportedLanguage) => {
+      if (!enabledRef.current) return;
+      const body = text.trim();
+      if (!body) return;
+      void fetchClip(body, language, 0).catch(() => {
+        /* A failed warm-up is not worth reporting; play() will try again. */
+      });
+    },
+    [fetchClip],
+  );
+
   const unlock = useCallback(
     (greeting: string, language: SupportedLanguage) => {
       if (greetedRef.current || !enabledRef.current) return;
@@ -226,7 +250,7 @@ export function useAgentVoice(): AgentVoice {
      which then set state and rendered again. A stable identity is what stops
      that loop. */
   return useMemo(
-    () => ({ enabled, toggle, speaking, speak, silence, unlock }),
-    [enabled, toggle, speaking, speak, silence, unlock],
+    () => ({ enabled, toggle, speaking, speak, silence, unlock, prime }),
+    [enabled, toggle, speaking, speak, silence, unlock, prime],
   );
 }

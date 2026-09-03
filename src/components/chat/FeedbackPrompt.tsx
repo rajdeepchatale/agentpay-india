@@ -14,6 +14,8 @@ export interface FeedbackPromptProps {
   language: SupportedLanguage;
   /** What she bought, so the rating can be read against the actual purchase. */
   productId?: string;
+  /** Fired with her thank-you so the agent can SAY it, not just print it. */
+  onChosen?: (thanks: string, language: SupportedLanguage) => void;
 }
 
 /**
@@ -31,6 +33,7 @@ export function FeedbackPrompt({
   sessionId,
   language,
   productId,
+  onChosen,
 }: FeedbackPromptProps) {
   const [chosen, setChosen] = useState<FeedbackRating | null>(null);
   const choices = FEEDBACK_CHOICES[language] ?? FEEDBACK_CHOICES.hinglish;
@@ -41,6 +44,9 @@ export function FeedbackPrompt({
          is hers whether or not our write succeeds, and a spinner here would
          make a one-tap courtesy feel like a transaction. */
       setChosen(rating);
+      /* Before the network, like the visible acknowledgement: her answer is
+         hers whether or not our write succeeds. */
+      onChosen?.(FEEDBACK_THANKS[language] ?? FEEDBACK_THANKS.hinglish, language);
       void fetch("/api/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -53,7 +59,7 @@ export function FeedbackPrompt({
         /* Swallowed on purpose — see above. */
       });
     },
-    [sessionId, productId],
+    [sessionId, productId, language, onChosen],
   );
 
   return (

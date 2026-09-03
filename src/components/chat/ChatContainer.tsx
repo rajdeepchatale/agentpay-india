@@ -193,6 +193,16 @@ export function ChatContainer() {
      sent message, an opened microphone — that path silences her, which
      cancels this greeting before it is audible. That is the right outcome: a
      buyer who walks in already asking gets an answer, not a formality. */
+  /* Ask Sarvam for the greeting NOW, not when she taps. Playback needs a
+     gesture; the fetch does not, and waiting for the tap to start the round
+     trip was 1.54s of a 1.62s delay before she heard anything. It also warms
+     the function, so the first real reply is quicker too. */
+  const { prime } = voice;
+  useEffect(() => {
+    if (paidFor) return;
+    prime(SPOKEN_WELCOME, "hinglish");
+  }, [prime, paidFor]);
+
   const { unlock } = voice;
   useEffect(() => {
     /* Not when she has just paid. Walking back in from the payment page and
@@ -563,6 +573,9 @@ export function ChatContainer() {
                 sessionId={sessionId}
                 language={language === "auto" ? "hinglish" : language}
                 productId={paidFor}
+                /* She replies out loud. Silent text after a tap reads as no
+                   response at all in a shop where she says everything else. */
+                onChosen={(thanks, lang) => speak(thanks, lang)}
               />
             </div>
           )}
