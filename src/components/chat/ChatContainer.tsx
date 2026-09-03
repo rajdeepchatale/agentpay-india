@@ -13,6 +13,7 @@ import { chatReducer, initialChatState } from "@/lib/chat/machine";
 import { readSessionId } from "@/lib/chat/session";
 import { useAgentVoice } from "@/lib/chat/useAgentVoice";
 import { turnLanguage } from "@/lib/chat/language";
+import { uiText } from "@/lib/chat/ui-text";
 import { closingMessage } from "@/lib/chat/closing";
 import { budgetReply, isBudgetAnswer, welcomeMessage } from "@/lib/chat/opening";
 import { BudgetPrompt } from "./BudgetPrompt";
@@ -141,6 +142,9 @@ export function ChatContainer() {
      "hinglish" separately. */
   const spokenLanguage: SupportedLanguage =
     language === "auto" ? "hinglish" : language;
+  /* Every fixed string the interface shows, in that same language — one table
+     so the chrome can never disagree with the conversation inside it. */
+  const t = uiText(spokenLanguage);
 
   const chooseLanguage = useCallback((next: LanguageChoice) => {
     setLanguageChoice(next);
@@ -321,7 +325,7 @@ export function ChatContainer() {
         });
 
         if (!res.ok) {
-          dispatch({ kind: "failed", error: "Something went wrong. Try again?" });
+          dispatch({ kind: "failed", error: t.errorGeneric });
           return;
         }
 
@@ -332,14 +336,16 @@ export function ChatContainer() {
         dispatch({
           kind: "failed",
           error: aborted
-            ? "The agent is taking longer than usual. Please wait or try again."
-            : "Connection lost. Check your internet and try again.",
+            ? t.errorTimeout
+            : t.errorOffline,
         });
       } finally {
         clearTimeout(timer);
       }
     },
-    [spendLimit, sessionId],
+    /* `t` belongs here: an error raised in the old language after she has
+       switched would contradict the rest of the interface. */
+    [spendLimit, sessionId, t],
   );
 
   const send = useCallback(
@@ -559,12 +565,12 @@ export function ChatContainer() {
           data-on={voice.enabled || undefined}
           data-speaking={voice.speaking || undefined}
           onClick={voice.toggle}
-          aria-label={voice.enabled ? "Turn off the agent's voice" : "Turn on the agent's voice"}
+          aria-label={voice.enabled ? t.voiceToggleOn : t.voiceToggleOff}
           aria-pressed={voice.enabled}
         >
           {voice.enabled ? <SpeakerIcon size={16} /> : <MuteIcon size={16} />}
           <span className={styles.voiceLabel}>
-            {voice.speaking ? "Speaking" : voice.enabled ? "Voice on" : "Voice off"}
+            {voice.speaking ? t.speaking : voice.enabled ? t.voiceOn : t.voiceOff}
           </span>
         </button>
 
@@ -649,6 +655,7 @@ export function ChatContainer() {
           {budget !== null && !allStepsDone && !paidFor && (
             <div className={styles.chips}>
               <DemoTour
+                language={language}
                 /* No unlock here any more: pointerdown fires before click, so
                    the first-gesture listener above has already run. */
                 onPick={send}
@@ -679,6 +686,7 @@ export function ChatContainer() {
           onVoiceInput={send}
           onVoiceStart={silenceVoice}
           voiceLanguage={language === "auto" ? undefined : language}
+          uiLanguage={spokenLanguage}
         />
       </div>
 

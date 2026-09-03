@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import type { SupportedLanguage } from "@/types";
+import { uiText } from "@/lib/chat/ui-text";
 import { MicIcon, SpinnerIcon } from "@/components/ui/Icon";
 import styles from "./VoiceButton.module.css";
 
@@ -34,6 +35,8 @@ export interface VoiceButtonProps {
    * no longer risks the whole utterance being read as English.
    */
   language?: SupportedLanguage;
+  /** The language the interface itself speaks. */
+  uiLanguage?: SupportedLanguage;
   disabled?: boolean;
 }
 
@@ -56,8 +59,10 @@ export function VoiceButton({
   onTranscript,
   onStart,
   language,
+  uiLanguage = "hinglish",
   disabled = false,
 }: VoiceButtonProps) {
+  const t = uiText(uiLanguage);
   const [state, setState] = useState<State>("idle");
   /** Why nothing happened, when nothing happened. Cleared on the next tap. */
   const [notice, setNotice] = useState<string | null>(null);
@@ -134,10 +139,10 @@ export function VoiceButton({
              route answers a Sarvam failure with 200 and an empty transcript,
              so a swallowed empty result looks exactly like a working mic that
              heard nothing. She gets told either way now. */
-          setNotice(data.message ?? "I couldn't catch that. Try again, or type it.");
+          setNotice(data.message ?? t.micUnheard);
         }
       } catch {
-        setNotice("Couldn't reach the transcriber. Type it instead.");
+        setNotice(t.micUnreachable);
       } finally {
         setState("idle");
       }
@@ -145,7 +150,7 @@ export function VoiceButton({
 
     recorder.start();
     setState("recording");
-  }, [onTranscript, onStart, language]);
+  }, [onTranscript, onStart, language, t]);
 
   if (state === "unsupported") return null;
 
@@ -160,7 +165,7 @@ export function VoiceButton({
         data-recording={recording || undefined}
         onClick={recording ? stop : start}
         disabled={disabled || busy}
-        aria-label={recording ? "Stop recording" : "Speak your message"}
+        aria-label={recording ? t.micStop : t.micSpeak}
         aria-pressed={recording}
       >
         {busy ? (
@@ -173,9 +178,9 @@ export function VoiceButton({
 
       {(recording || busy || state === "denied" || notice) && (
         <span className={styles.hint} role="status">
-          {recording && "Listening — tap to stop"}
-          {busy && "Transcribing…"}
-          {state === "denied" && "Microphone blocked. Type instead."}
+          {recording && t.micListening}
+          {busy && t.micTranscribing}
+          {state === "denied" && t.micBlocked}
           {!recording && !busy && state !== "denied" && notice}
         </span>
       )}

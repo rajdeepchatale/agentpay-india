@@ -82,27 +82,61 @@
 
 /* --- The guardrail line. Structural, not a badge. --- */
 
+/* Her limit, worn like a price tag on the cloth rather than printed as a
+   settings row.
+   
+   It used to be a centred line of small grey text — "Spending limit ₹1,000 ·
+   Change · Enter to send" — with a shield glyph beside it, which read as a
+   preferences strip and made the shield look like a theme switch. But this
+   number is not a preference. It is the figure the buyer just named, and the
+   whole product is the promise to hold it, so it should look like something
+   the shop is holding rather than something she can fiddle with.
+   
+   The amount leads, in the money face, on a zari-edged tag. The word comes
+   after it, quiet. */
 .guardrail {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
   max-width: 860px;
   margin: var(--space-3) auto 0;
-  font-size: var(--fs-xs);
-  color: var(--text-secondary);
 }
 
-/* The shield that sat here is gone. At 13px in success-green it read as a
-   status dot or a theme toggle rather than a shield — an ambiguous glyph next
-   to text that was already unambiguous. The shield metaphor still carries the
-   guardrail where it has the room to actually look like one: the block card
-   and the decision rail. */
+.tag {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-sunken);
+  position: relative;
+}
 
+/* The zari thread along its head — the same edge the agent's own bubbles
+   carry, so the tag reads as part of her rather than part of the browser. */
+.tag::before {
+  content: "";
+  position: absolute;
+  inset: 0 var(--space-2) auto;
+  height: 1px;
+  background: var(--zari-thread);
+  pointer-events: none;
+}
+
+/* The amount leads: money face, brighter than the word beside it, because the
+   number is the thing she named and the thing being kept. */
 .limitValue {
-  color: var(--text-secondary);
+  font-family: var(--font-mono-jb), monospace;
+  font-size: var(--fs-base);
+  color: var(--text-primary);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+}
+
+.limitWord {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
 }
 
 .editLimit {

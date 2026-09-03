@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import type { SupportedLanguage } from "@/types";
+import { uiText } from "@/lib/chat/ui-text";
 import { Button } from "@/components/ui/Button";
 import { SendIcon } from "@/components/ui/Icon";
 import { VoiceButton } from "./VoiceButton";
@@ -16,6 +17,7 @@ export interface ChatInputProps {
    * buyer cannot double-send, and swaps the send control for a spinner.
    */
   isLoading?: boolean;
+  /** Falls back to the chosen language when not given. */
   placeholder?: string;
   /** The spending cap in force, in ₹. Stated beside the composer, always. */
   spendLimit?: number;
@@ -30,6 +32,8 @@ export interface ChatInputProps {
   onVoiceStart?: () => void;
   /** Her chosen language, handed to Sarvam as a transcription hint. */
   voiceLanguage?: SupportedLanguage;
+  /** The language the interface itself speaks. */
+  uiLanguage?: SupportedLanguage;
   disabled?: boolean;
 }
 
@@ -38,14 +42,16 @@ const MAX_HEIGHT = 168;
 export function ChatInput({
   onSend,
   isLoading = false,
-  placeholder = "Type in Hindi, Marathi, Hinglish or English…",
+  placeholder,
   spendLimit,
   onEditLimit,
   onVoiceInput,
   onVoiceStart,
   voiceLanguage,
+  uiLanguage = "hinglish",
   disabled = false,
 }: ChatInputProps) {
+  const t = uiText(uiLanguage);
   const [value, setValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -99,6 +105,7 @@ export function ChatInput({
             onTranscript={onVoiceInput}
             onStart={onVoiceStart}
             language={voiceLanguage}
+            uiLanguage={uiLanguage}
             disabled={isBlocked}
           />
         )}
@@ -113,7 +120,7 @@ export function ChatInput({
             value={value}
             onChange={(event) => setValue(event.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={placeholder}
+            placeholder={placeholder ?? t.placeholder}
             disabled={isBlocked}
             aria-label="Message"
             lang="hi"
@@ -136,30 +143,29 @@ export function ChatInput({
 
       {spendLimit !== undefined && (
         <p className={styles.guardrail}>
-          <span>
-            Spending limit{" "}
+          <span className={styles.tag}>
             <span className={styles.limitValue}>
               ₹{spendLimit.toLocaleString("en-IN")}
             </span>
+            <span className={styles.limitWord}>{t.limitLabel}</span>
           </span>
+
           {onEditLimit && (
-            <>
-              <span aria-hidden="true">·</span>
-              <button
-                type="button"
-                className={styles.editLimit}
-                onClick={onEditLimit}
-              >
-                Change
-              </button>
-            </>
+            <button
+              type="button"
+              className={styles.editLimit}
+              onClick={onEditLimit}
+            >
+              {t.change}
+            </button>
           )}
+
           <span className={styles.hintKeys}>
-            <span aria-hidden="true"> · </span>
-            <kbd className={styles.key}>Enter</kbd> to send
+            <kbd className={styles.key}>Enter</kbd> {t.enterToSend}
           </span>
         </p>
       )}
+
     </div>
   );
 }
