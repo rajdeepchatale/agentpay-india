@@ -542,10 +542,14 @@
 }
 
 /* Answers the heading above it, so it reads as one thought — quieter than
-   the claim, and narrow enough to stay a sentence rather than a paragraph. */
+   the claim, and narrow enough to stay a sentence rather than a paragraph.
+   
+   Left-aligned, not centred: `auto` margins pushed it off to the right of a
+   left-aligned heading and button, so the answer floated away from the claim
+   it answers. */
 .closeSub {
   max-width: 46ch;
-  margin: var(--space-5) auto 0;
+  margin: var(--space-5) 0 0;
   font-size: var(--fs-base);
   line-height: var(--lh-base);
   color: var(--text-secondary);
