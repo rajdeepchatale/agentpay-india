@@ -158,9 +158,16 @@ in the dashboard and pasted into WhatsApp; a **Payment Page** is a hosted,
 no-code storefront. Neither requires her to own a website, hire a developer, or
 deploy anything.
 
-**AgentPay is a Payment Page that talks back.** She gets a URL, pastes it in her
-Instagram bio, and that is the whole integration — which is exactly what this
-demo is. The `/chat` link you are about to open is the link she would paste.
+**AgentPay is shaped like a Payment Page that talks back.** She gets a URL and
+pastes it in her bio — no site, no app, nothing deployed. That *shape* is what
+this demo proves: `/chat` is a link, and a link is all she would ever need to
+hand a buyer.
+
+Being precise about what that does and does not mean: a Payment Page is
+something a merchant creates herself, from a dashboard Razorpay hosts. This is
+one merchant's shop, hosted here, with a seeded catalog. **The distribution
+model is the argument; the dashboard and the self-serve creation are argued in
+[`docs/SCALING.md`](docs/SCALING.md), not built.**
 
 The one thing she supplies is her catalog. Reading it out of her Instagram
 captions or her WhatsApp price list is **argued in

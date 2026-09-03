@@ -367,8 +367,8 @@ export default function LandingPage() {
               link she pastes, not a site she builds. */}
           <p className={styles.closeSub}>
             She builds nothing. Razorpay already hands merchants a hosted
-            Payment Page — this is one that talks back. The link below is the
-            link she pastes in her Instagram bio.
+            Payment Page; this works the same way, and talks back. The link
+            below is the kind of link she would paste in her bio.
           </p>
           <Link className={styles.cta} href="/chat">
             Try the demo
