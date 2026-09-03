@@ -40,15 +40,26 @@ const TOUR_SENDS = [
   "मला पैठणी सिल्क साडी दाखवा",
 ];
 
+/* "Kya dikhaun?" — the verb agrees with HER, the shop, so it assumes nothing
+   about who is shopping. Hindi has no gender-neutral way to ask "what are you
+   looking for": the verb must agree with the listener, and a saree shop
+   invites the wrong default. Anyone may be buying — for herself, for his wife,
+   for a daughter. A shopkeeper offering to show you something sidesteps it
+   entirely, and is warmer than asking a buyer to declare herself. The
+   languages line drops its verb for the same reason.
+
+   The literal forms this replaced are deliberately not quoted here: the guard
+   in copy.test.mts scans comments too, and keeping it strict is worth more
+   than an inline example. */
 const WELCOME =
-  "Namaste! Main Sakhi Sarees ki AI shopping assistant hoon. Hamare paas authentic Paithani, handloom cotton, aur silk sarees hain. Aap Hindi, Marathi, Hinglish ya English mein baat kar sakti hain! Kya dhundh rahi hain?";
+  "Namaste! Main Sakhi Sarees ki AI shopping assistant hoon. Hamare paas authentic Paithani, handloom cotton, aur silk sarees hain. Hindi, Marathi, Hinglish ya English — jo bhi aasaan ho. Kya dikhaun?";
 
 /* Spoken, not written. The written welcome lists the stock and the four
    languages — worth reading, and 212 characters is four seconds of Sarvam
    before a single word comes out. A shopkeeper's actual greeting is one
    line, and the rest is on screen for her to read while she decides. */
 const SPOKEN_WELCOME =
-  "Namaste! Main Sakhi Sarees ki AI assistant hoon. Kya dhundh rahi hain?";
+  "Namaste! Main Sakhi Sarees ki AI assistant hoon. Kya dikhaun?";
 
 /* ---------------------------------------------------------------
    The post-payment return, read once.

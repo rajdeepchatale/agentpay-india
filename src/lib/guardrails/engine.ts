@@ -150,7 +150,7 @@ function check(
       rule: "unknown_product",
       limit: ctx.maxSpend,
       attempted: 0,
-      suggestion: "Main woh saree dhundh nahi payi. Dobara bata sakti hain?",
+      suggestion: "Main woh saree dhundh nahi payi. Dobara bataiye?",
       reasoning: `BLOCKED unknown_product: no catalog entry for "${productId}". Refused rather than guessing.`,
     };
   }

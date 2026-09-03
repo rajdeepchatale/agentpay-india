@@ -78,8 +78,8 @@ export interface AgentRequest {
 /** Fallback copy, in the buyer's own language. */
 const FALLBACK = {
   confused: {
-    hinglish: "Maaf kijiye, main samajh nahi payi. Aap dobara bata sakti hain?",
-    hi: "माफ़ कीजिए, मैं समझ नहीं पाई। आप दोबारा बता सकती हैं?",
+    hinglish: "Maaf kijiye, main samajh nahi payi. Dobara bataiye?",
+    hi: "माफ़ कीजिए, मैं समझ नहीं पाई। दोबारा बताइए?",
     mr: "माफ करा, मला समजलं नाही. तुम्ही पुन्हा सांगाल का?",
     en: "Sorry, I didn't catch that. Could you say it again?",
   },
