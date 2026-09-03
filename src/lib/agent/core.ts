@@ -86,6 +86,15 @@ export interface AgentRequest {
    * had already said. The client's copy is the one that survives.
    */
   history?: AgentMessage[];
+  /**
+   * The saree the agent last asked her to confirm, as the client has it.
+   *
+   * Pending consent lived in the same per-instance Map as the history, so
+   * "order kara" arrived at a process that had forgotten what it had offered
+   * and asked her to confirm all over again. Already checked against the
+   * catalog by the validator; the guardrail engine still re-reads the price.
+   */
+  pendingProductId?: string;
 }
 
 /** Fallback copy, in the buyer's own language. */
@@ -124,6 +133,12 @@ export async function runAgent(req: AgentRequest): Promise<AgentResponse> {
 
   /* Consent is granted by the BUYER, never by the model. If her message reads
      as agreement, promote whatever the agent last asked her to confirm. */
+  /* Restore what this instance never knew it had offered, so her agreement
+     has something to attach to. Her WORDS are still what grants it, judged
+     server-side — the model never asserts consent and neither does the
+     client. */
+  if (req.pendingProductId) markConsentRequested(sessionId, req.pendingProductId);
+
   if (isAffirmative(message)) {
     const granted = grantPendingConsent(sessionId);
     if (granted.length) {

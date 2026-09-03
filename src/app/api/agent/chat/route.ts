@@ -41,6 +41,7 @@ export async function POST(request: NextRequest) {
       allowedCategories: v.allowedCategories,
       language: v.language,
       history: v.history,
+      pendingProductId: v.pendingProductId,
     });
     return NextResponse.json(response);
   } catch (e) {

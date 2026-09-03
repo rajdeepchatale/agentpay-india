@@ -291,6 +291,18 @@ export function ChatContainer() {
       .slice(-20);
   }, [state.messages]);
 
+  /* Which saree the agent last asked her to confirm, mirrored for the request
+     body the same way the thread is. */
+  const pendingRef = useRef<string | null>(null);
+  useEffect(() => {
+    const last = [...state.messages].reverse().find((m) => m.role === "agent");
+    if (last?.response?.type === "consent_required") {
+      pendingRef.current = last.response.data?.products?.[0]?.id ?? null;
+    } else if (last?.response?.type === "order_created") {
+      pendingRef.current = null;
+    }
+  }, [state.messages]);
+
   const spokenRef = useRef<string | null>(null);
   const lastAgent = state.messages[state.messages.length - 1];
   const lastAgentId =
@@ -340,6 +352,10 @@ export function ChatContainer() {
                served by a different one — which is how the agent came to ask
                what she wanted after she had already told it. */
             history: historyRef.current,
+            /* The saree she was last asked to confirm. Same reason as the
+               history: the server's own note of it does not survive a change
+               of instance. */
+            ...(pendingRef.current ? { pending_product_id: pendingRef.current } : {}),
           }),
           signal: controller.signal,
         });

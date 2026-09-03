@@ -7,6 +7,7 @@
 
 import { clampSpendLimit } from "@/lib/guardrails/engine";
 import type { SupportedLanguage } from "@/types";
+import { getProductById } from "@/lib/catalog/search";
 
 const MAX_MESSAGE_LENGTH = 2000;
 
@@ -32,6 +33,8 @@ export type ChatValidation =
       language?: SupportedLanguage;
       /** The thread so far, carried by the client. See readHistory. */
       history?: Array<{ role: "user" | "assistant"; content: string }>;
+      /** The saree the agent last asked her to confirm. Catalog-checked. */
+      pendingProductId?: string;
     }
   | { ok: false; status: number; error: string; message: string };
 
@@ -125,6 +128,19 @@ export function validateChatRequest(body: unknown): ChatValidation {
   const language = readLanguage(b.language);
   const history = readHistory(b.history);
 
+  /* Which saree the agent last asked about. Carried for the same reason the
+     history is — pending consent lived in the same per-instance Map, so on a
+     later turn the server had forgotten what it had offered and asked again.
+     
+     Checked against the catalog here, and the engine still re-reads the price
+     and the cap, so the worst a forged id can do is name a real saree the
+     buyer must still agree to in her own words. */
+  const rawPending = b.pending_product_id;
+  const pendingProductId =
+    typeof rawPending === "string" && getProductById(rawPending.trim())
+      ? rawPending.trim()
+      : undefined;
+
   return {
     ok: true,
     message,
@@ -133,5 +149,6 @@ export function validateChatRequest(body: unknown): ChatValidation {
     ...(allowedCategories?.length ? { allowedCategories } : {}),
     ...(language ? { language } : {}),
     ...(history ? { history } : {}),
+    ...(pendingProductId ? { pendingProductId } : {}),
   };
 }
