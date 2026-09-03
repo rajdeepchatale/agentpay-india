@@ -46,6 +46,17 @@
    to read the page on a phone. Reserving the space and scrolling inside it is
    what a real chat window does anyway: the frame never moves, the conversation
    moves within it. */
+/* Every beat keeps its natural height.
+   
+   Without this the flex column COMPRESSES its children once the conversation
+   is taller than the frame — so when the block arrived, the saree photographs
+   were squeezed and the models were cropped through the face. A conversation
+   that overflows should scroll, which is what a chat window does; it should
+   never shrink what is already on screen. */
+.thread > * {
+  flex-shrink: 0;
+}
+
 .thread {
   display: flex;
   flex-direction: column;
@@ -55,7 +66,11 @@
      ever moves. */
   justify-content: flex-start;
   gap: var(--space-3);
-  height: 420px;
+  /* Sized to the TALLEST arrangement — products AND the block together —
+     rather than to a comfortable average. Still a fixed height, so the zero
+     CLS this was introduced for is unchanged; it is simply the right fixed
+     number instead of one that forced its own content to crop. */
+  height: 468px;
   padding: var(--space-4);
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -294,6 +309,6 @@
 }
 
 @media (max-width: 520px) {
-  .thread { height: 340px; padding: var(--space-3); }
+  .thread { height: 392px; padding: var(--space-3); }
   .cardDeva { display: none; }
 }

@@ -24,25 +24,33 @@ export interface DemoTourProps {
  * only signposting, so the interesting thing is not left to whether a stranger
  * happens to phrase a request the way the catalog needs.
  */
+/* Worded as a BUYER speaks, not as a tour of features.
+   
+   "Watch it refuse" told a stranger what the software was about to do, which
+   is a product demonstrating itself rather than a shop serving someone. These
+   are three things a real customer would say out loud; the guardrail still
+   fires on the second and third because the Paithani is ₹8,999 and she has
+   just set her own limit below it. Nothing is staged — the signposting is
+   gone, the coverage is not. */
 const STEPS = [
   {
     n: 1,
-    send: "1000 ke under cotton saree dikhao",
-    label: "Find sarees in budget",
-    outcome: "Returns only what fits ₹1,000",
+    send: "Cotton saree dikhao",
+    label: "Cotton saree dikhao",
+    outcome: "Only what fits the limit you set",
   },
   {
     n: 2,
     send: "Authentic Paithani silk saree",
-    label: "Watch it refuse",
-    outcome: "₹8,999 — blocked, with alternatives",
+    label: "Paithani silk dikhao",
+    outcome: "₹8,999 — she holds your limit",
     key: true,
   },
   {
     n: 3,
     send: "मला पैठणी सिल्क साडी दाखवा",
-    label: "The same refusal, in Marathi",
-    outcome: "Understands and answers in her language",
+    label: "मला पैठणी सिल्क साडी दाखवा",
+    outcome: "Marathi in, Marathi out",
   },
 ];
 

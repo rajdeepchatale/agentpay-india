@@ -77,7 +77,16 @@ const DWELL: Record<Beat["kind"], number> = {
 };
 
 export function LiveDemo() {
-  const [step, advance] = useReducer((n: number) => (n + 1) % (SCRIPT.length + 1), 0);
+  /* Advances to the end and STOPS. It used to wrap with % and replay forever:
+     motion that never resolves competes with the headline for attention, and
+     the reader has to wait out a loop to see the beat that matters. Playing
+     once and resting on the block leaves the guardrail — the whole thesis —
+     on screen for as long as they look at it. */
+  const [step, advance] = useReducer(
+    (n: number) => Math.min(n + 1, SCRIPT.length),
+    0,
+  );
+  const finished = step >= SCRIPT.length;
   const [paused, setPaused] = useState(false);
   const reduced = useRef(false);
   const frameRef = useRef<HTMLDivElement>(null);
@@ -108,14 +117,12 @@ export function LiveDemo() {
   }, [step]);
 
   useEffect(() => {
-    if (paused || !inView) return;
+    if (paused || !inView || finished) return;
     const beat = SCRIPT[step];
-    /* Past the last beat, hold on the block — it is the point of the replay —
-       then start again. */
-    const ms = beat ? DWELL[beat.kind] : 2600;
-    const t = setTimeout(advance, reduced.current ? ms * 2 : ms);
+    if (!beat) return;
+    const t = setTimeout(advance, reduced.current ? DWELL[beat.kind] * 2 : DWELL[beat.kind]);
     return () => clearTimeout(t);
-  }, [step, paused, inView]);
+  }, [step, paused, inView, finished]);
 
   const shown = SCRIPT.slice(0, step);
 

@@ -14,6 +14,8 @@ import { readSessionId } from "@/lib/chat/session";
 import { useAgentVoice } from "@/lib/chat/useAgentVoice";
 import { turnLanguage } from "@/lib/chat/language";
 import { closingMessage } from "@/lib/chat/closing";
+import { budgetReply, isBudgetAnswer } from "@/lib/chat/opening";
+import { BudgetPrompt } from "./BudgetPrompt";
 import { getProductById } from "@/lib/catalog/search";
 import { FeedbackPrompt } from "./FeedbackPrompt";
 import { LanguagePicker, type LanguageChoice } from "./LanguagePicker";
@@ -55,15 +57,18 @@ const TOUR_SENDS = [
    The literal forms this replaced are deliberately not quoted here: the guard
    in copy.test.mts scans comments too, and keeping it strict is worth more
    than an inline example. */
+/* She asks the budget FIRST, before showing anything — a shopkeeper's opening
+   question, and the thing that turns the guardrail from our rule into the
+   buyer's own. */
 const WELCOME =
-  "Namaste! Main Sakhi Sarees ki AI shopping assistant hoon. Hamare paas authentic Paithani, handloom cotton, aur silk sarees hain. Hindi, Marathi, Hinglish ya English — jo bhi aasaan ho. Kya dikhaun?";
+  "Namaste! Main Sakhi Sarees ki AI shopping assistant hoon. Hamare paas authentic Paithani, handloom cotton, aur silk sarees hain. Hindi, Marathi, Hinglish ya English — jo bhi aasaan ho. Pehle bataiye, aapka budget kitna hai?";
 
 /* Spoken, not written. The written welcome lists the stock and the four
    languages — worth reading, and 212 characters is four seconds of Sarvam
    before a single word comes out. A shopkeeper's actual greeting is one
    line, and the rest is on screen for her to read while she decides. */
 const SPOKEN_WELCOME =
-  "Namaste! Main Sakhi Sarees ki AI assistant hoon. Kya dikhaun?";
+  "Namaste! Main Sakhi Sarees ki AI assistant hoon. Aapka budget kitna hai?";
 
 /* ---------------------------------------------------------------
    The post-payment return, read once.
@@ -138,6 +143,10 @@ export function ChatContainer() {
   const [languageChoice, setLanguageChoice] = useState<LanguageChoice | null>(null);
   const language = languageChoice ?? persistedLanguage;
 
+  /* Null until she names a figure. Everything the shop shows is gated behind
+     it, because a limit she did not set is not a limit she agreed to. */
+  const [budget, setBudget] = useState<number | null>(null);
+
   const chooseLanguage = useCallback((next: LanguageChoice) => {
     setLanguageChoice(next);
     try {
@@ -147,6 +156,27 @@ export function ChatContainer() {
       /* Not persisted; the session still honours the choice. */
     }
   }, []);
+
+  const acceptBudget = useCallback(
+    (amount: number) => {
+      setBudget(amount);
+      setSpendLimit(amount);
+      const lang = language === "auto" ? "hinglish" : language;
+      /* Dispatched as her reply rather than printed as a confirmation, so she
+         says the number back — the same path every other line she speaks
+         travels. */
+      dispatch({
+        kind: "received",
+        response: {
+          type: "text",
+          content: budgetReply(amount, lang),
+          language: lang,
+          audit_id: "",
+        },
+      });
+    },
+    [language],
+  );
 
   /* Remove the query param once seen. A refresh or a shared link should not
      replay a payment confirmation. This is a write to an external system —
@@ -302,6 +332,20 @@ export function ChatContainer() {
       /* The reducer is the single authority on whether a send is allowed —
          checking status here as well would let the two disagree. */
       if (!message || state.status === "sending") return;
+
+      /* She may answer the budget question in words instead of tapping. Only
+         when it is genuinely an answer — "1000 ke under cotton saree dikhao"
+         is a request for sarees that happens to contain a figure, and reading
+         it as a budget would swallow what she actually asked for. */
+      if (budget === null) {
+        const answered = isBudgetAnswer(message);
+        if (answered !== null) {
+          dispatch({ kind: "send", text: message });
+          acceptBudget(answered);
+          return;
+        }
+      }
+
       dispatch({ kind: "send", text: message });
 
       /* Her pinned choice, else what Sarvam heard, else let the server guess
@@ -315,7 +359,7 @@ export function ChatContainer() {
         }),
       );
     },
-    [request, state.status, silenceVoice, language],
+    [request, state.status, silenceVoice, language, budget, acceptBudget],
   );
 
   const retry = useCallback(() => {
@@ -539,18 +583,6 @@ export function ChatContainer() {
           {/* Stays until every step has been walked, rather than vanishing
               after the first message — the guardrail is step two, and a tour
               that disappears before it is reached is not a tour. */}
-          {!allStepsDone && !paidFor && (
-            <div className={styles.chips}>
-              <DemoTour
-                /* No unlock here any more: pointerdown fires before click, so
-                   the first-gesture listener above has already run. */
-                onPick={send}
-                sent={sentTexts}
-                disabled={isBusy}
-              />
-            </div>
-          )}
-
           {state.messages.map((m, i) =>
             m.role === "user" ? (
               <MessageBubble key={m.id} role="user">
@@ -576,6 +608,25 @@ export function ChatContainer() {
                 /* She replies out loud. Silent text after a tap reads as no
                    response at all in a shop where she says everything else. */
                 onChosen={(thanks, lang) => speak(thanks, lang)}
+              />
+            </div>
+          )}
+
+          {/* Her question needs answering before the shop shows anything. */}
+          {budget === null && !paidFor && (
+            <div className={styles.chips}>
+              <BudgetPrompt onChoose={acceptBudget} disabled={isBusy} />
+            </div>
+          )}
+
+          {budget !== null && !allStepsDone && !paidFor && (
+            <div className={styles.chips}>
+              <DemoTour
+                /* No unlock here any more: pointerdown fires before click, so
+                   the first-gesture listener above has already run. */
+                onPick={send}
+                sent={sentTexts}
+                disabled={isBusy}
               />
             </div>
           )}

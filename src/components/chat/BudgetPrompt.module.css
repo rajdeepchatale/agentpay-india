@@ -1,0 +1,47 @@
+/* The three amounts, offered the way a shopkeeper offers them — as a question
+   already asked, with the easy answers to hand. Same chip language as the
+   feedback taps, because they do the same job at opposite ends of the visit. */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.amount {
+  padding: var(--space-2) var(--space-5);
+  /* Thumb-sized, per the touch-target pass. */
+  min-height: 44px;
+  font-family: var(--font-mono-jb), monospace;
+  font-size: var(--fs-base);
+  color: var(--text-secondary);
+  background-color: var(--bg-surface);
+  background-image: var(--weave-warp), var(--weave-weft);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-standard),
+    border-color var(--dur-fast) var(--ease-standard);
+}
+
+.amount:hover:not(:disabled) {
+  color: var(--text-primary);
+  /* Zari, never saffron — choosing a ceiling is not spending money. */
+  border-color: var(--zari-bright);
+}
+
+.amount:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+.amount:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.hint {
+  margin-top: var(--space-2);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
