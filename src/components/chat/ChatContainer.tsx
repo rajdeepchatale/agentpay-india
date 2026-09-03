@@ -195,6 +195,10 @@ export function ChatContainer() {
      buyer who walks in already asking gets an answer, not a formality. */
   const { unlock } = voice;
   useEffect(() => {
+    /* Not when she has just paid. Walking back in from the payment page and
+       being greeted as a new visitor — "Namaste, kya dikhaun?" — undoes the
+       purchase she just made, and the close is the line that belongs here. */
+    if (paidFor) return;
     const greet = () => unlock(SPOKEN_WELCOME, "hinglish");
     window.addEventListener("pointerdown", greet, { once: true });
     window.addEventListener("keydown", greet, { once: true });
@@ -202,7 +206,7 @@ export function ChatContainer() {
       window.removeEventListener("pointerdown", greet);
       window.removeEventListener("keydown", greet);
     };
-  }, [unlock]);
+  }, [unlock, paidFor]);
 
   /* Speak each agent reply as it lands — once. Keyed on the message id rather
      than a count, so a re-render never replays a line she already heard. */
@@ -509,18 +513,23 @@ export function ChatContainer() {
 
       <div className={styles.scroll} ref={scrollRef}>
         <div className={styles.thread}>
-          <MessageBubble
-            role="agent"
-            lang="mr"
-            action={<SpeakButton text={WELCOME} language="hinglish" />}
-          >
-            {WELCOME}
-          </MessageBubble>
+          {/* Arrival copy. Coming back from the payment page is not an
+              arrival — she has just bought something, and greeting her as a
+              new visitor there undoes the purchase she just made. */}
+          {!paidFor && (
+            <MessageBubble
+              role="agent"
+              lang="mr"
+              action={<SpeakButton text={WELCOME} language="hinglish" />}
+            >
+              {WELCOME}
+            </MessageBubble>
+          )}
 
           {/* Stays until every step has been walked, rather than vanishing
               after the first message — the guardrail is step two, and a tour
               that disappears before it is reached is not a tour. */}
-          {!allStepsDone && (
+          {!allStepsDone && !paidFor && (
             <div className={styles.chips}>
               <DemoTour
                 /* No unlock here any more: pointerdown fires before click, so

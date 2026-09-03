@@ -1,4 +1,5 @@
 import type { Product, SupportedLanguage } from "@/types";
+import { speakableName } from "@/lib/catalog/name";
 
 /**
  * The last thing she says.
@@ -69,7 +70,11 @@ export function closingMessage(
      with a hole in it. */
   if (!product) return copy.generic;
 
-  const name = language === "hi" || language === "mr" ? product.name_hindi || product.name : product.name;
+  /* The short name, not the catalog one: "Khadi Cotton Saree", not "Khadi
+     Cotton Saree — Block Print". The dash becomes a pause when spoken and the
+     qualifier adds a beat that earns nothing in a sentence. */
+  const name = speakableName(product, language);
+  if (!name) return copy.generic;
   return copy.withProduct(name, rupees(product.price));
 }
 
