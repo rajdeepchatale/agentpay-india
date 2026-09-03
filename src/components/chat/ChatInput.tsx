@@ -22,7 +22,10 @@ export interface ChatInputProps {
   /** Opens the limit editor. The limit line is static when this is absent. */
   onEditLimit?: () => void;
   /** Voice capture. The mic appears only once this is wired up. */
-  onVoiceInput?: (text: string) => void;
+  onVoiceInput?: (
+    text: string,
+    heard?: { language: SupportedLanguage; confidence: number },
+  ) => void;
   /** Fired when the mic opens, so the agent can stop talking into it. */
   onVoiceStart?: () => void;
   /** Her chosen language, handed to Sarvam as a transcription hint. */

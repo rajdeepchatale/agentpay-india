@@ -37,6 +37,10 @@ export function toneFor(entry: AuditEntry): AuditTone {
       return "info";
     case "guardrail_check":
       return "neutral";
+    /* Her own words back, not a decision the agent made — so it reads as
+       information rather than as another judgement in the trail. */
+    case "feedback":
+      return "info";
     default:
       return "neutral";
   }
@@ -48,6 +52,7 @@ const LABELS: Record<string, string> = {
   guardrail_check: "Guardrail check",
   consent_request: "Consent",
   failure_recovery: "Recovered",
+  feedback: "Buyer feedback",
 };
 
 /** What this decision is called, in words rather than symbols. */

@@ -8,10 +8,14 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import type { AgentResponse, Product } from "@/types";
+import type { AgentResponse, Product, SupportedLanguage } from "@/types";
 import { chatReducer, initialChatState } from "@/lib/chat/machine";
 import { readSessionId } from "@/lib/chat/session";
 import { useAgentVoice } from "@/lib/chat/useAgentVoice";
+import { turnLanguage } from "@/lib/chat/language";
+import { closingMessage } from "@/lib/chat/closing";
+import { getProductById } from "@/lib/catalog/search";
+import { FeedbackPrompt } from "./FeedbackPrompt";
 import { LanguagePicker, type LanguageChoice } from "./LanguagePicker";
 import { ChatInput } from "./ChatInput";
 import { MessageBubble } from "./MessageBubble";
@@ -26,7 +30,7 @@ import { ErrorCard } from "./ErrorCard";
 import { DemoTour } from "./DemoTour";
 import { SettingsModal } from "./SettingsModal";
 import { GuardrailRail } from "./GuardrailRail";
-import { SettingsIcon, CheckIcon, ShieldIcon, SpeakerIcon, MuteIcon } from "@/components/ui/Icon";
+import { SettingsIcon, ShieldIcon, SpeakerIcon, MuteIcon } from "@/components/ui/Icon";
 import styles from "./ChatContainer.module.css";
 
 const TIMEOUT_MS = 30_000;
@@ -151,6 +155,32 @@ export function ChatContainer() {
     if (paidFor) window.history.replaceState({}, "", window.location.pathname);
   }, [paidFor]);
 
+  /* Coming back from payment is a TURN, not a banner.
+     
+     Dispatching it as an ordinary agent message is what makes her speak it:
+     the effect below speaks each agent reply as it lands, so the close needs
+     no voice code of its own. It also means the confirmation sits in the
+     conversation where she said everything else, rather than in a box beneath
+     it.
+     
+     The callback carries a product id, so the catalog — not the database —
+     supplies the saree and the price. */
+  const closedRef = useRef(false);
+  useEffect(() => {
+    if (!paidFor || closedRef.current) return;
+    closedRef.current = true;
+    const spoken = language === "auto" ? "hinglish" : language;
+    dispatch({
+      kind: "received",
+      response: {
+        type: "text",
+        content: closingMessage(getProductById(paidFor), spoken),
+        language: spoken,
+        audit_id: "",
+      },
+    });
+  }, [paidFor, language]);
+
   /* She greets on the first gesture, wherever it lands — not only on a tour
      step. A shopkeeper looks up when you walk in; she does not wait to be
      addressed through one particular door.
@@ -205,7 +235,7 @@ export function ChatContainer() {
   }, [state.messages.length, state.status]);
 
   const request = useCallback(
-    async (message: string) => {
+    async (message: string, turnLang?: SupportedLanguage) => {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
@@ -217,9 +247,9 @@ export function ChatContainer() {
             message,
             session_id: sessionId,
             guardrails: { max_spend: spendLimit },
-            /* Omitted when she has not chosen, so the agent detects as before.
-               Sent, it outranks detection for every turn. */
-            ...(language !== "auto" ? { language } : {}),
+            /* Omitted when there is nothing better than the server's own text
+               detection. Sent, it outranks that detection for this turn. */
+            ...(turnLang ? { language: turnLang } : {}),
           }),
           signal: controller.signal,
         });
@@ -243,14 +273,14 @@ export function ChatContainer() {
         clearTimeout(timer);
       }
     },
-    /* `language` belongs here: without it the request keeps the choice that
-       was current when this closure was built, and switching to मराठी would
-       not take effect until something else happened to rebuild it. */
-    [spendLimit, sessionId, language],
+    [spendLimit, sessionId],
   );
 
   const send = useCallback(
-    (text: string) => {
+    (
+      text: string,
+      heard?: { language: SupportedLanguage; confidence: number },
+    ) => {
       /* She is talking, so the agent stops. Talking over a customer is the
          one thing a shopkeeper never does. */
       silenceVoice();
@@ -259,16 +289,29 @@ export function ChatContainer() {
          checking status here as well would let the two disagree. */
       if (!message || state.status === "sending") return;
       dispatch({ kind: "send", text: message });
-      void request(message);
+
+      /* Her pinned choice, else what Sarvam heard, else let the server guess
+         from the text. Resolved in one place so the three signals cannot
+         disagree depending on which path called this. */
+      void request(
+        message,
+        turnLanguage({
+          ...(language !== "auto" ? { pinned: language } : {}),
+          ...(heard ? { spoken: heard.language, confidence: heard.confidence } : {}),
+        }),
+      );
     },
-    [request, state.status, silenceVoice],
+    [request, state.status, silenceVoice, language],
   );
 
   const retry = useCallback(() => {
     if (!state.lastSent) return;
     dispatch({ kind: "retry" });
-    void request(state.lastSent);
-  }, [request, state.lastSent]);
+    void request(
+      state.lastSent,
+      turnLanguage(language !== "auto" ? { pinned: language } : {}),
+    );
+  }, [request, state.lastSent, language]);
 
   const isBusy = state.status === "sending";
 
@@ -502,21 +545,16 @@ export function ChatContainer() {
             ),
           )}
 
+          {/* She asked "how was it?" as the last line of her closing message,
+              so these are the ways to answer rather than a survey appearing
+              unbidden. */}
           {paidFor && (
             <div className={styles.panel}>
-              <div className={styles.paid}>
-                <span className={styles.paidKaath} aria-hidden="true" />
-                <span className={styles.paidTick}>
-                  <CheckIcon size={14} />
-                </span>
-                <div>
-                  <p className={styles.paidTitle}>Payment received</p>
-                  <p className={styles.paidBody}>
-                    Dhanyavaad! Aapka order confirm ho gaya hai. Sakhi Sarees se
-                    jald hi update milega.
-                  </p>
-                </div>
-              </div>
+              <FeedbackPrompt
+                sessionId={sessionId}
+                language={language === "auto" ? "hinglish" : language}
+                productId={paidFor}
+              />
             </div>
           )}
 

@@ -1,0 +1,62 @@
+/* Sits under her closing message as part of the same breath — she asked the
+   question out loud, these are the ways to answer it. Chips rather than a
+   rating widget: a shopkeeper asks how it went, she does not hand you a form. */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.choice {
+  padding: var(--space-2) var(--space-4);
+  /* Thumb-sized, per the touch-target pass. */
+  min-height: 44px;
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  background-color: var(--bg-surface);
+  background-image: var(--weave-warp), var(--weave-weft);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-standard),
+    border-color var(--dur-fast) var(--ease-standard),
+    background-color var(--dur-fast) var(--ease-standard);
+}
+
+.choice:hover:not(:disabled) {
+  color: var(--text-primary);
+  /* Zari — the thread brightening where it catches light. Never saffron:
+     saffron belongs to the button that spends money, and this one does not. */
+  border-color: var(--zari-bright);
+}
+
+.choice:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+.choice:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+/* The one she chose stays lit while the others recede. */
+.choice[data-chosen] {
+  color: var(--zari-bright);
+  border-color: var(--zari-bright);
+  opacity: 1;
+}
+
+.thanks {
+  margin-top: var(--space-3);
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  animation: messageIn var(--dur-base) var(--ease-out-expo) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thanks {
+    animation: none;
+  }
+}

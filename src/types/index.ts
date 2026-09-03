@@ -151,7 +151,9 @@ export type AuditAction =
   | 'create_order'
   | 'guardrail_check'
   | 'consent_request'
-  | 'failure_recovery';
+  | 'failure_recovery'
+  /** What the buyer said about the experience after paying. */
+  | 'feedback';
 
 /** Status of a guardrail check */
 export type GuardrailStatus = 'passed' | 'blocked' | 'n/a';

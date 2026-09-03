@@ -46,8 +46,12 @@ function provider(): LlmProvider {
  * Devanagari marker silently failed to match and correct Marathi was
  * reported as Hindi.
  */
+/* उपलब्ध was here and is now not: it is spelled identically in Hindi and
+   Marathi, so "क्या यह उपलब्ध है?" — ordinary Hindi — was classified Marathi and
+   both answered and spoken in Marathi. Every marker left is Marathi-only:
+   दाखवा against Hindi दिखाओ, काय against क्या, किंमत against कीमत. */
 const MARATHI_MARKERS =
-  /(आहे|नाही|तुम्ही|तुमच|आपल|मला|दाखवा|आवडेल|उपलब्ध|नमस्कार|साड्या|छान|किंमत|काय)/u;
+  /(आहे|नाही|तुम्ही|तुमच|आपल|मला|दाखवा|आवडेल|नमस्कार|साड्या|छान|किंमत|काय)/u;
 const HINGLISH_MARKERS =
   /(^|\s)(hai|hain|kya|aap|aapke|aapko|mujhe|dikhao|chahiye|karo|nahi|haan|mein|ke|ki|bahut|acch)/i;
 

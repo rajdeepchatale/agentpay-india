@@ -6,8 +6,18 @@ import { MicIcon, SpinnerIcon } from "@/components/ui/Icon";
 import styles from "./VoiceButton.module.css";
 
 export interface VoiceButtonProps {
-  /** Called with the transcript once she stops speaking. */
-  onTranscript: (text: string) => void;
+  /**
+   * The transcript, plus the language Sarvam reported hearing.
+   *
+   * The language matters as much as the text. saarika detects from the audio
+   * and reports a confidence; discarding it left the agent re-deriving the
+   * language from the transcript with a word-list regex, which answered Hindi
+   * in Marathi.
+   */
+  onTranscript: (
+    text: string,
+    heard?: { language: SupportedLanguage; confidence: number },
+  ) => void;
   /**
    * Fired the moment the microphone opens, before any audio is captured.
    *
@@ -105,10 +115,20 @@ export function VoiceButton({
         form.append("audio", blob, "speech.webm");
         if (language) form.append("language", language);
         const res = await fetch("/api/voice/stt", { method: "POST", body: form });
-        const data = (await res.json()) as { text?: string; message?: string };
+        const data = (await res.json()) as {
+          text?: string;
+          message?: string;
+          language?: SupportedLanguage;
+          confidence?: number;
+        };
         const text = data.text?.trim();
         if (text) {
-          onTranscript(text);
+          onTranscript(
+            text,
+            data.language && typeof data.confidence === "number"
+              ? { language: data.language, confidence: data.confidence }
+              : undefined,
+          );
         } else {
           /* Silence here is what hid a broken microphone in production: the
              route answers a Sarvam failure with 200 and an empty transcript,
