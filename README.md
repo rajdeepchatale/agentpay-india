@@ -565,9 +565,16 @@ Returns the decision timeline with per-entry reasoning and guardrail status.
 **Next:** nothing planned is unbuilt. What follows is scale, not features — see below.
 
 **Beyond:**
-1. **NPCI Unified Agentic Protocol (UAP)** — a universal AI-buyer protocol when the standard lands
-2. **Razorpay MCP Server** — expose merchant catalogs to external agent runtimes
-3. **WhatsApp Business webhook** — put the agent where the DMs already arrive
+1. **Razorpay Checkout instead of payment links.** Orders are uncapped; payment
+   *links* are limited to 30 in test mode, which this account has reached — so
+   links are reused per saree rather than minted per order, and an order created
+   past the ceiling returns without one rather than failing. Opening Checkout
+   against the `order_id` removes the ceiling entirely, and keeps the buyer
+   inside the conversation instead of sending her to `rzp.io` — which is closer
+   to what "conversational in-app checkout" should mean.
+2. **NPCI Unified Agentic Protocol (UAP)** — a universal AI-buyer protocol when the standard lands
+3. **Razorpay MCP Server** — expose merchant catalogs to external agent runtimes
+4. **WhatsApp Business webhook** — put the agent where the DMs already arrive
 
 ---
 
