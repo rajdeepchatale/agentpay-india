@@ -6,6 +6,8 @@ export interface MessageBubbleProps {
   children: ReactNode;
   /** Devanagari, Latin, or mixed — set so the right face is chosen per run. */
   lang?: string;
+  /** Rendered beside the bubble — the speaker on an agent reply. */
+  action?: ReactNode;
 }
 
 /**
@@ -15,12 +17,13 @@ export interface MessageBubbleProps {
  * and its bubble is the container the product cards and verdict panels hang
  * off, which only reads correctly if it is the one with weight.
  */
-export function MessageBubble({ role, children, lang }: MessageBubbleProps) {
+export function MessageBubble({ role, children, lang, action }: MessageBubbleProps) {
   return (
     <div className={role === "user" ? styles.rowUser : styles.rowAgent}>
       <div className={role === "user" ? styles.user : styles.agent} lang={lang}>
         {children}
       </div>
+      {action}
     </div>
   );
 }

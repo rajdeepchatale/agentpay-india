@@ -13,6 +13,7 @@ import { chatReducer, initialChatState } from "@/lib/chat/machine";
 import { readSessionId } from "@/lib/chat/session";
 import { ChatInput } from "./ChatInput";
 import { MessageBubble } from "./MessageBubble";
+import { SpeakButton } from "./SpeakButton";
 import { TypingIndicator } from "./TypingIndicator";
 import { ProductCard } from "./ProductCard";
 import { GuardrailAlert } from "./GuardrailAlert";
@@ -178,7 +179,11 @@ export function ChatContainer() {
     const { type, content, data } = response;
 
     const bubble = content ? (
-      <MessageBubble role="agent" lang={response.language === "en" ? "en" : "mr"}>
+      <MessageBubble
+        role="agent"
+        lang={response.language === "en" ? "en" : "mr"}
+        action={<SpeakButton text={content} language={response.language} />}
+      >
         {content}
       </MessageBubble>
     ) : null;
@@ -389,6 +394,9 @@ export function ChatContainer() {
           isLoading={isBusy}
           spendLimit={spendLimit}
           onEditLimit={() => setSettingsOpen(true)}
+          /* Spoken words go straight out as a message — asking her to speak
+             and then press send would make voice slower than typing. */
+          onVoiceInput={send}
         />
       </div>
 

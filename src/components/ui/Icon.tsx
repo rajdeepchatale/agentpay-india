@@ -106,6 +106,26 @@ export function ChevronRightIcon(props: IconProps) {
   );
 }
 
+/** Speaker. Two arcs for sound, drawn on the same grid as everything else. */
+export function SpeakerIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M11 5 6.5 8.5H3.5v7h3L11 19V5Z" />
+      <path d="M15 9.5a3.5 3.5 0 0 1 0 5" />
+      <path d="M17.8 7a7 7 0 0 1 0 10" />
+    </Svg>
+  );
+}
+
+/** Stop. A square, because that is what stop has always been. */
+export function StopIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="6" y="6" width="12" height="12" rx="1.5" />
+    </Svg>
+  );
+}
+
 /** Retry. The arrow head sits on the arc so it reads at 16px. */
 export function RetryIcon(props: IconProps) {
   return (

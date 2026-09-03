@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import { Button } from "@/components/ui/Button";
-import { MicIcon, SendIcon, ShieldIcon } from "@/components/ui/Icon";
+import { SendIcon, ShieldIcon } from "@/components/ui/Icon";
+import { VoiceButton } from "./VoiceButton";
 import styles from "./ChatInput.module.css";
 
 export interface ChatInputProps {
@@ -20,7 +21,7 @@ export interface ChatInputProps {
   /** Opens the limit editor. The limit line is static when this is absent. */
   onEditLimit?: () => void;
   /** Voice capture. The mic appears only once this is wired up. */
-  onVoiceInput?: () => void;
+  onVoiceInput?: (text: string) => void;
   disabled?: boolean;
 }
 
@@ -84,17 +85,7 @@ export function ChatInput({
     <div className={styles.composer}>
       <div className={styles.row}>
         {onVoiceInput && (
-          <Button
-            variant="ghost"
-            size="lg"
-            iconOnly
-            round
-            onClick={onVoiceInput}
-            disabled={isBlocked}
-            aria-label="Speak your message"
-          >
-            <MicIcon size={20} />
-          </Button>
+          <VoiceButton onTranscript={onVoiceInput} disabled={isBlocked} />
         )}
 
         <div

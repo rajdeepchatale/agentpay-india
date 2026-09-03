@@ -1,0 +1,94 @@
+/* ==========================================================================
+   The microphone.
+
+   Ghost weight at rest — speaking is an alternative to typing, not the
+   committing action, so it never takes saffron. Recording is the one state
+   that earns colour, and it earns red because a live microphone should be
+   unmistakable.
+   ========================================================================== */
+
+.wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: none;
+}
+
+.mic {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  color: var(--text-secondary);
+  border-radius: var(--radius-full);
+  transition: color var(--dur-fast) var(--ease-standard),
+    background-color var(--dur-fast) var(--ease-standard);
+}
+
+.mic:hover:not(:disabled) {
+  color: var(--text-primary);
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.mic:disabled {
+  opacity: 0.45;
+}
+
+.mic:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+/* Live. Red, not saffron — saffron is the action that spends money, and a
+   microphone is not that. */
+.mic[data-recording] {
+  color: var(--color-error);
+  background-color: var(--color-error-wash);
+}
+
+/* The pulse sits behind the icon and is purely decorative, so it is masked
+   from assistive tech and stopped under reduced motion. */
+.pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-error);
+  animation: recPulse 1.4s var(--ease-standard) infinite;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse {
+    animation: none;
+    opacity: 0.7;
+  }
+}
+
+.spinner {
+  animation: spin 900ms linear infinite;
+}
+
+/* Floats above the composer so nothing below it shifts when the state
+   changes — the composer's height must not move mid-sentence. */
+.hint {
+  position: absolute;
+  bottom: calc(100% + var(--space-2));
+  left: 0;
+  z-index: 2;
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+  color: var(--text-primary);
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+  animation: messageIn var(--dur-fast) var(--ease-out-expo) both;
+}
+
+@media (pointer: coarse) {
+  .mic {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}

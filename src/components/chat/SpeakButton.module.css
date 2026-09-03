@@ -1,0 +1,50 @@
+/* The speaker on an agent message. Quiet until hovered — the reply is the
+   content; this is an affordance beside it, not a call to action. */
+
+.speak {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  color: var(--text-muted);
+  border-radius: var(--radius-full);
+  opacity: 0.55;
+  transition: opacity var(--dur-fast) var(--ease-standard),
+    color var(--dur-fast) var(--ease-standard),
+    background-color var(--dur-fast) var(--ease-standard);
+}
+
+.speak:hover:not(:disabled),
+.speak:focus-visible {
+  opacity: 1;
+  color: var(--text-primary);
+  background-color: rgba(255, 255, 255, 0.07);
+}
+
+.speak:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+/* Playing. Zari rather than saffron: this is a material state, not a
+   committing action. */
+.speak[data-playing] {
+  opacity: 1;
+  color: var(--zari-bright);
+  background-color: rgba(201, 162, 39, 0.14);
+}
+
+.speak:disabled {
+  opacity: 0.4;
+}
+
+.spinner {
+  animation: spin 900ms linear infinite;
+}
+
+@media (pointer: coarse) {
+  .speak {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}

@@ -49,3 +49,10 @@
   background: var(--zari-thread);
   pointer-events: none;
 }
+
+/* The action sits outside the bubble, aligned to its foot, so it never
+   reflows the text it belongs to. */
+.rowAgent {
+  align-items: flex-end;
+  gap: var(--space-1);
+}
