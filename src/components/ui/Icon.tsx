@@ -79,11 +79,25 @@ export function ShieldIcon(props: IconProps) {
   );
 }
 
-export function SettingsIcon(props: IconProps) {
+/**
+ * The spending limit.
+ *
+ * What stood here was called SettingsIcon and drawn as a circle with eight
+ * radiating lines — which is not a gear, it is a sun, the universal
+ * dark-mode glyph. It opened a dialog titled "Spending limit", so it was
+ * wrong twice: the wrong picture for a gear, and a gear was the wrong idea
+ * for a control that only ever edits one number.
+ *
+ * A shield with a ceiling line inside it: this product's own mark for the
+ * guardrail, which is exactly what the number is. The same shield carries the
+ * block card and the decision rail, so the header button and the refusal it
+ * produces now read as one idea.
+ */
+export function SpendLimitIcon(props: IconProps) {
   return (
     <Svg {...props}>
-      <circle cx="12" cy="12" r="3.25" />
-      <path d="M12 2.5v2.2M12 19.3v2.2M21.5 12h-2.2M4.7 12H2.5M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6M18.7 18.7l-1.6-1.6M6.9 6.9 5.3 5.3" />
+      <path d="M12 2.8 19 5.6v5.2c0 4.6-2.9 7.7-7 9.4-4.1-1.7-7-4.8-7-9.4V5.6l7-2.8Z" />
+      <path d="M8.6 11.6h6.8" />
     </Svg>
   );
 }

@@ -33,7 +33,7 @@ import { ErrorCard } from "./ErrorCard";
 import { DemoTour } from "./DemoTour";
 import { SettingsModal } from "./SettingsModal";
 import { GuardrailRail } from "./GuardrailRail";
-import { SettingsIcon, ShieldIcon, SpeakerIcon, MuteIcon } from "@/components/ui/Icon";
+import { SpendLimitIcon, ShieldIcon, SpeakerIcon, MuteIcon } from "@/components/ui/Icon";
 import styles from "./ChatContainer.module.css";
 
 const TIMEOUT_MS = 30_000;
@@ -586,9 +586,9 @@ export function ChatContainer() {
           type="button"
           className={styles.gear}
           onClick={() => setSettingsOpen(true)}
-          aria-label="Spending limit settings"
+          aria-label={`${t.change} — ${t.limitLabel}`}
         >
-          <SettingsIcon size={18} />
+          <SpendLimitIcon size={18} />
         </button>
         <span className={styles.selvedge} aria-hidden="true" />
       </header>
