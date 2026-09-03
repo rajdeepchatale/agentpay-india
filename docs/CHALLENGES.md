@@ -230,7 +230,7 @@ without any assertion about model behaviour.
 
 **`test/alias-hooks.mjs`, `*.test.mts`**
 
-266 tests run with **zero test dependencies** — Node's native `--test` runner over
+270 tests run with **zero test dependencies** — Node's native `--test` runner over
 TypeScript type-stripping, with a small resolver hook mapping the `@/*` alias and
 stubbing `server-only`.
 
@@ -334,3 +334,118 @@ landed, so the conversation polls for it and closes on that — she is thanked
 because payment arrived, not because a third party remembered to send her home.
 
 ---
+
+---
+
+## 14. The guardrail only fired when the model cooperated — again
+
+§1 was the guardrail never firing because a well-behaved model steered around
+it. This is the same lesson arriving somewhere new.
+
+The engine gates the **tool call**, which covers every path the model takes
+*through a tool* and none of the paths where it simply talks. Asked for a
+Paithani over the cap, the model sometimes just discussed Paithanis — no
+search, no consent request, so no rule ran and the refusal quietly did not
+happen. Whether the spending limit applied depended on how the model felt like
+replying, which is not a limit.
+
+**Fixed** in [`core.ts`](../src/lib/agent/core.ts): a turn that ends in prose
+with no tool call has the buyer's own message put through the same engine, and
+a block is returned with real alternatives at her cap.
+
+**Caught by** sweeping the entire journey in a browser instead of driving the
+API — the API had been passing this case all along, because a script always
+asks in a way that triggers a tool.
+
+---
+
+## 15. The verification made a gesture no real buyer makes
+
+The chat was supposed to greet the buyer aloud on arrival. It was measured at
+**0.06s** and shipped. It was, in fact, **silent** — reported by the person
+using it, not by any check.
+
+Two causes, and the second only became visible after fixing the first.
+
+The landing CTA was a plain `<a href>`, so opening the chat was a full document
+navigation and the browser discarded the user activation that came with the
+click. Audio is blocked without activation, so nothing could play. A `next/link`
+keeps the document, and the click survives the trip.
+
+That alone did not fix it. The code still waited for a `pointerdown` **on the
+chat page** — a gesture someone who just clicked to get there has no reason to
+make. It now asks the browser whether activation already exists and greets
+immediately if so.
+
+**The real defect was in the test.** The script clicked the page to unlock
+audio before measuring — something no visitor does. It measured 0.06s while the
+actual experience was nothing at all.
+
+**Lesson:** a probe that arranges the conditions it needs is not measuring the
+product. Every audio check since drives the real path: land on the marketing
+page, click the real link, touch nothing else.
+
+---
+
+## 16. Two Razorpay objects, one purchase — the webhook could never match
+
+Paying for a saree creates **two** Razorpay objects: an order from
+`orders.create`, and a payment link that carries its *own* internal order.
+
+Verified against the live API rather than assumed:
+
+```
+payment link plink_TXdJyB2M5sq49l
+  its own order_id : order_TXeGi1ZVFk7nHg   ← what payment.captured carries
+  our stored order : order_TXe4ZljQ3aiBgk   ← what the orders table holds
+```
+
+They never match. So when a buyer paid, `markOrderStatus` found no row, the
+order stayed `created` for ever, and `GET /api/orders/status` never reported
+paid — meaning the polling close, built specifically to survive Razorpay not
+redirecting the buyer back, could not fire from a real payment. The redirect
+was carrying the entire post-payment experience alone.
+
+**Fixed** in [`webhook.ts`](../src/lib/razorpay/webhook.ts): `payment_link.paid`
+is handled too, matched on `short_url` — the one identifier both sides share,
+because it is stored when the order is recorded. Links are reused, so one
+`short_url` can belong to several rows; the **oldest still-unpaid** row is
+settled, because marking the newest would leave an older genuine purchase
+looking unpaid for ever.
+
+**A smaller one found beside it.** Test mode caps payment links at 30 and this
+account reached it, so an order past the ceiling returns without a link — by
+design, since the order exists at Razorpay and losing the link must not lose
+the purchase. But the card rendered `href={order.payment_link}` unconditionally,
+and `href=""` is **not an inert button: it reloads the page.** Clicking "Pay
+now" and landing back where you started is worse than not being offered it.
+
+---
+
+## 17. The interface spoke a different language from the agent inside it
+
+Choosing मराठी changed what the agent said and left everything around it in
+Hinglish and English: the placeholder, the voice label, the error messages, the
+suggestion chips. The picker looked broken because it was — on the very first
+line.
+
+The cause was not a missing translation but **scattered copy**. A welcome
+constant in the container, a placeholder default in the composer, voice labels
+inline in the header, errors written at the call site, tour wording in its own
+component — each authored in whatever language its writer had in mind. Fixing
+them one at a time is how it got that way.
+
+**Fixed** with one table, [`ui-text.ts`](../src/lib/chat/ui-text.ts), and a test
+that fails if any language is missing a key another has — so a string added in
+English only cannot ship and be discovered by a judge switching to Marathi.
+
+The suggestion chips were the worst of it: a fixed mix of Hinglish and Marathi,
+so choosing हिंदी left two of three suggestions in languages just declined, and
+tapping the Marathi one sent Marathi while the pin forced a Hindi answer. On
+*auto* the mix stays deliberately — three languages in three chips is the
+multilingual claim demonstrated rather than asserted.
+
+**The gender guard caught the replacement copy**, which is what it is for, and
+the fix was better writing: *"सुन रही हूँ"* rather than *"सुन रही हैं"*. That is
+her own status, so first person is what a shopkeeper says; the third person
+reads as a caption describing one.
