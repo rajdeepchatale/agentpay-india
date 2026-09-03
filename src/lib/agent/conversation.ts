@@ -100,8 +100,40 @@ export function hasConsent(sessionId: string, productId: string): boolean {
 const AFFIRMATIVE =
   /^\s*(haan|haa|hoy|yeah|yep|yes|okay|okey|sure|confirm|kar do|karo|theek|thik|ok|ya|ha|ho|होय|हाँ|हों|हा|हो|ठीक|करा|करो)(?![\p{L}\p{N}])/iu;
 
+/*
+ * Saying plainly what she wants, rather than agreeing to what was offered.
+ *
+ * "order kara" was answered with "which saree would you like to see?" — the
+ * pattern above is anchored to the start of the message, so a sentence that
+ * BEGINS with "order" never matched, and roman "kara" was missing even though
+ * Devanagari करा was there. She had said exactly what she wanted and was asked
+ * again.
+ *
+ * This one is deliberately unanchored, which is only safe because negation is
+ * checked first: matching "order" anywhere would otherwise turn "nahi order
+ * karo" into a purchase.
+ */
+const ORDER_INTENT =
+  /(order|ऑर्डर|आर्डर|book|place)\s*(kara|karo|kar\s*do|karein|karun|kar|de\s*do|it|the\s*order|करा|करो|कर\s*दो|करें|कर)/iu;
+
+/*
+ * Anything that turns a sentence into a refusal. Checked BEFORE consent, so a
+ * message containing both loses — the safe direction when the outcome is
+ * spending someone's money.
+ */
+const NEGATION =
+  /(nahi|nahin|mat|nako|don'?t|do not|cancel|rehne do|ruko|abhi nahi|नाही|नको|नहीं|मत|रुको)/iu;
+
+/** A question about ordering is not an instruction to order. */
+const QUESTION = /[?？]\s*$|\b(kaise|kaisa|kya|how|कैसे|कसं)\b/iu;
+
 export function isAffirmative(text: string): boolean {
-  return AFFIRMATIVE.test(text.trim());
+  const trimmed = text.trim();
+  /* Refusal wins outright. */
+  if (NEGATION.test(trimmed)) return false;
+  if (AFFIRMATIVE.test(trimmed)) return true;
+  if (QUESTION.test(trimmed)) return false;
+  return ORDER_INTENT.test(trimmed);
 }
 
 /**

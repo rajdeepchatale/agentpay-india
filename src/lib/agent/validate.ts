@@ -30,8 +30,55 @@ export type ChatValidation =
       allowedCategories?: string[];
       /** Her explicit choice. Absent means detect it from what she wrote. */
       language?: SupportedLanguage;
+      /** The thread so far, carried by the client. See readHistory. */
+      history?: Array<{ role: "user" | "assistant"; content: string }>;
     }
   | { ok: false; status: number; error: string; message: string };
+
+/* How much of the thread is worth carrying, and how much of one turn.
+   Enough for the model to follow "pehli wali" and "order kara"; not enough
+   for a caller to push a novel through the context window on our budget. */
+const MAX_HISTORY_TURNS = 20;
+const MAX_HISTORY_CHARS = 2000;
+
+/**
+ * The conversation so far, as sent by the client.
+ *
+ * It has to come from the client because the server has nowhere to keep it:
+ * history lived in a module-scope Map, which on a serverless platform is
+ * per-INSTANCE. Turn one is written into one container's memory and turn two
+ * can be served by another, so the model is handed a blank slate and asks
+ * what she wants all over again.
+ *
+ * Untrusted like everything else that crosses this boundary. Only the two
+ * roles a conversation actually has are allowed — a forged "system" turn is
+ * the obvious way to try to rewrite the agent's instructions — and the
+ * guardrail engine still re-reads every price from the catalog, so nothing
+ * here can move money.
+ */
+function readHistory(
+  raw: unknown,
+): Array<{ role: "user" | "assistant"; content: string }> | undefined {
+  if (!Array.isArray(raw)) return undefined;
+
+  const turns = raw
+    .filter(
+      (t): t is { role: string; content: string } =>
+        !!t &&
+        typeof t === "object" &&
+        typeof (t as { content?: unknown }).content === "string" &&
+        ((t as { role?: unknown }).role === "user" ||
+          (t as { role?: unknown }).role === "assistant"),
+    )
+    .map((t) => ({
+      role: t.role as "user" | "assistant",
+      content: t.content.slice(0, MAX_HISTORY_CHARS),
+    }))
+    /* The most recent turns are the ones that carry the thread. */
+    .slice(-MAX_HISTORY_TURNS);
+
+  return turns.length ? turns : undefined;
+}
 
 export function validateChatRequest(body: unknown): ChatValidation {
   const b = (body ?? {}) as Record<string, unknown>;
@@ -76,6 +123,7 @@ export function validateChatRequest(body: unknown): ChatValidation {
     : undefined;
 
   const language = readLanguage(b.language);
+  const history = readHistory(b.history);
 
   return {
     ok: true,
@@ -84,5 +132,6 @@ export function validateChatRequest(body: unknown): ChatValidation {
     maxSpend,
     ...(allowedCategories?.length ? { allowedCategories } : {}),
     ...(language ? { language } : {}),
+    ...(history ? { history } : {}),
   };
 }

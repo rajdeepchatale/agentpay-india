@@ -77,6 +77,15 @@ export interface AgentRequest {
    * than her own.
    */
   language?: SupportedLanguage;
+  /**
+   * The thread as the client has it.
+   *
+   * Server memory is per-instance on a serverless platform, so the history
+   * this process holds is often empty for a conversation that is several
+   * turns old — which is why the agent kept asking what she wanted after she
+   * had already said. The client's copy is the one that survives.
+   */
+  history?: AgentMessage[];
 }
 
 /** Fallback copy, in the buyer's own language. */
@@ -138,10 +147,12 @@ export async function runAgent(req: AgentRequest): Promise<AgentResponse> {
     ...(req.language ? { language: req.language } : {}),
   });
 
-  const messages: AgentMessage[] = [
-    ...getHistory(sessionId),
-    { role: "user", content: message },
-  ];
+  /* This instance's memory first — it is the record we wrote ourselves — and
+     the client's copy when this instance has none, which on a serverless
+     platform is most of the time. */
+  const remembered = getHistory(sessionId);
+  const thread = remembered.length ? remembered : (req.history ?? []);
+  const messages: AgentMessage[] = [...thread, { role: "user", content: message }];
   const turnMessages: AgentMessage[] = [{ role: "user", content: message }];
 
   let products: Product[] | undefined;

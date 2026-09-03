@@ -276,6 +276,21 @@ export function ChatContainer() {
 
   /* Speak each agent reply as it lands — once. Keyed on the message id rather
      than a count, so a re-render never replays a line she already heard. */
+  /* Mirrors the conversation for the request body. A ref rather than state:
+     it is read at send time and never rendered, so it must not add a render
+     of its own. */
+  const historyRef = useRef<Array<{ role: "user" | "assistant"; content: string }>>([]);
+  useEffect(() => {
+    historyRef.current = state.messages
+      .map((m) =>
+        m.role === "user"
+          ? { role: "user" as const, content: m.text }
+          : { role: "assistant" as const, content: m.response?.content ?? "" },
+      )
+      .filter((m) => m.content.trim().length > 0)
+      .slice(-20);
+  }, [state.messages]);
+
   const spokenRef = useRef<string | null>(null);
   const lastAgent = state.messages[state.messages.length - 1];
   const lastAgentId =
@@ -320,6 +335,11 @@ export function ChatContainer() {
             /* Omitted when there is nothing better than the server's own text
                detection. Sent, it outranks that detection for this turn. */
             ...(turnLang ? { language: turnLang } : {}),
+            /* The thread as rendered. The server keeps its own copy but that
+               lives in one instance's memory, and a later turn is routinely
+               served by a different one — which is how the agent came to ask
+               what she wanted after she had already told it. */
+            history: historyRef.current,
           }),
           signal: controller.signal,
         });
@@ -407,6 +427,9 @@ export function ChatContainer() {
   const turn = state.messages.filter((m) => m.role === "agent").length;
   const sentTexts = state.messages.filter((m) => m.role === "user").map((m) => m.text);
   const allStepsDone = TOUR_SENDS.every((t) => sentTexts.includes(t));
+  /* Whether the buyer has said anything yet. The budget reply is the agent's,
+     so it does not count — the openers are for someone who has not started. */
+  const hasSpoken = state.messages.some((m) => m.role === "user");
   const attempted = state.messages.reduce<number | null>((max, m) => {
     const asked = m.response?.data?.guardrail?.attempted;
     return typeof asked === "number" && asked > (max ?? 0) ? asked : max;
@@ -659,7 +682,13 @@ export function ChatContainer() {
             </div>
           )}
 
-          {budget !== null && !allStepsDone && !paidFor && (
+          {/* Openers, not a permanent menu.
+              
+              Once she is talking to the agent the three-step box is clutter
+              sitting under a real conversation — she has already started, and
+              the thing to look at is what the shop just showed her. It stays
+              only until her first message. */}
+          {budget !== null && !allStepsDone && !paidFor && !hasSpoken && (
             <div className={styles.chips}>
               <DemoTour
                 language={language}

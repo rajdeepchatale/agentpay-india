@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
       maxSpend: v.maxSpend,
       allowedCategories: v.allowedCategories,
       language: v.language,
+      history: v.history,
     });
     return NextResponse.json(response);
   } catch (e) {

@@ -71,6 +71,48 @@ describe("declining clears the pending request", () => {
   });
 });
 
+describe("isAffirmative — explicit instructions to order", () => {
+  /* Reported from a real session: "order kara" was answered with "which saree
+     would you like to see?". The pattern is anchored to the START of the
+     message, so a sentence beginning with "order" never matched — and roman
+     "kara" was missing even though Devanagari करा was present. The buyer had
+     said plainly what she wanted and the agent asked her again. */
+
+  test("reads an instruction to place the order, in any of the four", () => {
+    for (const said of [
+      "order kara",
+      "order karo",
+      "order kar do",
+      "order karein",
+      "ऑर्डर करा",
+      "ऑर्डर करो",
+      "आर्डर कर दो",
+      "place the order",
+      "book kar do",
+    ]) {
+      assert.equal(isAffirmative(said), true, `should accept: ${said}`);
+    }
+  });
+
+  test("a refusal that mentions ordering is NOT consent", () => {
+    /* The dangerous direction. Matching "order" anywhere in the sentence
+       turns "nahi order karo" into a purchase, so negation has to win. */
+    for (const said of [
+      "nahi order karo",
+      "abhi order mat karo",
+      "नको ऑर्डर करा",
+      "order mat karo",
+      "don't place the order",
+    ]) {
+      assert.equal(isAffirmative(said), false, `must refuse: ${said}`);
+    }
+  });
+
+  test("still does not treat a question about ordering as consent", () => {
+    assert.equal(isAffirmative("order kaise karte hain?"), false);
+  });
+});
+
 describe("isAffirmative", () => {
   for (const yes of ["haan", "Haan", "ho", "yes", "ok", "confirm", "हो", "हाँ", "करा"]) {
     test(`"${yes}" is agreement`, () => assert.equal(isAffirmative(yes), true));
