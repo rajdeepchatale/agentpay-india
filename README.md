@@ -7,6 +7,7 @@
 [![Next.js 16](https://img.shields.io/badge/Next.js_16-App_Router-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Google Gemini](https://img.shields.io/badge/Google_Gemini-Agent_Brain-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
+[![Sarvam AI](https://img.shields.io/badge/Sarvam_AI-Voice_in_%26_out-FF6B00?style=for-the-badge)](https://www.sarvam.ai/)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
@@ -57,7 +58,7 @@ This section exists so every other claim in this README can be checked and found
 | Full-screen chat UI | ✅ Built — `/chat` |
 | Design-system specimen sheet | ✅ Built — `/design` |
 | 16-saree catalog + search API | ✅ Built |
-| **Voice in / out (Sarvam AI)** | ⬜ **Not built** — planned |
+| Voice in / out (Sarvam AI) | ✅ Built — speak to the agent, hear the reply in the same language |
 | Audit dashboard | ✅ Built — `/dashboard?session_id=…` |
 | Landing page | ✅ Built — `/` |
 | Payment webhook (signed) | ✅ Built — orders move `created → paid` on a verified `payment.captured` |
@@ -86,6 +87,9 @@ A representative boutique, written to be realistic — not an existing customer.
 
 ### 🗣️ Native Multilingual Commerce
 - Chat in **Hindi, Marathi, Hinglish, or English** — the agent replies in the same language
+- **Speak instead of typing** — Sarvam AI transcribes her speech and reads the reply back
+  in the language she used. Typing Devanagari on a phone is slow enough that most buyers
+  give up and type romanised Hinglish; speaking removes that tax
 - Authentic Maharashtrian textile vocabulary: *पैठणी, हातमाग, जरी, पदर, आंबा मोटिफ*
 - Devanagari is first-class: script detection is Unicode-aware, not ASCII `\b`
 
@@ -211,10 +215,13 @@ agentpay-india/
 │   │   ├── dashboard/page.tsx       # Audit trail viewer
 │   │   └── api/
 │   │       ├── agent/chat/route.ts  # Agent reasoning + tool calling
+│   │       ├── voice/stt/route.ts   # Sarvam Saarika — speech in, language preserved
+│   │       ├── voice/tts/route.ts   # Sarvam Bulbul — the reply, spoken
 │   │       ├── catalog/route.ts     # Product search & filtering
 │   │       └── audit/route.ts       # Audit log retrieval
 │   ├── components/
 │   │   ├── chat/                    # ChatContainer, MessageBubble, ProductCard,
+│   │   │                            # VoiceButton, SpeakButton, GuardrailRail,
 │   │   │                            # ConsentPrompt, GuardrailAlert, OrderConfirmation,
 │   │   │                            # FailureCard, ErrorCard, TypingIndicator,
 │   │   │                            # SuggestionChips, SettingsModal, ChatInput
@@ -224,6 +231,7 @@ agentpay-india/
 │   │   ├── guardrails/              # Spending cap engine, consent, rate limits
 │   │   ├── razorpay/                # SDK client, orders, payment links, paise maths
 │   │   ├── chat/                    # State machine, session, colour swatches
+│   │   ├── voice/                   # Sarvam client — saarika STT, bulbul TTS
 │   │   ├── catalog/                 # 16 saree products (3 price tiers) + search
 │   │   ├── audit/                   # Structured decision logger
 │   │   └── db/                      # Supabase client
@@ -325,6 +333,16 @@ npm test        # 134 tests, no test dependencies
 Returns `{ products: Product[] }`. This is the machine-readable endpoint an external
 agent would call.
 
+### `POST /api/voice/stt`
+`multipart/form-data` with an audio blob → `{ text, language, confidence }`. Uses
+Sarvam **saarika**, which transcribes in the language spoken. The other endpoint,
+`saaras`, translates to English — that would hand the agent English and it would answer
+in English, losing the point of the product.
+
+### `POST /api/voice/tts`
+`{ text, language }` → `audio/wav`. Sarvam returns base64 inside JSON rather than a
+stream, so it is decoded server-side before the browser sees it.
+
 ### `GET /api/audit?session_id=xxx`
 Returns the decision timeline with per-entry reasoning and guardrail status.
 
@@ -351,7 +369,7 @@ Returns the decision timeline with per-entry reasoning and guardrail status.
 > sixty million, and why guardrails-as-architecture is what lets a regulated payments
 > company ship agentic commerce at all.
 
-**Next:** voice in and out via Sarvam AI — the one planned capability still unbuilt.
+**Next:** nothing planned is unbuilt. What follows is scale, not features — see below.
 
 **Beyond:**
 1. **NPCI Unified Agentic Protocol (UAP)** — a universal AI-buyer protocol when the standard lands

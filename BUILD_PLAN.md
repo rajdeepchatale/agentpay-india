@@ -15,10 +15,10 @@
 
 | | |
 |---|---|
-| ✅ Complete | **Steps 1–9 and 13** of 14, plus a payment webhook that was not in the original scope |
+| ✅ Complete | **Steps 1–13** of 14, plus a payment webhook that was not in the original scope |
 | 🌐 Live | **https://agentpay-india.vercel.app** — verified end to end on the deployed URL |
 | 📦 Public | **github.com/rajdeepchatale/agentpay-india** |
-| 👉 Next | **Voice (10–11, 🟡 Tier 3) — or cut it.** Then Step 14, the video |
+| 👉 Next | **Step 14 — the video.** Every buildable step is done |
 | 🟢 Blockers | None. Every 🔴 Tier 1 item is done |
 | 🟡 Pending | Nothing blocking. All 16 saree photographs are in |
 
@@ -168,8 +168,8 @@ shared in a chat transcript.
 | ✅ 7 | Deploy — get it live | 🔴 1 | done |
 | ✅ 8 | Audit dashboard | 🟠 2 | done |
 | ✅ 9 | Landing page | 🟠 2 | done |
-| 10 | Sarvam voice routes | 🟡 3 | lean |
-| 11 | Voice UI | 🟡 3 | medium |
+| ✅ 10 | Sarvam voice routes | 🟡 3 | done |
+| ✅ 11 | Voice UI | 🟡 3 | done |
 | 12 | Testing + docs | ⚪ 4 | **already done** — see below |
 | ✅ 13 | Final deploy + verify | 🔴 1 | done |
 | 14 | 5-minute video — **user records** | — | — |
@@ -643,7 +643,19 @@ version of this page.
 
 | # | Task |
 |---|------|
-| 1 | `src/lib/voice/sarvam.ts` — STT `saaras:v3`, TTS `bulbul:v3`. Header **`api-subscription-key`** (not `Authorization`). BCP-47: `hi-IN`, `mr-IN`, `en-IN` |
+| 1 | `src/lib/voice/sarvam.ts` — STT **`saarika:v2.5`**, TTS `bulbul:v3`. Header **`api-subscription-key`** (not `Authorization`). BCP-47: `hi-IN`, `mr-IN`, `en-IN` |
+
+> [!IMPORTANT]
+> **This step's STT spec was wrong and was corrected during the build.**
+> It said `saaras:v3`. Two problems, both found by probing the live API before
+> writing code:
+> - `saarika:v3` does not exist; `saarika:v2.5` is current and `saarika:v2` is deprecated.
+> - **`saaras` translates to English.** Speaking *"मला पैठणी सिल्क साडी दाखवा"*
+>   returns *"Show me a Paithani silk saree."* — which would hand the agent
+>   English, so it would reply in English and lose the one thing this product
+>   is for. `saarika` transcribes in the language actually spoken.
+>
+> TTS `bulbul:v3` was correct as written.
 | 2 | `POST /api/voice/stt` — multipart audio → transcript + detected language |
 | 3 | `POST /api/voice/tts` — **Sarvam returns base64 JSON `{ audios: [...] }`, not a stream.** Buffer-decode server-side → `audio/wav` |
 

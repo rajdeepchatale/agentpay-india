@@ -73,8 +73,9 @@ export default function LandingPage() {
 
           <p className={styles.sub}>
             Her Instagram Reel gets 50,000 views. She can answer 30 DMs. AgentPay
-            answers all of them, 24/7, in Hindi, Marathi, Hinglish or English —
-            and creates a real Razorpay order inside the conversation.
+            answers all of them, 24/7 — typed or spoken, in Hindi, Marathi,
+            Hinglish or English — and creates a real Razorpay order inside the
+            conversation.
           </p>
 
           <div className={styles.actions}>
@@ -235,6 +236,29 @@ export default function LandingPage() {
               <code>rzp_test_</code>, so no real money can move.
             </p>
           </div>
+        </section>
+
+        {/* ---- Motif: voice ---- */}
+        <section className={styles.motif}>
+          <h2 className={styles.motifHead}>She can just say it</h2>
+          <p className={styles.motifBody}>
+            Typing Devanagari on a phone is slow enough that most Indian buyers
+            give up and type romanised Hinglish instead. Speaking removes that
+            tax — and it is the difference between a merchant&rsquo;s actual
+            customers being able to use this and only the ones comfortable with
+            a keyboard.
+          </p>
+          <p className={styles.motifBody}>
+            Sarvam AI transcribes what she said <em>in the language she said it</em>,
+            and reads the reply back in the same one. Sarvam has a second endpoint
+            that translates speech to English; using it would have handed the agent
+            English and lost the whole point, so this uses the one that preserves
+            her language.
+          </p>
+          <p className={styles.flowNote}>
+            Tap the microphone in the chat and speak. Tap the speaker beside any
+            reply to hear it.
+          </p>
         </section>
 
         {/* ---- Motif: machine-readable. Backed, not asserted. ---- */}
