@@ -27,6 +27,7 @@ import {
 import { logDecision, recordOrder } from "@/lib/audit/logger";
 import { toPaise } from "@/lib/razorpay/amounts";
 import { searchProducts } from "@/lib/catalog/search";
+import { speakableName } from "@/lib/catalog/name";
 import { checkSearchIntent } from "@/lib/guardrails/engine";
 import { confirmLine, orderReadyLine } from "@/lib/chat/confirm";
 import { getProductById } from "@/lib/catalog/search";
@@ -116,6 +117,24 @@ export interface AgentRequest {
    * model narrated consent while calling search_products.
    */
   selectedProductId?: string;
+}
+
+/**
+ * Sold out, said plainly, in her language.
+ *
+ * A saree that is out of stock is not a saree the shop cannot find. Reusing
+ * the "having trouble finding that" copy told the buyer something untrue about
+ * her own order.
+ */
+function soldOutLine(product: Product | undefined, lang: SupportedLanguage): string {
+  const name = product ? speakableName(product, lang) : "";
+  const lines: Record<SupportedLanguage, string> = {
+    hinglish: `${name || "Yeh saree"} abhi stock mein nahi hai. Aur bhi sundar options hain — dikhaun?`,
+    hi: `${name || "यह साड़ी"} अभी स्टॉक में नहीं है। और भी सुंदर विकल्प हैं — दिखाऊँ?`,
+    mr: `${name || "ही साडी"} सध्या स्टॉकमध्ये नाही. आणखी सुंदर पर्याय आहेत — दाखवू?`,
+    en: `${name || "That saree"} is out of stock. There are other good options — shall I show you?`,
+  };
+  return lines[lang] ?? lines.hinglish;
 }
 
 /** Fallback copy, in the buyer's own language. */
@@ -266,8 +285,15 @@ export async function runAgent(req: AgentRequest): Promise<AgentResponse> {
 
     if (outcome.failure) {
       /* Out of stock. Answer it here rather than falling through to the model,
-         which re-appended her message and produced a duplicate turn. */
-      const line = FALLBACK.stuck[lang];
+         which re-appended her message and produced a duplicate turn.
+         
+         The engine already wrote the right sentence — it names what is in
+         stock at her cap. FALLBACK.stuck says "I am having trouble finding
+         that", which is a different and untrue thing to tell someone whose
+         saree is simply sold out. */
+      const line =
+        (outcome.result as { tell_the_buyer?: string })?.tell_the_buyer ??
+        soldOutLine(getProductById(req.selectedProductId), lang);
       appendMessages(sessionId, [{ role: "assistant", content: line }]);
       return {
         type: "failure_handled",
