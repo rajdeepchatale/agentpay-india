@@ -117,6 +117,17 @@ export function SpeakerIcon(props: IconProps) {
   );
 }
 
+/** Muted. The speaker with the sound struck through. */
+export function MuteIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M11 5 6.5 8.5H3.5v7h3L11 19V5Z" />
+      <path d="m16 9.5 5 5" />
+      <path d="m21 9.5-5 5" />
+    </Svg>
+  );
+}
+
 /** Stop. A square, because that is what stop has always been. */
 export function StopIcon(props: IconProps) {
   return (

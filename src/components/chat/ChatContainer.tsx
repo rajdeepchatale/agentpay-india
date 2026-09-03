@@ -11,6 +11,7 @@ import {
 import type { AgentResponse, Product } from "@/types";
 import { chatReducer, initialChatState } from "@/lib/chat/machine";
 import { readSessionId } from "@/lib/chat/session";
+import { useAgentVoice } from "@/lib/chat/useAgentVoice";
 import { ChatInput } from "./ChatInput";
 import { MessageBubble } from "./MessageBubble";
 import { SpeakButton } from "./SpeakButton";
@@ -24,7 +25,7 @@ import { ErrorCard } from "./ErrorCard";
 import { DemoTour } from "./DemoTour";
 import { SettingsModal } from "./SettingsModal";
 import { GuardrailRail } from "./GuardrailRail";
-import { SettingsIcon, CheckIcon, ShieldIcon } from "@/components/ui/Icon";
+import { SettingsIcon, CheckIcon, ShieldIcon, SpeakerIcon, MuteIcon } from "@/components/ui/Icon";
 import styles from "./ChatContainer.module.css";
 
 const TIMEOUT_MS = 30_000;
@@ -75,6 +76,8 @@ export function ChatContainer() {
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
+  const voice = useAgentVoice();
+  const { speak, silence: silenceVoice } = voice;
 
   /* Both read through useSyncExternalStore — the same pattern Modal uses for
      client-only state. It reports server-vs-client without a setState in an
@@ -89,6 +92,23 @@ export function ChatContainer() {
   useEffect(() => {
     if (paidFor) window.history.replaceState({}, "", window.location.pathname);
   }, [paidFor]);
+
+  /* Speak each agent reply as it lands — once. Keyed on the message id rather
+     than a count, so a re-render never replays a line she already heard. */
+  const spokenRef = useRef<string | null>(null);
+  const lastAgent = state.messages[state.messages.length - 1];
+  const lastAgentId =
+    lastAgent?.role === "agent" && lastAgent.response?.content ? lastAgent.id : null;
+
+  useEffect(() => {
+    if (!lastAgentId || spokenRef.current === lastAgentId) return;
+    const msg = state.messages.find((m) => m.id === lastAgentId);
+    if (!msg?.response?.content) return;
+    spokenRef.current = lastAgentId;
+    speak(msg.response.content, msg.response.language);
+    /* Keyed on the message id, not the array: a re-render must never replay a
+       line she has already heard. */
+  }, [lastAgentId, speak, state.messages]);
 
   /* Follow the conversation as it grows. */
   useEffect(() => {
@@ -139,6 +159,9 @@ export function ChatContainer() {
 
   const send = useCallback(
     (text: string) => {
+      /* She is talking, so the agent stops. Talking over a customer is the
+         one thing a shopkeeper never does. */
+      silenceVoice();
       const message = text.trim();
       /* The reducer is the single authority on whether a send is allowed —
          checking status here as well would let the two disagree. */
@@ -146,7 +169,7 @@ export function ChatContainer() {
       dispatch({ kind: "send", text: message });
       void request(message);
     },
-    [request, state.status],
+    [request, state.status, silenceVoice],
   );
 
   const retry = useCallback(() => {
@@ -313,6 +336,21 @@ export function ChatContainer() {
 
         {/* Without this the audit trail is unreachable in a live demo, and the
             guardrail evidence never gets seen. */}
+        <button
+          type="button"
+          className={styles.voiceToggle}
+          data-on={voice.enabled || undefined}
+          data-speaking={voice.speaking || undefined}
+          onClick={voice.toggle}
+          aria-label={voice.enabled ? "Turn off the agent's voice" : "Turn on the agent's voice"}
+          aria-pressed={voice.enabled}
+        >
+          {voice.enabled ? <SpeakerIcon size={16} /> : <MuteIcon size={16} />}
+          <span className={styles.voiceLabel}>
+            {voice.speaking ? "Speaking" : voice.enabled ? "Voice on" : "Voice off"}
+          </span>
+        </button>
+
         <a
           className={styles.auditLink}
           href={sessionId ? `/dashboard?session_id=${encodeURIComponent(sessionId)}` : "/dashboard"}
@@ -334,7 +372,11 @@ export function ChatContainer() {
 
       <div className={styles.scroll} ref={scrollRef}>
         <div className={styles.thread}>
-          <MessageBubble role="agent" lang="mr">
+          <MessageBubble
+            role="agent"
+            lang="mr"
+            action={<SpeakButton text={WELCOME} language="hinglish" />}
+          >
             {WELCOME}
           </MessageBubble>
 
@@ -343,7 +385,16 @@ export function ChatContainer() {
               that disappears before it is reached is not a tour. */}
           {!allStepsDone && (
             <div className={styles.chips}>
-              <DemoTour onPick={send} sent={sentTexts} disabled={isBusy} />
+              <DemoTour
+                onPick={(text) => {
+                  /* First gesture — audio is unlocked now, so the shop can
+                     greet her. Browsers refuse to speak before this point. */
+                  voice.unlock(WELCOME, "hinglish");
+                  send(text);
+                }}
+                sent={sentTexts}
+                disabled={isBusy}
+              />
             </div>
           )}
 

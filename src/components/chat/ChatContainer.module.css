@@ -323,3 +323,63 @@
     min-height: 44px;
   }
 }
+
+/* --- The agent's voice --- */
+/* Sits beside the audit link, ghost weight. It reports state as well as
+   toggling it: a judge should be able to see at a glance whether the shop is
+   talking, without waiting to hear it. */
+
+.voiceToggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: none;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  border-radius: var(--radius-full);
+  transition: color var(--dur-fast) var(--ease-standard),
+    background-color var(--dur-fast) var(--ease-standard);
+}
+
+.voiceToggle:hover {
+  color: var(--text-primary);
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.voiceToggle:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.voiceToggle[data-on] {
+  color: var(--text-secondary);
+}
+
+/* Live. Zari, because a voice is a material of this shop rather than an action
+   that spends — saffron stays reserved for the button that commits money. */
+.voiceToggle[data-speaking] {
+  color: var(--zari-bright);
+  background-color: rgba(201, 162, 39, 0.12);
+}
+
+.voiceToggle[data-speaking] svg {
+  animation: recPulse 1.2s var(--ease-standard) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .voiceToggle[data-speaking] svg {
+    animation: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .voiceLabel {
+    display: none;
+  }
+}
+
+@media (pointer: coarse) {
+  .voiceToggle {
+    min-height: 44px;
+  }
+}
