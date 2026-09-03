@@ -30,15 +30,30 @@ export function OrderConfirmation({ order }: OrderConfirmationProps) {
         <dd className={styles.metaValue}>{order.razorpay_order_id}</dd>
       </dl>
 
-      <a
-        className={styles.pay}
-        href={order.payment_link}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Pay now
-        <ExternalIcon size={16} />
-      </a>
+      {/* Only when there is somewhere to go.
+      
+          Razorpay's test mode allows 30 payment links in total, and an order
+          created past that ceiling comes back without one — deliberately, so a
+          failed link never costs the buyer an order that already exists at
+          Razorpay. But `href=""` is not an inert button: it reloads the page.
+          Clicking "Pay now" and landing back where you started is a worse
+          outcome than not being offered the button. */}
+      {order.payment_link ? (
+        <a
+          className={styles.pay}
+          href={order.payment_link}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Pay now
+          <ExternalIcon size={16} />
+        </a>
+      ) : (
+        <p className={styles.note}>
+          The order is live at Razorpay — this test account has used all 30 of
+          its payment links, so there is no checkout link to open.
+        </p>
+      )}
 
       <p className={styles.note}>Test mode — no money moves.</p>
     </div>
