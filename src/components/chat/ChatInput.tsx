@@ -22,6 +22,8 @@ export interface ChatInputProps {
   onEditLimit?: () => void;
   /** Voice capture. The mic appears only once this is wired up. */
   onVoiceInput?: (text: string) => void;
+  /** Fired when the mic opens, so the agent can stop talking into it. */
+  onVoiceStart?: () => void;
   disabled?: boolean;
 }
 
@@ -34,6 +36,7 @@ export function ChatInput({
   spendLimit,
   onEditLimit,
   onVoiceInput,
+  onVoiceStart,
   disabled = false,
 }: ChatInputProps) {
   const [value, setValue] = useState("");
@@ -85,7 +88,11 @@ export function ChatInput({
     <div className={styles.composer}>
       <div className={styles.row}>
         {onVoiceInput && (
-          <VoiceButton onTranscript={onVoiceInput} disabled={isBlocked} />
+          <VoiceButton
+            onTranscript={onVoiceInput}
+            onStart={onVoiceStart}
+            disabled={isBlocked}
+          />
         )}
 
         <div

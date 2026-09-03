@@ -93,6 +93,29 @@ export function ChatContainer() {
     if (paidFor) window.history.replaceState({}, "", window.location.pathname);
   }, [paidFor]);
 
+  /* She greets on the first gesture, wherever it lands — not only on a tour
+     step. A shopkeeper looks up when you walk in; she does not wait to be
+     addressed through one particular door.
+
+     This is as early as it can honestly be. Browsers refuse audio until a
+     gesture, so a greeting on page load plays to nobody in Chrome and Safari
+     alike.
+
+     If the first gesture happens to start a conversation — a tour step, a
+     sent message, an opened microphone — that path silences her, which
+     cancels this greeting before it is audible. That is the right outcome: a
+     buyer who walks in already asking gets an answer, not a formality. */
+  const { unlock } = voice;
+  useEffect(() => {
+    const greet = () => unlock(WELCOME, "hinglish");
+    window.addEventListener("pointerdown", greet, { once: true });
+    window.addEventListener("keydown", greet, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", greet);
+      window.removeEventListener("keydown", greet);
+    };
+  }, [unlock]);
+
   /* Speak each agent reply as it lands — once. Keyed on the message id rather
      than a count, so a re-render never replays a line she already heard. */
   const spokenRef = useRef<string | null>(null);
@@ -386,12 +409,9 @@ export function ChatContainer() {
           {!allStepsDone && (
             <div className={styles.chips}>
               <DemoTour
-                onPick={(text) => {
-                  /* First gesture — audio is unlocked now, so the shop can
-                     greet her. Browsers refuse to speak before this point. */
-                  voice.unlock(WELCOME, "hinglish");
-                  send(text);
-                }}
+                /* No unlock here any more: pointerdown fires before click, so
+                   the first-gesture listener above has already run. */
+                onPick={send}
                 sent={sentTexts}
                 disabled={isBusy}
               />
@@ -448,6 +468,7 @@ export function ChatContainer() {
           /* Spoken words go straight out as a message — asking her to speak
              and then press send would make voice slower than typing. */
           onVoiceInput={send}
+          onVoiceStart={silenceVoice}
         />
       </div>
 

@@ -79,7 +79,16 @@ export function useAgentVoice(): AgentVoice {
     enabledRef.current = enabled;
   }, [enabled]);
 
+  /* Bumped every time she is silenced. A clip whose generation is stale by the
+     time its audio is ready must never reach the speaker: the greeting is
+     fetched on her first gesture, and if that gesture was the microphone, the
+     audio would otherwise arrive a second later and be recorded by the very
+     mic she just opened. Pausing an element that does not exist yet is a
+     no-op, so cancellation has to survive the await. */
+  const genRef = useRef(0);
+
   const silence = useCallback(() => {
+    genRef.current += 1;
     const a = audioRef.current;
     if (a) {
       a.onended = null;
@@ -98,6 +107,7 @@ export function useAgentVoice(): AgentVoice {
       /* Interrupt whatever is playing. Two voices at once is not a
          conversation, and the newest reply is always the relevant one. */
       silence();
+      const gen = genRef.current;
 
       const key = `${language}:${body}`;
       try {
@@ -116,8 +126,10 @@ export function useAgentVoice(): AgentVoice {
           cacheRef.current.set(key, url);
         }
 
-        /* A toggle-off mid-fetch must not still produce sound. */
-        if (!enabledRef.current) return;
+        /* A toggle-off mid-fetch, or anything that silenced her while this was
+           in flight — a sent message, an opened microphone — must not still
+           produce sound. */
+        if (!enabledRef.current || genRef.current !== gen) return;
 
         const audio = new Audio(url);
         audio.onplay = () => setSpeaking(true);

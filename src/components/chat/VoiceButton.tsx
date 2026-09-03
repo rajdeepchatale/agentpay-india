@@ -7,6 +7,14 @@ import styles from "./VoiceButton.module.css";
 export interface VoiceButtonProps {
   /** Called with the transcript once she stops speaking. */
   onTranscript: (text: string) => void;
+  /**
+   * Fired the moment the microphone opens, before any audio is captured.
+   *
+   * The agent has to stop talking here. A shop assistant who keeps speaking
+   * into your sentence is rude; one whose voice lands in your recording is
+   * also a transcription bug, because Sarvam hears her over you.
+   */
+  onStart?: () => void;
   disabled?: boolean;
 }
 
@@ -25,7 +33,11 @@ type State = "idle" | "recording" | "transcribing" | "denied" | "unsupported";
  * steady while speaking a sentence is harder than it sounds, and a slip
  * mid-sentence loses the whole utterance.
  */
-export function VoiceButton({ onTranscript, disabled = false }: VoiceButtonProps) {
+export function VoiceButton({
+  onTranscript,
+  onStart,
+  disabled = false,
+}: VoiceButtonProps) {
   const [state, setState] = useState<State>("idle");
   /** Why nothing happened, when nothing happened. Cleared on the next tap. */
   const [notice, setNotice] = useState<string | null>(null);
@@ -38,6 +50,10 @@ export function VoiceButton({ onTranscript, disabled = false }: VoiceButtonProps
 
   const start = useCallback(async () => {
     setNotice(null);
+    /* Before the permission prompt, not after: the greeting fetched on this
+       same tap is still in flight, and silencing has to beat it to the
+       speaker. */
+    onStart?.();
     if (typeof MediaRecorder === "undefined" || !navigator.mediaDevices) {
       setState("unsupported");
       return;
@@ -98,7 +114,7 @@ export function VoiceButton({ onTranscript, disabled = false }: VoiceButtonProps
 
     recorder.start();
     setState("recording");
-  }, [onTranscript]);
+  }, [onTranscript, onStart]);
 
   if (state === "unsupported") return null;
 
