@@ -15,24 +15,32 @@
 
 | | |
 |---|---|
-| ✅ Complete | **Steps 1–7** of 14 — every 🔴 Tier 1 item except the final verify |
-| 🌐 Live | **https://agentpay-india.vercel.app** — agent, guardrails and audit trail all verified in production |
+| ✅ Complete | **Steps 1–9 and 13** of 14, plus a payment webhook that was not in the original scope |
+| 🌐 Live | **https://agentpay-india.vercel.app** — verified end to end on the deployed URL |
 | 📦 Public | **github.com/rajdeepchatale/agentpay-india** |
-| 👉 Next | **Step 8 — Audit Dashboard** |
-| 🟢 Blockers | None |
-| 🟡 Pending | 5 of 16 saree images (non-blocking — every missing file renders an authored woven placeholder) |
+| 👉 Next | **Voice (10–11, 🟡 Tier 3) — or cut it.** Then Step 14, the video |
+| 🟢 Blockers | None. Every 🔴 Tier 1 item is done |
+| 🟡 Pending | Nothing blocking. All 16 saree photographs are in |
 
-**Verified in production, not asserted:** `/` → `/chat`; catalog API; the agent
-replying in Hinglish; the ₹8,999 guardrail block firing against a ₹1,000 cap on
-four separate phrasings; Supabase persisting the audit trail with reasoning.
+**Step 13 verified on production, not asserted** (Sep 3):
+
+| | |
+|---|---|
+| Guardrail | ₹8,999 blocked against a ₹1,000 cap, via the guided tour |
+| Real order | `order_TXRwjMKFA9IGRr` · ₹499 · payment link resolves HTTP 200 |
+| Audit trail | 5 decisions rendered at `/dashboard`, blocks marked |
+| Guardrail rail | live, reading the trail, overrun drawn |
+| Routes | `/` `/chat` `/dashboard` `/design` all 200, unknown path 404 |
+| Input validation | six malformed request shapes all rejected 400 |
+| Cap tampering | client sending `max_spend: 99999999` clamped to the ceiling |
+| Webhook | forged signature refused 400 |
+| Accessibility | 0 blocking, 0 major across 3 pages × 4 widths |
 
 > [!NOTE]
-> **Added to the plan after Step 7, not in the original scope.**
-> **Payment webhook + `callback_url`.** Orders are created and reach Razorpay,
-> but nothing flips the local row from `created` to `paid` after payment
-> completes, and the buyer is left on Razorpay's page rather than returned to
-> the chat. Needed the public URL to exist, which it now does. Do this before
-> Step 9 — it closes the only loop that is currently open.
+> **Two accessibility findings deliberately left.** `source` in the colophon and
+> `Change` in the spending-limit line are inline links inside a sentence, which
+> WCAG 2.5.8 exempts because their size is constrained by the surrounding text.
+> Growing them would break the line they sit in.
 
 ---
 
@@ -156,14 +164,14 @@ shared in a chat transcript.
 | ✅ 3 | Razorpay SDK + Supabase | 🔴 1 | done |
 | ✅ 4 | Agent brain + chat API + audit ⭐ | 🔴 1 | done |
 | ✅ 5 | Guardrails + failure handling | 🔴 1 | done |
-| **6** | **Chat UI** | 🔴 1 | **full** |
-| **7** | **Deploy — get it live** | 🔴 1 | lean |
-| 8 | Audit dashboard | 🟠 2 | medium |
-| 9 | Landing page | 🟠 2 | **full** |
+| ✅ 6 | Chat UI | 🔴 1 | done |
+| ✅ 7 | Deploy — get it live | 🔴 1 | done |
+| ✅ 8 | Audit dashboard | 🟠 2 | done |
+| ✅ 9 | Landing page | 🟠 2 | done |
 | 10 | Sarvam voice routes | 🟡 3 | lean |
 | 11 | Voice UI | 🟡 3 | medium |
-| 12 | Testing + docs | ⚪ 4 | lean |
-| 13 | Final deploy + verify | 🔴 1 | lean |
+| 12 | Testing + docs | ⚪ 4 | **already done** — see below |
+| ✅ 13 | Final deploy + verify | 🔴 1 | done |
 | 14 | 5-minute video — **user records** | — | — |
 
 *Size indicates step complexity. The four **full** steps are what judges
@@ -224,9 +232,9 @@ paise (₹599)**, real payment link issued. 22 unit tests cover the money maths.
 > with a runtime assertion** — never inline the multiplication.
 
 **Verify**
-- [ ] Real test order for ₹599 returns `order_xxxxxxxxxxxx`
-- [ ] Payment link resolves to a working `rzp.io` URL
-- [ ] Supabase tables exist and accept a write
+- [x] Real test order for ₹599 returns `order_xxxxxxxxxxxx`
+- [x] Payment link resolves to a working `rzp.io` URL
+- [x] Supabase tables exist and accept a write
 
 ---
 
@@ -271,12 +279,12 @@ REASONING
 ```
 
 **Verify by curl before building any UI on it**
-- [ ] `"1000 ke under cotton saree dikhao"` → `type:"products"`, Tier-1 sarees
-- [ ] `"मला पैठणी साडी दाखवा"` → replies **in Marathi**
-- [ ] `"pehli wali mango motif chahiye"` → `type:"consent_required"`
-- [ ] `"haan"` → `type:"order_created"` with a real `order_*` ID
-- [ ] `GET /api/audit?session_id=xxx` → decisions with reasoning
-- [ ] Every response validates against `AgentResponse` — no drift
+- [x] `"1000 ke under cotton saree dikhao"` → `type:"products"`, Tier-1 sarees
+- [x] `"मला पैठणी साडी दाखवा"` → replies **in Marathi**
+- [x] `"pehli wali mango motif chahiye"` → `type:"consent_required"`
+- [x] `"haan"` → `type:"order_created"` with a real `order_*` ID
+- [x] `GET /api/audit?session_id=xxx` → decisions with reasoning
+- [x] Every response validates against `AgentResponse` — no drift
 
 ---
 
@@ -660,9 +668,9 @@ voice both directions. Then `docs/ARCHITECTURE.md` and a README refresh.
 - [x] ~~Move the real README inside the project~~ — done Sep 2. The polished
       14KB README was in the parent folder; the repo had the default
       `create-next-app` one. Judges would have cloned the wrong README.
-- [ ] README still says Next.js 14 (actual **16.3.4**), "20 saree products"
+- [x] README still says Next.js 14 (actual **16.3.4**), "20 saree products"
       (actual **16**), and Node 18.17+ (Next 16 needs **20.9+**)
-- [ ] README links a Vercel URL that does not exist yet — update after Step 7
+- [x] README links a Vercel URL that does not exist yet — update after Step 7
 
 *This step is prose-heavy and cannot break code — a cheaper model could do it.*
 
