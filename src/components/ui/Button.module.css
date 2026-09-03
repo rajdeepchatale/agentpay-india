@@ -170,3 +170,16 @@
   display: grid;
   place-items: center;
 }
+
+/* WCAG 2.5.5 — on a touch device every button clears a 44px target. The `sm`
+   variant is 34px, which is fine for a mouse and too small for a thumb, so the
+   floor is applied by input type rather than by breakpoint: a small laptop with
+   a trackpad keeps the compact size, a phone does not. */
+@media (pointer: coarse) {
+  .button {
+    min-height: 44px;
+  }
+  .iconOnly {
+    min-width: 44px;
+  }
+}

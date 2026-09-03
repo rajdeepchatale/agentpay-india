@@ -80,10 +80,10 @@
 
 .shopName {
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-tight);
   font-size: var(--fs-lg);
   font-weight: 600;
   line-height: 1.1;
-  letter-spacing: var(--tracking-tight);
   color: var(--text-primary);
 }
 
@@ -309,5 +309,17 @@
 @media (min-width: 1280px) {
   .shell > aside {
     display: flex;
+  }
+}
+
+
+/* WCAG 2.5.5 — a standalone control needs a 44px target on a phone. The text
+   keeps its size; the hit area grows around it with padding, so nothing in the
+   masthead moves. */
+@media (pointer: coarse) {
+  .auditLink,
+  .gear {
+    min-width: 44px;
+    min-height: 44px;
   }
 }

@@ -788,3 +788,16 @@
     }
   }
 }
+
+
+/* Standalone links on the landing page — the hero's secondary action and the
+   two "open the..." links — reach a 44px target on touch. Inline links inside
+   a sentence are exempt and stay as they are. */
+@media (pointer: coarse) {
+  .ghost,
+  .inline {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}

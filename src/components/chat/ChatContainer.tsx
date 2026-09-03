@@ -297,7 +297,9 @@ export function ChatContainer() {
           <span className={styles.wordmark}>AgentPay</span>
           <span className={styles.divider} aria-hidden="true" />
           <span className={styles.merchant}>
-            <span className={styles.shopName}>Sakhi Sarees</span>
+            {/* The page's one <h1>. Without it a screen reader lands on a
+                document with no heading at all. */}
+            <h1 className={styles.shopName}>Sakhi Sarees</h1>
             <span className={styles.shopDeva} lang="mr">
               सखी साड्या
             </span>

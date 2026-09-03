@@ -232,3 +232,12 @@
     font-size: var(--fs-md);
   }
 }
+
+
+@media (pointer: coarse) {
+  .back {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}
