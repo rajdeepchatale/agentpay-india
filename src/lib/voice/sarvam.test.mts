@@ -8,7 +8,35 @@ import {
   chunkForSpeech,
   uploadType,
   TTS_CHAR_LIMIT,
+  TTS_SPEAKER,
+  BULBUL_V3_SPEAKERS,
 } from "./sarvam.ts";
+
+describe("TTS_SPEAKER — her voice is pinned, not inherited", () => {
+  /* Two failures this guards against, both of which would be silent.
+
+     A speaker Sarvam does not accept returns 400, and textToSpeech answers a
+     400 with null, which the route turns into an empty body — so a typo here
+     costs the whole voice with no error anywhere, exactly the way the
+     microphone's MIME string did.
+
+     And leaving it unset is what made her male in the first place: Sarvam
+     picks a default, and a model update is free to change which one. */
+
+  test("is set at all — an unset speaker is how she ended up male", () => {
+    assert.ok(TTS_SPEAKER, "a speaker must be pinned explicitly");
+  });
+
+  test("is a speaker bulbul:v3 actually accepts", () => {
+    /* The roster was read off the live API. The 44-name list an unrecognised
+       speaker returns spans every Sarvam model; v3 takes a subset, and
+       anushka, vidya, manisha and arya are all rejected by it. */
+    assert.ok(
+      BULBUL_V3_SPEAKERS.includes(TTS_SPEAKER),
+      `${TTS_SPEAKER} is not on the verified bulbul:v3 roster`,
+    );
+  });
+});
 
 describe("uploadType — the MIME string Sarvam will actually accept", () => {
   /* Found by reproducing the real failure, not by reading docs. Sarvam

@@ -28,6 +28,37 @@ const BASE = "https://api.sarvam.ai";
 const STT_MODEL = "saarika:v2.5";
 const TTS_MODEL = "bulbul:v3";
 
+/**
+ * The speakers bulbul:v3 accepts, read off the live API.
+ *
+ * Worth stating precisely, because the obvious way to find this out is wrong:
+ * sending an unrecognised name returns a 44-name list spanning every Sarvam
+ * model, and four of the most prominent — anushka, vidya, manisha, arya — are
+ * rejected by v3. Sending a *recognised but incompatible* name is what returns
+ * v3's actual roster.
+ */
+export const BULBUL_V3_SPEAKERS = [
+  "aditya", "ritu", "ashutosh", "priya", "neha", "rahul", "pooja", "rohan",
+  "simran", "kavya", "amit", "dev", "ishita", "shreya", "ratan", "varun",
+  "manan", "sumit", "roopa", "kabir", "aayan", "shubh", "advait", "anand",
+  "tanya", "tarun", "sunny", "mani", "gokul", "vijay", "shruti", "suhani",
+  "mohit", "kavitha", "rehan", "soham", "rupali", "niharika",
+] as const;
+
+/**
+ * Sakhi's voice.
+ *
+ * Pinned rather than left to Sarvam, which is how she came out male: with no
+ * speaker set, the API picks its own default and a model update is free to
+ * change which one — including the night before a demo is recorded.
+ *
+ * Female because the rest of her already is. "Sakhi" (सखी) means *female
+ * friend*; the merchant persona is a woman; and her own fallback copy says
+ * "मैं समझ नहीं पाई", a feminine self-reference. The voice was the only part
+ * disagreeing.
+ */
+export const TTS_SPEAKER: (typeof BULBUL_V3_SPEAKERS)[number] = "shreya";
+
 /** Sarvam rejects a single input longer than this. */
 export const TTS_CHAR_LIMIT = 480;
 
@@ -268,6 +299,7 @@ export async function textToSpeech(
       inputs: [chunks[0]],
       target_language_code: toBcp47(language),
       model: TTS_MODEL,
+      speaker: TTS_SPEAKER,
     }),
   });
 
