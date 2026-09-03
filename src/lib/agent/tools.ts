@@ -17,8 +17,7 @@ import {
   recordOrderPlaced,
 } from "@/lib/guardrails/engine";
 import { createOrder } from "@/lib/razorpay/orders";
-import { createPaymentLink } from "@/lib/razorpay/payment-links";
-import { findPaymentLink } from "@/lib/audit/logger";
+import { createPaymentLink, findPayableLink } from "@/lib/razorpay/payment-links";
 
 export const TOOL_SPECS: ToolSpec[] = [
   {
@@ -318,11 +317,13 @@ export async function runTool(
           amountInr: product.price,
           sessionId: ctx.sessionId,
         });
-        /* Reuse the link already minted for this saree. Razorpay's test mode
-           allows 30 in total, and one per order exhausted that — after which
-           every purchase failed at the last step and the order, which HAD been
-           created, was thrown away with it. */
-        let paymentLink = await findPaymentLink(product.id);
+        /* Reuse a link for this saree that can STILL BE PAID. Razorpay's test
+           mode allows 30 links in total and development exhausted the quota,
+           but the first version of this reused any link recorded for the
+           saree — including ones already paid, which cannot be paid again.
+           The buyer then landed on Razorpay's "already paid" page, never paid,
+           and was never sent back. */
+        let paymentLink = await findPayableLink(product.id, product.price);
         if (!paymentLink) {
           try {
             paymentLink = (
