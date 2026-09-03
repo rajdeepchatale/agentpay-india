@@ -224,15 +224,24 @@ export function ChatContainer() {
      the function, so the first real reply is quicker too. */
   const { prime } = voice;
   useEffect(() => {
-    if (paidFor) return;
+    /* getPaid(), not the rendered value. useSyncExternalStore hands back the
+       SERVER snapshot during hydration — null here — and effects run on that
+       pass, so a guard on the rendered value fetched the greeting on a paid
+       return before the client snapshot arrived. getPaid reads the URL and
+       caches it, so it is right on the first call. */
+    if (getPaid()) return;
     prime(welcomeMessage(spokenLanguage), spokenLanguage);
   }, [prime, paidFor, spokenLanguage]);
 
   const { unlock } = voice;
   useEffect(() => {
     /* Not when she has just paid. Walking back in from the payment page and
-       being greeted as a new visitor undoes the purchase she just made. */
-    if (paidFor) return;
+       being greeted as a new visitor undoes the purchase she just made.
+       
+       getPaid() rather than the rendered value, for the hydration reason
+       above: on the pass where effects first run, the rendered value is still
+       the server snapshot. */
+    if (getPaid()) return;
 
     const greet = () => unlock(welcomeMessage(spokenLanguage), spokenLanguage);
 
