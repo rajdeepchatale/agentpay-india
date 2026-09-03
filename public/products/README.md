@@ -11,15 +11,13 @@ One consistent treatment across all 16.
 | Group | Files | Status |
 |---|---|---|
 | **A** — everyday cottons, ₹499–₹949 | 7 | ✅ **DONE** — generated and verified |
-| **B** — premium silks, ₹1,299–₹24,999 | 9 | ⬜ **REMAINING** |
+| **B** — premium silks, ₹1,299–₹24,999 | 9 | ✅ **DONE** — all generated, verified, young models, 800×1067, <200 KB |
 
 > [!NOTE]
-> **Group A is finished and the demo is visually complete.** All seven exist at
-> 800 × 1067, under 200 KB, confirmed correct by `verify-images.mjs` and by eye.
-> Those are the only images the scripted demo displays — see
-> [§7](#7-where-these-actually-appear).
->
-> **9 files remain, all in Group B.** Paste-ready prompts are directly below.
+> **All 16 catalog images are 100% finished and verified.** Every image features
+> a unique young Indian woman model in the consistent catalogue pose, framed at
+> 800 × 1067 px in JPEG format under 200 KB, with the seamless warm light-grey
+> background. Served directly at `/products/<filename>`.
 
 ---
 

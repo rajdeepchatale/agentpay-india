@@ -17,7 +17,7 @@ export function CatalogStrip() {
   return (
     <section className={styles.strip} aria-label="The catalog">
       <div className={styles.lead}>
-        <h2 className={styles.head}>Sixteen sarees, ₹499 to ₹24,999</h2>
+        <h2 className={styles.head}>Sixteen sarees, ₹499 to ₹78,000</h2>
         <p className={styles.body}>
           Paithani from the Yeola and Paithan weavers, handloom cottons, Chanderi
           and Kanjivaram silks. The agent searches this catalog and no other — and

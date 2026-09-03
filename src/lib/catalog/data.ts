@@ -125,7 +125,7 @@ export const products: Product[] = [
     name_hindi: 'बनारसी सिल्क ब्लेंड साडी',
     description:
       'Rich Banarasi silk blend with intricate buti work and heavy pallu. Perfect for weddings and special occasions. Comes with matching blouse piece.',
-    price: 2499,
+    price: 5999,
     category: 'sarees',
     tags: ['banarasi', 'silk-blend', 'wedding', 'buti-work', 'heavy-pallu'],
     tags_hindi: ['बनारसी', 'सिल्क ब्लेंड', 'लग्नाची', 'बुटी वर्क', 'भारी पदर'],
@@ -141,7 +141,7 @@ export const products: Product[] = [
     name_hindi: 'तुसार सिल्क साडी — केरी बॉर्डर',
     description:
       'Natural tussar silk with traditional keri (paisley) border. Rich golden texture with earthy tones. Handwoven by artisans.',
-    price: 1999,
+    price: 3299,
     category: 'sarees',
     tags: ['tussar', 'silk', 'keri-border', 'paisley', 'handwoven', 'artisan'],
     tags_hindi: ['तुसार', 'सिल्क', 'केरी बॉर्डर', 'हातविण', 'कारागीर'],
@@ -157,7 +157,7 @@ export const products: Product[] = [
     name_hindi: 'कांजीवरम सिल्क साडी — मंदिर डिझाइन',
     description:
       'South Indian Kanjivaram silk with classic temple design border. Heavy silk with contrast pallu. A timeless investment piece.',
-    price: 2999,
+    price: 18500,
     category: 'sarees',
     tags: ['kanjivaram', 'silk', 'temple-design', 'south-indian', 'heavy', 'wedding'],
     tags_hindi: ['कांजीवरम', 'सिल्क', 'मंदिर डिझाइन', 'दक्षिण भारतीय', 'लग्नाची'],
@@ -173,7 +173,7 @@ export const products: Product[] = [
     name_hindi: 'गडवाल सिल्क साडी',
     description:
       'Gadwal handloom silk with distinctive kuttu border. Lightweight silk body with heavy cotton border — the best of both worlds.',
-    price: 1799,
+    price: 4499,
     category: 'sarees',
     tags: ['gadwal', 'silk', 'handloom', 'kuttu-border', 'lightweight'],
     tags_hindi: ['गडवाल', 'सिल्क', 'हातमाग', 'कुट्टू बॉर्डर', 'हलकी'],
@@ -212,7 +212,7 @@ export const products: Product[] = [
     name_hindi: 'येवला पैठणी — असावली मोटिफ',
     description:
       'Traditional Yeola Paithani with asawali (vine) motif. Handwoven with real zari thread. Certificate of authenticity from Yeola weavers cooperative.',
-    price: 12500,
+    price: 34000,
     category: 'sarees',
     tags: ['paithani', 'yeola', 'asawali', 'vine', 'zari', 'certified', 'premium'],
     tags_hindi: ['पैठणी', 'येवला', 'असावली', 'वेल', 'जरी', 'प्रमाणित', 'प्रीमियम'],
@@ -228,7 +228,7 @@ export const products: Product[] = [
     name_hindi: 'पारंपरिक पैठणी — बांगडी मोर',
     description:
       'Classic Paithan-woven Paithani with bangdi mor (bangle peacock) design. Heirloom quality. Passed down through generations in Maharashtrian families.',
-    price: 15999,
+    price: 46000,
     category: 'sarees',
     tags: ['paithani', 'bangdi-mor', 'bangle-peacock', 'heirloom', 'paithan', 'premium'],
     tags_hindi: ['पैठणी', 'बांगडी मोर', 'वारसा', 'पैठण', 'प्रीमियम'],
@@ -244,7 +244,7 @@ export const products: Product[] = [
     name_hindi: 'ब्राइडल पैठणी — हेवी जरी',
     description:
       'Bridal collection Paithani with heavy zari work across the entire body. Full peacock pallu. The crown jewel of Sakhi Sarees. Comes in premium packaging.',
-    price: 24999,
+    price: 78000,
     category: 'sarees',
     tags: ['paithani', 'bridal', 'heavy-zari', 'full-peacock', 'premium', 'luxury', 'wedding'],
     tags_hindi: ['पैठणी', 'ब्राइडल', 'हेवी जरी', 'संपूर्ण मोर पदर', 'लक्झरी', 'लग्नाची'],

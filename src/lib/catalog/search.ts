@@ -26,7 +26,13 @@ const STOPWORDS = new Set([
   // English
   'show', 'me', 'want', 'need', 'the', 'for', 'with', 'and', 'or', 'some',
   'any', 'please', 'looking', 'find', 'get', 'buy', 'under', 'below',
-  'less', 'than', 'good', 'nice', 'best', 'my',
+  'less', 'than', 'good', 'nice', 'best', 'my', 'all', 'everything',
+  /* Every product here IS a saree, so the word carries no discriminating
+     information — it matched all sixteen on incidental tags and produced a
+     near-random ranking. "show me all sarees" now reduces to no terms at all,
+     which is correct: she asked to see things, so show her things, cheapest
+     first. */
+  'saree', 'sarees', 'sari', 'saris', 'sadi', 'sadya', 'साडी', 'साड्या',
 ]);
 
 /** Terms worth matching on, once filler and bare numbers are removed. */

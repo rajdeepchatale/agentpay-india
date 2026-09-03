@@ -198,10 +198,10 @@ describe("checkSearchIntent — blocks on what she actually asked for", () => {
     assert.equal(checkSearchIntent("authentic Paithani silk saree", 1000).kind, "blocked");
   });
 
-  test('"bridal paithani heavy zari" blocks and cites ₹24,999', () => {
+  test('"bridal paithani heavy zari" blocks and cites ₹78,000', () => {
     const v = checkSearchIntent("bridal paithani heavy zari", 1000);
     assert.equal(v.kind, "blocked");
-    if (v.kind === "blocked") assert.equal(v.attempted, 24999);
+    if (v.kind === "blocked") assert.equal(v.attempted, 78000);
   });
 
   test('"cotton saree dikhao" does NOT block — happy path must stay intact', () => {
@@ -264,5 +264,50 @@ describe("checkSearchIntent — stock and category also fire on intent", () => {
     const v = checkSearchIntent("Authentic Paithani silk saree", 1000);
     assert.equal(v.kind, "blocked");
     if (v.kind === "blocked") assert.equal(v.attempted, 8999);
+  });
+});
+
+describe("checkSearchIntent — the model cannot narrow its way past a rule", () => {
+  /* Gemini rewrites a request before calling the tool. Roughly one run in
+     seven it shortened "Authentic Paithani silk saree" to bare "paithani",
+     which correctly matches the ₹899 print and correctly does not block — so
+     the refusal silently stopped happening. The rule was being judged on the
+     model's paraphrase rather than on what the buyer said. */
+
+  test("blocks on the buyer's words even when the model's query would not", () => {
+    const modelQuery = "paithani";
+    const buyerSaid = "Authentic Paithani silk saree";
+
+    /* On its own the shortened query is genuinely fine. */
+    assert.equal(checkSearchIntent(modelQuery, 1000).kind, "ok");
+
+    const v = checkSearchIntent(modelQuery, 1000, undefined, buyerSaid);
+    assert.equal(v.kind, "blocked");
+    if (v.kind === "blocked") assert.equal(v.attempted, 8999);
+  });
+
+  test("still blocks when only the model's query names the expensive saree", () => {
+    /* The Marathi case: the raw Devanagari does not match the English catalog,
+       and it is the model's translation that finds the silk Paithani. Both
+       directions have to work. */
+    const v = checkSearchIntent("Paithani silk saree", 1000, undefined, "मला पैठणी सिल्क साडी दाखवा");
+    assert.equal(v.kind, "blocked");
+  });
+
+  test("does not block a buyer who is avoiding the expensive one", () => {
+    const v = checkSearchIntent("cotton", 1000, undefined, "not the expensive paithani, something cheap");
+    assert.equal(v.kind, "ok");
+  });
+
+  test("the happy path survives being checked twice", () => {
+    assert.equal(
+      checkSearchIntent("cotton", 1000, undefined, "1000 ke under cotton saree dikhao").kind,
+      "ok",
+    );
+  });
+
+  test("omitting the buyer's words changes nothing", () => {
+    assert.equal(checkSearchIntent("paithani", 1000).kind, "ok");
+    assert.equal(checkSearchIntent("pure silk paithani", 1000).kind, "blocked");
   });
 });

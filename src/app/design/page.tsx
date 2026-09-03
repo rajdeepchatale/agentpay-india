@@ -147,7 +147,7 @@ export default function DesignSystemPage() {
 
             <div className={styles.specimen}>
               <p className={styles.subLabel}>Mono — JetBrains Mono, tabular</p>
-              <p className={styles.specMono}>order_PthN4kSaR1 · ₹599 · ₹24,999</p>
+              <p className={styles.specMono}>order_PthN4kSaR1 · ₹599 · ₹78,000</p>
             </div>
           </section>
 

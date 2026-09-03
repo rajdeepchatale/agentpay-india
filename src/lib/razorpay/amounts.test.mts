@@ -15,8 +15,8 @@ describe("toPaise", () => {
     assert.equal(toPaise(8999), 899900);
   });
 
-  test("converts the ₹24,999 bridal Paithani", () => {
-    assert.equal(toPaise(24999), 2499900);
+  test("converts the ₹78,000 bridal Paithani", () => {
+    assert.equal(toPaise(78000), 7800000);
   });
 
   test("rounds fractional rupees to the nearest paisa", () => {
@@ -42,7 +42,7 @@ describe("toPaise", () => {
   });
 
   test("rejects an implausible amount, so a hallucinated price cannot charge", () => {
-    // No saree in the catalog exceeds ₹24,999. A model that invents ₹99,00,000
+    // No saree in the catalog exceeds ₹78,000. A model that invents ₹99,00,000
     // must hit a wall in code, not in a prompt.
     assert.throws(() => toPaise(9_900_000), /exceeds/i);
   });

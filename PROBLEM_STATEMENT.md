@@ -116,7 +116,7 @@ The ₹1,000 cap blocking the ₹8,999 Paithani is not an error state — it is
 | Buyer drop-off | ~70% |
 | Default spending cap | **₹1,000** |
 | Blocked Paithani price | **₹8,999** (not ₹8,000) |
-| Catalog size | **16 sarees**, 3 price tiers (₹499–₹24,999) |
+| Catalog size | **16 sarees**, 3 price tiers (₹499–₹78,000) |
 | Rate limit | 3 orders/hour |
 | Languages | Hindi · Marathi · Hinglish · English |
 | Voice | Sarvam AI — 22 Indian languages |

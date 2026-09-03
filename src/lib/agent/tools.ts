@@ -95,6 +95,8 @@ export interface ToolOutcome {
 export interface ToolContext {
   sessionId: string;
   maxSpend: number;
+  /** What the buyer actually typed this turn, before the model paraphrased it. */
+  buyerSaid?: string;
   allowedCategories?: string[];
   /** True once the buyer has agreed to this exact product. */
   hasConsentFor: (productId: string) => boolean;
@@ -126,7 +128,12 @@ export async function runTool(
       /* The guardrail runs on INTENT, before the model sees any prices or
          stock flags. A rule that only fires when the model calls a tool
          never fires when a well-mannered model quietly changes the subject. */
-      const verdict = checkSearchIntent(query, cap, ctx.allowedCategories);
+      const verdict = checkSearchIntent(
+        query,
+        cap,
+        ctx.allowedCategories,
+        ctx.buyerSaid,
+      );
 
       if (verdict.kind === "blocked") {
         return {
@@ -185,7 +192,11 @@ export async function runTool(
             (c) => c.toLowerCase() === p.category.toLowerCase(),
           ),
       );
-      const affordable = all.filter((p) => p.price <= cap).slice(0, 4);
+      /* No slice. A hardcoded cap of four meant raising the spending limit
+         from ₹1,000 to ₹25,000 still returned four sarees — the buyer widened
+         her budget and the shop showed her the same shelf. Everything she can
+         actually afford is hers to see; the rail scrolls. */
+      const affordable = all.filter((p) => p.price <= cap);
       const overCap = all.filter((p) => p.price > cap);
 
       return {

@@ -278,6 +278,41 @@ export function checkSearchIntent(
   query: string,
   cap: number,
   allowedCategories?: string[],
+  /**
+   * What the buyer actually typed, when it differs from the query the model
+   * chose to send.
+   *
+   * The model rewrites a request before calling the tool, and roughly one run
+   * in seven it shortened "Authentic Paithani silk saree" to bare "paithani" —
+   * which matches the ₹899 print, is genuinely affordable, and correctly does
+   * not block. So the refusal quietly stopped happening, and whether a rule
+   * fired depended on how the model had paraphrased her.
+   *
+   * That is the same class of bug as a guardrail that only runs at tool-call
+   * time: the model's behaviour deciding whether the engine gets to speak.
+   * Both readings are now judged, and a block from either one stands. The
+   * model cannot narrow its way past a rule.
+   */
+  buyerSaid?: string,
+): SearchVerdict {
+  const onQuery = evaluateQuery(query, cap, allowedCategories);
+  if (onQuery.kind === "blocked") return onQuery;
+
+  /* Only an outright block escalates. An out-of-stock verdict is about one
+     specific saree the model found, and the raw sentence may well match a
+     different one — promoting that would report the wrong product. */
+  if (buyerSaid && buyerSaid.trim() && buyerSaid !== query) {
+    const onBuyer = evaluateQuery(buyerSaid, cap, allowedCategories);
+    if (onBuyer.kind === "blocked") return onBuyer;
+  }
+
+  return onQuery;
+}
+
+function evaluateQuery(
+  query: string,
+  cap: number,
+  allowedCategories?: string[],
 ): SearchVerdict {
   const ranked = searchProducts({ q: query });
   const top = ranked[0];

@@ -12,7 +12,7 @@
  * guardrail engine's job and is configurable per session. This is a hard
  * floor-of-last-resort so that a hallucinated price, a corrupted catalog
  * entry, or a misplaced decimal can never reach the payment API.
- * The most expensive item in the catalog is ₹24,999.
+ * The most expensive item in the catalog is ₹78,000.
  */
 const MAX_ORDER_INR = 100_000;
 

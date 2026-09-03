@@ -222,6 +222,9 @@ export async function runAgent(req: AgentRequest): Promise<AgentResponse> {
           sessionId,
           maxSpend,
           allowedCategories,
+          /* Her own words, so a rule is judged on what she asked for and not
+             on how the model chose to paraphrase it. */
+          buyerSaid: message,
           hasConsentFor: (id) => hasConsent(sessionId, id),
           recordConsentRequest: (id) => markConsentRequested(sessionId, id),
         });
