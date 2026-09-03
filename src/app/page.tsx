@@ -363,6 +363,13 @@ export default function LandingPage() {
             <br />
             who don&rsquo;t have an app.
           </h2>
+          {/* The obvious next question, answered before it is asked: this is a
+              link she pastes, not a site she builds. */}
+          <p className={styles.closeSub}>
+            She builds nothing. Razorpay already hands merchants a hosted
+            Payment Page — this is one that talks back. The link below is the
+            link she pastes in her Instagram bio.
+          </p>
           <Link className={styles.cta} href="/chat">
             Try the demo
             <ChevronRightIcon size={18} />

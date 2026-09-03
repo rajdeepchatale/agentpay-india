@@ -541,6 +541,17 @@
   color: var(--text-primary);
 }
 
+/* Answers the heading above it, so it reads as one thought — quieter than
+   the claim, and narrow enough to stay a sentence rather than a paragraph. */
+.closeSub {
+  max-width: 46ch;
+  margin: var(--space-5) auto 0;
+  font-size: var(--fs-base);
+  line-height: var(--lh-base);
+  color: var(--text-secondary);
+  text-wrap: pretty;
+}
+
 .close .cta {
   margin-top: var(--space-6);
 }

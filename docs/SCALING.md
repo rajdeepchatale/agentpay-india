@@ -74,6 +74,17 @@ Distribution is then trivial, because **Razorpay already owns the merchant
 relationship**: no new signup, no new KYC, no integration project. A toggle in
 a dashboard she already logs into.
 
+And the delivery mechanism already exists too. A **Payment Link** is created in
+that dashboard and pasted into WhatsApp; a **Payment Page** is a hosted,
+no-code storefront. Neither asks a merchant to own a website or hire a
+developer.
+
+**This is a Payment Page that talks back** — she gets a URL and pastes it in
+her bio, which is the entire integration. That is not a roadmap item: the
+`/chat` link in this repo is the link she would paste. The end state removes
+even that, with the agent running inside her existing WhatsApp number, where
+the DMs already arrive.
+
 ---
 
 ## Why a regulated payments company can actually ship this
