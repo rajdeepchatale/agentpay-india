@@ -123,7 +123,7 @@ export default function LandingPage() {
 
           <ol className={styles.flow}>
             <li className={styles.step} data-step="1">
-              <p className={styles.stepHead}>She types</p>
+              <p className={styles.stepHead}>A buyer types</p>
               <p className={styles.stepBody}>
                 Hindi, Marathi, Hinglish or English — often mixed mid-sentence.
               </p>
@@ -241,7 +241,7 @@ export default function LandingPage() {
 
         {/* ---- Motif: voice ---- */}
         <section className={styles.motif}>
-          <h2 className={styles.motifHead}>She can just say it</h2>
+          <h2 className={styles.motifHead}>Or just say it</h2>
           <p className={styles.motifBody}>
             Typing Devanagari on a phone is slow enough that most Indian buyers
             give up and type romanised Hinglish instead. Speaking removes that
@@ -250,11 +250,11 @@ export default function LandingPage() {
             a keyboard.
           </p>
           <p className={styles.motifBody}>
-            Sarvam AI transcribes what she said <em>in the language she said it</em>,
-            and reads the reply back in the same one. Sarvam has a second endpoint
-            that translates speech to English; using it would have handed the agent
-            English and lost the whole point, so this uses the one that preserves
-            her language.
+            Sarvam AI transcribes the words <em>in the language they were
+            spoken</em>, and reads the reply back in the same one. Sarvam has a
+            second endpoint that translates speech to English; using it would
+            have handed the agent English and lost the whole point, so this uses
+            the one that preserves the language it heard.
           </p>
           <p className={styles.flowNote}>
             Tap the microphone in the chat and speak. Tap the speaker beside any

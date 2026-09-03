@@ -42,14 +42,14 @@ India has **60 million+ small merchants**. Zomato, Swiggy, Zepto are already AI-
  └──────────────┘   └──────────────┘   └──────────────┘   └──────────────┘   └──────────────┘
 ```
 
-**The limit is the buyer's, not ours.** The shop asks what she wants to spend before
-showing anything. That one question is the difference between a demo and an agent: a cap
-we chose makes a later refusal *our rule imposed on a stranger*, while a figure she named
-makes the identical refusal **the agent keeping her word**.
+**The limit is the buyer's, not ours.** The shop asks what the buyer wants to spend
+before showing anything. That one question is the difference between a demo and an agent:
+a cap we chose makes a later refusal *our rule imposed on a stranger*, while a figure the
+buyer named makes the identical refusal **the agent keeping her word**.
 
 *The pitch: "An AI shopkeeper for the 60 million merchants who don't have an app."*
 
-She answers every DM in her buyer's language, takes the payment inside the conversation, and holds a spending limit nobody can talk her out of.
+The agent answers every DM in the buyer's own language, takes the payment inside the conversation, and holds a spending limit nobody can talk her out of.
 
 ---
 
@@ -60,7 +60,7 @@ She answers every DM in her buyer's language, takes the payment inside the conve
 | Multilingual chat agent — Hindi, Marathi, Hinglish, English | `/chat` |
 | Deterministic guardrail engine, outside the LLM | `src/lib/guardrails/` |
 | Real Razorpay test-mode orders and payment links | `src/lib/razorpay/` |
-| Voice in and out — she listens, and answers aloud unprompted | Sarvam saarika + bulbul |
+| Voice in and out — the agent listens, and answers aloud unprompted | Sarvam saarika + bulbul |
 | Language picker — pin one, and the whole shop speaks it | header |
 | Supabase audit trail, with the reasoning behind each decision | `/dashboard?session_id=…` |
 | Signed payment webhook — `created → paid` on `payment.captured` | `/api/razorpay/webhook` |
@@ -101,9 +101,11 @@ A representative boutique, written to be realistic — not an existing customer.
 
 ---
 
-## 🤔 "Why not just build her a website?"
+## 🤔 "Why not just build them a website?"
 
-She could. Plenty have. Here is what happens anyway.
+Take our demo merchant — she runs Sakhi Sarees, and she is one of the 60 million,
+not the shape of all of them. She could build a site. Plenty of merchants have.
+Here is what happens anyway.
 
 Her Reel goes out at 9pm. By midnight there are **200 DMs**:
 
@@ -126,10 +128,11 @@ Six steps, each one shedding people, for a buyer who was ready at step zero.
 The agent removes the handoff entirely — she never leaves the chat she was
 already in.
 
-Then there is who her buyer actually is. A checkout form assumes English, a
-keyboard, and comfort with a payment flow. Her buyer types romanised Hinglish
+Then there is who her buyers actually are. A checkout form assumes English, a
+keyboard, and comfort with a payment flow. Her buyers type romanised Hinglish
 because typing Devanagari on a phone is slow — or would simply rather speak.
-**Voice and native language are not polish here. They are how she gets in.**
+**Voice and native language are not polish here. They are how those buyers get
+in at all.**
 
 ### Razorpay already answered this question
 
