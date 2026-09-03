@@ -223,6 +223,26 @@ export function ChatContainer() {
      sent message, an opened microphone — that path silences her, which
      cancels this greeting before it is audible. That is the right outcome: a
      buyer who walks in already asking gets an answer, not a formality. */
+  /* Wake the agent function while she is still reading the greeting.
+     
+     Measured on production: a cold first message took 26 to 32 seconds, then
+     1.8 to 8.5 warm. A judge's opening question is by definition the cold one,
+     so the worst number in the system is the first one anyone sees.
+     
+     Deliberately a malformed body. It is rejected at the validator before any
+     model call, so this costs a container start and nothing else — no Gemini
+     tokens, no audit row, no session. */
+  useEffect(() => {
+    void fetch("/api/agent/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "{}",
+      keepalive: true,
+    }).catch(() => {
+      /* A failed warm-up changes nothing; the real request still works. */
+    });
+  }, []);
+
   /* Ask Sarvam for the greeting NOW, not when she taps. Playback needs a
      gesture; the fetch does not, and waiting for the tap to start the round
      trip was 1.54s of a 1.62s delay before she heard anything. It also warms
