@@ -1,13 +1,13 @@
 # AgentPay India — Build Plan
 
 > **The single source of truth.** Replaces `ANTIGRAVITY_PLAN.md` and
-> `CLAUDE_CODE_PLAN.md`, both deleted Sep 2 2026.
+> the second agent's plan, both deleted Sep 2 2026.
 >
 > **Project**: AgentPay India — Agentic Commerce Gateway for Bharat Merchants
 > **Event**: Razorpay AI Buildathon 2026 · Track 01 — AI Growth & Agentic Commerce
 > **Submit by**: September 5, 2026 · razorpay.com/buildathon
 > **Repo**: `/Users/rajdeepchatale/Documents/Razorpay/agentpay-india/`
-> **Builder**: Claude Code (Opus 5) — sole agent. Antigravity retired Sep 2.
+> **Builder**: one AI coding agent, sole builder. Second agent retired Sep 2.
 
 ---
 
@@ -57,7 +57,7 @@ four separate phrasings; Supabase persisting the audit trail with reasoning.
 
 ## Model
 
-**Claude Opus 5 for every step.** No model switching. Decided Sep 2.
+**One model for every step.** No model switching. Decided Sep 2.
 
 Effort level is set by the user at the system level — do not adjust it or
 advise on it.

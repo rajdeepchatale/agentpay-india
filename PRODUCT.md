@@ -76,7 +76,7 @@ trail with per-decision reasoning.
   library, no component kit. Every icon is an authored inline SVG on one grid.
 - One agent owns the whole repository. There is no file-ownership boundary.
 - Work is step-gated: one step is built and verified, then the next begins.
-  Claude Code (Opus 5) is the sole builder as of Sep 2.
+  A single AI coding agent is the sole builder as of Sep 2.
 
 **Terminology that must stay accurate:** saree names and their Devanagari forms come from the
 seeded catalog and are not to be paraphrased or invented.
