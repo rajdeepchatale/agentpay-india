@@ -196,20 +196,75 @@ export function ChatContainer() {
      The callback carries a product id, so the catalog — not the database —
      supplies the saree and the price. */
   const closedRef = useRef(false);
+  const [paidProduct, setPaidProduct] = useState<string | null>(null);
+
+  const closePurchase = useCallback(
+    (productId: string) => {
+      if (closedRef.current) return;
+      closedRef.current = true;
+      setPaidProduct(productId);
+      dispatch({
+        kind: "received",
+        response: {
+          type: "text",
+          content: closingMessage(getProductById(productId), spokenLanguage),
+          language: spokenLanguage,
+          audit_id: "",
+        },
+      });
+    },
+    [spokenLanguage],
+  );
+
   useEffect(() => {
-    if (!paidFor || closedRef.current) return;
-    closedRef.current = true;
-    const spoken = spokenLanguage;
-    dispatch({
-      kind: "received",
-      response: {
-        type: "text",
-        content: closingMessage(getProductById(paidFor), spoken),
-        language: spoken,
-        audit_id: "",
-      },
-    });
-  }, [paidFor, spokenLanguage]);
+    if (paidFor) closePurchase(paidFor);
+  }, [paidFor, closePurchase]);
+
+  /* Watch for the money instead of waiting to be sent back.
+     
+     Every payment link carries a callback into this page and every link has
+     one set correctly — but the buyer does not reliably arrive. Razorpay can
+     leave her on its own receipt page, and the shop then never thanks her for
+     a purchase that definitely happened, which is the worst possible moment
+     to go quiet.
+     
+     The webhook already knows. Once an order exists, the conversation asks
+     every few seconds until it hears yes, and closes on that. If the redirect
+     does work, the callback wins the race and this stops — closePurchase runs
+     once either way. */
+  const hasOrder = state.messages.some((m) => m.response?.type === "order_created");
+  useEffect(() => {
+    if (!hasOrder || !sessionId || paidFor) return;
+
+    let stop = false;
+    /* Long enough for a real payment, short enough not to poll a page nobody
+       is on any more. */
+    const until = Date.now() + 10 * 60_000;
+
+    const ask = async () => {
+      if (stop || closedRef.current || Date.now() > until) return;
+      try {
+        const res = await fetch(
+          `/api/orders/status?session_id=${encodeURIComponent(sessionId)}`,
+          { cache: "no-store" },
+        );
+        const data = (await res.json()) as { paid?: boolean; product_id?: string };
+        if (data.paid && data.product_id) {
+          closePurchase(data.product_id);
+          return;
+        }
+      } catch {
+        /* A missed poll is not a failure; the next one will do. */
+      }
+      if (!stop) timer = window.setTimeout(ask, 4000);
+    };
+
+    let timer = window.setTimeout(ask, 4000);
+    return () => {
+      stop = true;
+      window.clearTimeout(timer);
+    };
+  }, [hasOrder, sessionId, paidFor, closePurchase]);
 
   /* She greets on the first gesture, wherever it lands — not only on a tour
      step. A shopkeeper looks up when you walk in; she does not wait to be
@@ -713,12 +768,12 @@ export function ChatContainer() {
           {/* She asked "how was it?" as the last line of her closing message,
               so these are the ways to answer rather than a survey appearing
               unbidden. */}
-          {paidFor && (
+          {(paidFor || paidProduct) && (
             <div className={styles.panel}>
               <FeedbackPrompt
                 sessionId={sessionId}
                 language={spokenLanguage}
-                productId={paidFor}
+                productId={paidProduct ?? paidFor ?? undefined}
                 /* She replies out loud. Silent text after a tap reads as no
                    response at all in a shop where she says everything else. */
                 onChosen={(thanks, lang) => speak(thanks, lang)}

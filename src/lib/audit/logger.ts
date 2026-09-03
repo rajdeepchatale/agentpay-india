@@ -181,3 +181,34 @@ export async function findPaymentLink(productId: string): Promise<string | null>
     return null;
   }
 }
+
+/**
+ * The saree this session has actually paid for, if any.
+ *
+ * Razorpay's payment link carries a callback_url back to the chat, and it is
+ * set correctly on every link — but the buyer does not reliably arrive back:
+ * she can be left on Razorpay's own receipt page, and the shop then never
+ * says thank you for a purchase that definitely happened.
+ *
+ * The webhook already knows. This lets the conversation ask, so the close
+ * fires because the money arrived rather than because a redirect worked.
+ */
+export async function paidProductFor(sessionId: string): Promise<string | null> {
+  const db = supabase();
+  if (!db) return null;
+
+  try {
+    const { data, error } = await db
+      .from("orders")
+      .select("product_id")
+      .eq("session_id", sessionId)
+      .eq("status", "paid")
+      .order("created_at", { ascending: false })
+      .limit(1);
+    if (error || !data?.length) return null;
+    const id = (data[0] as { product_id?: string }).product_id;
+    return typeof id === "string" && id ? id : null;
+  } catch {
+    return null;
+  }
+}
