@@ -40,12 +40,26 @@
   color: var(--text-secondary);
 }
 
+/* A FIXED height, not a minimum.
+   The replay grew from 311px to 669px across one loop and then snapped back,
+   so every section below it jumped 358px, repeatedly, while someone was trying
+   to read the page on a phone. Reserving the space and scrolling inside it is
+   what a real chat window does anyway: the frame never moves, the conversation
+   moves within it. */
 .thread {
   display: flex;
   flex-direction: column;
+  /* Top-anchored, not bottom. Bottom-anchoring pushed every existing beat
+     upward each time a new one arrived — a 0.10 CLS entirely inside the frame.
+     Growing downward and scrolling to follow means nothing already on screen
+     ever moves. */
+  justify-content: flex-start;
   gap: var(--space-3);
-  min-height: 380px;
+  height: 420px;
   padding: var(--space-4);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
 }
 
 .user,
@@ -280,6 +294,6 @@
 }
 
 @media (max-width: 520px) {
-  .thread { min-height: 260px; padding: var(--space-3); }
+  .thread { height: 340px; padding: var(--space-3); }
   .cardDeva { display: none; }
 }

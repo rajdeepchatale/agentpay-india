@@ -80,25 +80,48 @@ export function LiveDemo() {
   const [step, advance] = useReducer((n: number) => (n + 1) % (SCRIPT.length + 1), 0);
   const [paused, setPaused] = useState(false);
   const reduced = useRef(false);
+  const frameRef = useRef<HTMLDivElement>(null);
+  const threadRef = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(true);
 
   useEffect(() => {
     reduced.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   }, []);
 
+  /* Stop advancing once it has scrolled away. A conversation animating behind
+     the reader is noise, and on a phone it is noise that costs battery. */
   useEffect(() => {
-    if (paused) return;
+    const el = frameRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: 0.25 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  /* The thread scrolls inside a fixed frame, so follow each new beat down. */
+  useEffect(() => {
+    const el = threadRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [step]);
+
+  useEffect(() => {
+    if (paused || !inView) return;
     const beat = SCRIPT[step];
     /* Past the last beat, hold on the block — it is the point of the replay —
        then start again. */
     const ms = beat ? DWELL[beat.kind] : 2600;
     const t = setTimeout(advance, reduced.current ? ms * 2 : ms);
     return () => clearTimeout(t);
-  }, [step, paused]);
+  }, [step, paused, inView]);
 
   const shown = SCRIPT.slice(0, step);
 
   return (
     <div
+      ref={frameRef}
       className={styles.frame}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
@@ -108,7 +131,7 @@ export function LiveDemo() {
         <span className={styles.replay}>replay of a real session</span>
       </div>
 
-      <div className={styles.thread}>
+      <div className={styles.thread} ref={threadRef}>
         {shown.map((beat, i) => {
           switch (beat.kind) {
             case "user":
