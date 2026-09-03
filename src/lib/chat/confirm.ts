@@ -33,3 +33,26 @@ export function confirmLine(product: Product, language: SupportedLanguage): stri
     rupees(product.price),
   );
 }
+
+/**
+ * What she says once the order exists but nothing is paid.
+ *
+ * An order is a request to pay. Saying it is confirmed, or that the saree is
+ * on its way, is a lie the buyer can disprove by looking at the Pay now
+ * button still sitting there — which is exactly what the model used to do,
+ * three times out of three, before the prompt was given a section about it.
+ * Templated here because this line now comes from the deterministic path.
+ */
+const READY: Record<SupportedLanguage, (name: string, price: string) => string> = {
+  hinglish: (n, p) => `${n} ka order ready hai, ₹${p}. Pay now dabaiye aur saree aapki.`,
+  hi: (n, p) => `${n} का ऑर्डर तैयार है, ₹${p}। पेमेंट पूरा कीजिए और साड़ी आपकी।`,
+  mr: (n, p) => `${n} ची ऑर्डर तयार आहे, ₹${p}. पेमेंट पूर्ण करा आणि साडी तुमची.`,
+  en: (n, p) => `Your ${n} order is ready, ₹${p}. Complete the payment and it's yours.`,
+};
+
+export function orderReadyLine(product: Product, language: SupportedLanguage): string {
+  return (READY[language] ?? READY.hinglish)(
+    speakableName(product, language),
+    rupees(product.price),
+  );
+}

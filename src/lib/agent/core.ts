@@ -26,7 +26,8 @@ import {
 import { logDecision, recordOrder } from "@/lib/audit/logger";
 import { toPaise } from "@/lib/razorpay/amounts";
 import { searchProducts } from "@/lib/catalog/search";
-import { confirmLine } from "@/lib/chat/confirm";
+import { confirmLine, orderReadyLine } from "@/lib/chat/confirm";
+import { getProductById } from "@/lib/catalog/search";
 
 const MERCHANT = { name: "Sakhi Sarees", city: "Pune" };
 /** How many times the model may call tools before we force a text answer. */
@@ -151,16 +152,19 @@ export async function runAgent(req: AgentRequest): Promise<AgentResponse> {
      client. */
   if (req.pendingProductId) markConsentRequested(sessionId, req.pendingProductId);
 
+  /** Set when THIS message is what granted consent — see below. */
+  let justGranted: string[] = [];
+
   if (isAffirmative(message)) {
-    const granted = grantPendingConsent(sessionId);
-    if (granted.length) {
+    justGranted = grantPendingConsent(sessionId);
+    if (justGranted.length) {
       await logDecision({
         sessionId,
         action: "consent_request",
         input: { message },
-        output: { granted },
+        output: { granted: justGranted },
         guardrailStatus: "passed",
-        reasoning: `Buyer agreed. Consent granted for: ${granted.join(", ")}.`,
+        reasoning: `Buyer agreed. Consent granted for: ${justGranted.join(", ")}.`,
       });
     }
   } else if (/\b(nahi|nako|no|nope|cancel|rehne do)\b/i.test(message)) {
@@ -252,6 +256,75 @@ export async function runAgent(req: AgentRequest): Promise<AgentResponse> {
         audit_id: auditId,
       };
     }
+  }
+
+  /* She agreed. That is not a question for the model either.
+     
+     "haan" after a consent request was answered with ANOTHER consent request:
+     the model saw its own earlier question in the history and asked again,
+     and the buyer could not get past it. Selecting was made deterministic for
+     the same reason a moment earlier; agreeing is the other half of the same
+     path, and the half where money actually moves.
+     
+     runTool still refuses to create an order without recorded consent, and
+     the guardrail engine still re-reads the price against the cap — this only
+     removes the model's freedom to ask a third time. */
+  if (justGranted.length) {
+    const productId = justGranted[0];
+    const outcome = await runTool(
+      "create_order",
+      { product_id: productId },
+      {
+        sessionId,
+        maxSpend,
+        buyerSaid: message,
+        ...(allowedCategories ? { allowedCategories } : {}),
+        hasConsentFor: (id: string) => hasConsent(sessionId, id),
+        recordConsentRequest: (id: string) => markConsentRequested(sessionId, id),
+      },
+    );
+
+    if (outcome.order) {
+      auditId = await logDecision({
+        sessionId,
+        action: "create_order",
+        input: { product_id: productId, message },
+        output: outcome.result as Record<string, unknown>,
+        guardrailStatus: "passed",
+        reasoning: outcome.reasoning,
+      });
+      consumeConsent(sessionId, productId);
+      try {
+        await recordOrder({
+          sessionId,
+          productId,
+          productName: getProductById(productId)?.name ?? "",
+          amount: outcome.order.amount,
+          amountPaise: toPaise(outcome.order.amount),
+          razorpayOrderId: outcome.order.razorpay_order_id,
+          paymentLink: outcome.order.payment_link,
+        });
+      } catch (e) {
+        /* The order exists at Razorpay. Failing to note it locally must not
+           take it away from her. */
+        console.error("[order] created but not recorded:", outcome.order.razorpay_order_id, e);
+      }
+
+      const product = getProductById(productId);
+      const line = product ? orderReadyLine(product, lang) : outcome.order.razorpay_order_id;
+      appendMessages(sessionId, [
+        { role: "user", content: message },
+        { role: "assistant", content: line },
+      ]);
+      return {
+        type: "order_created",
+        content: line,
+        data: { order: outcome.order },
+        language: lang,
+        audit_id: auditId,
+      };
+    }
+    /* Order could not be created — fall through and let the model explain. */
   }
 
   const llm = provider();
