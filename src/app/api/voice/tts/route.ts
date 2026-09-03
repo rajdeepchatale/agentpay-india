@@ -13,6 +13,16 @@ import type { SupportedLanguage } from "@/types";
 import { textToSpeech } from "@/lib/voice/sarvam";
 
 export const runtime = "nodejs";
+/**
+ * Run this next to Sarvam, not next to nothing.
+ *
+ * Measured on production: the edge answered from bom1 while the function
+ * itself executed in iad1, so every clip travelled Mumbai → Virginia →
+ * Sarvam (India) → Virginia → Mumbai. A 48-character line costs Sarvam ~1.0s
+ * directly and was costing 2.3s through us. The buyer is in India and so is
+ * the speech API; the compute should be too.
+ */
+export const preferredRegion = ["bom1"];
 export const dynamic = "force-dynamic";
 
 const LANGUAGES = ["hi", "mr", "en", "hinglish"] as const;

@@ -17,6 +17,10 @@ import type { SupportedLanguage } from "@/types";
 import { speechToText } from "@/lib/voice/sarvam";
 
 export const runtime = "nodejs";
+/* Next to Sarvam, for the same reason as the TTS route — and it matters more
+   here, because the audio being uploaded is far larger than the text going
+   the other way. */
+export const preferredRegion = ["bom1"];
 export const dynamic = "force-dynamic";
 
 /** Twenty seconds of speech is far more than a saree request needs. */
