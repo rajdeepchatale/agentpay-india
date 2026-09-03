@@ -146,6 +146,25 @@ The difference here is who it reaches. **Every one of those pilot partners is
 an enterprise with an app. The saree shop has no app.** That is the long tail
 those pilots structurally cannot reach.
 
+### "So how does she get this, if she has no website?"
+
+**She doesn't build anything. She gets a link.**
+
+Razorpay already ships this distribution model. A **Payment Link** is created
+in the dashboard and pasted into WhatsApp; a **Payment Page** is a hosted,
+no-code storefront. Neither requires her to own a website, hire a developer, or
+deploy anything.
+
+**AgentPay is a Payment Page that talks back.** She gets a URL, pastes it in her
+Instagram bio, and that is the whole integration — which is exactly what this
+demo is. The `/chat` link you are about to open is the link she would paste.
+
+The one thing she supplies is her catalog. Reading it out of her Instagram
+captions or her WhatsApp price list is **argued in
+[`docs/SCALING.md`](docs/SCALING.md), not built** — for this demo the catalog is
+seeded. And the end state needs no link at all: the agent runs inside her
+existing WhatsApp number, where the DMs already arrive.
+
 ### What this does not claim
 
 **AgentPay does not replace her storefront. It replaces the 200 unanswered
