@@ -29,6 +29,7 @@
    its provenance.
    ========================================================================== */
 
+import Link from "next/link";
 import type { Metadata } from "next";
 import { LiveDemo } from "@/components/landing/LiveDemo";
 import { CatalogStrip } from "@/components/landing/CatalogStrip";
@@ -79,10 +80,10 @@ export default function LandingPage() {
           </p>
 
           <div className={styles.actions}>
-            <a className={styles.cta} href="/chat">
+            <Link className={styles.cta} href="/chat">
               Try the demo
               <ChevronRightIcon size={18} />
-            </a>
+            </Link>
             <a className={styles.ghost} href="/dashboard">
               See the audit trail
             </a>
@@ -362,10 +363,10 @@ export default function LandingPage() {
             <br />
             This makes the saree shop AI-transactable.
           </h2>
-          <a className={styles.cta} href="/chat">
+          <Link className={styles.cta} href="/chat">
             Try the demo
             <ChevronRightIcon size={18} />
-          </a>
+          </Link>
           <p className={styles.colophon}>
             Razorpay AI Buildathon 2026 · Track 01 · built by Rajdeep Chatale ·{" "}
             <a href="https://github.com/rajdeepchatale/agentpay-india">source</a>

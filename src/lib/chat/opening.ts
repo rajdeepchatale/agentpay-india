@@ -18,6 +18,30 @@ import type { SupportedLanguage } from "@/types";
 
 const rupees = (n: number) => n.toLocaleString("en-IN");
 
+/**
+ * The first thing she says.
+ *
+ * Two things were wrong with the line this replaces. It was a hardcoded
+ * Hinglish string, so choosing English in the header still opened in
+ * Hinglish and the picker looked broken on the very first line. And it ran to
+ * 210 characters — a paragraph listing the stock and the four supported
+ * languages before finally asking a question, which is four seconds of Sarvam
+ * before a single word is heard.
+ *
+ * A shopkeeper says hello and asks what you are looking to spend. The stock
+ * list is what the sarees themselves are for.
+ */
+const WELCOMES: Record<SupportedLanguage, string> = {
+  hinglish: "Namaste! Main Sakhi Sarees ki AI assistant hoon. Aapka budget kitna hai?",
+  hi: "नमस्ते! मैं सखी साड़ीज़ की AI असिस्टेंट हूँ। आपका बजट कितना है?",
+  mr: "नमस्कार! मी सखी साड्यांची AI असिस्टंट आहे. तुमचं बजेट किती आहे?",
+  en: "Namaste! I'm the AI assistant at Sakhi Sarees. What's your budget?",
+};
+
+export function welcomeMessage(language: SupportedLanguage): string {
+  return WELCOMES[language] ?? WELCOMES.hinglish;
+}
+
 export interface Budget {
   amount: number;
   label: string;

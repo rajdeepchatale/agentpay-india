@@ -93,10 +93,11 @@
   color: var(--text-secondary);
 }
 
-.guardrailIcon {
-  color: var(--color-success);
-  flex-shrink: 0;
-}
+/* The shield that sat here is gone. At 13px in success-green it read as a
+   status dot or a theme toggle rather than a shield — an ambiguous glyph next
+   to text that was already unambiguous. The shield metaphor still carries the
+   guardrail where it has the room to actually look like one: the block card
+   and the decision rail. */
 
 .limitValue {
   color: var(--text-secondary);

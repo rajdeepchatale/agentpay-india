@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import type { SupportedLanguage } from "@/types";
 import { Button } from "@/components/ui/Button";
-import { SendIcon, ShieldIcon } from "@/components/ui/Icon";
+import { SendIcon } from "@/components/ui/Icon";
 import { VoiceButton } from "./VoiceButton";
 import styles from "./ChatInput.module.css";
 
@@ -136,7 +136,6 @@ export function ChatInput({
 
       {spendLimit !== undefined && (
         <p className={styles.guardrail}>
-          <ShieldIcon size={13} className={styles.guardrailIcon} />
           <span>
             Spending limit{" "}
             <span className={styles.limitValue}>

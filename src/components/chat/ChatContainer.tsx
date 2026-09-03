@@ -14,7 +14,7 @@ import { readSessionId } from "@/lib/chat/session";
 import { useAgentVoice } from "@/lib/chat/useAgentVoice";
 import { turnLanguage } from "@/lib/chat/language";
 import { closingMessage } from "@/lib/chat/closing";
-import { budgetReply, isBudgetAnswer } from "@/lib/chat/opening";
+import { budgetReply, isBudgetAnswer, welcomeMessage } from "@/lib/chat/opening";
 import { BudgetPrompt } from "./BudgetPrompt";
 import { getProductById } from "@/lib/catalog/search";
 import { FeedbackPrompt } from "./FeedbackPrompt";
@@ -57,19 +57,6 @@ const TOUR_SENDS = [
    The literal forms this replaced are deliberately not quoted here: the guard
    in copy.test.mts scans comments too, and keeping it strict is worth more
    than an inline example. */
-/* She asks the budget FIRST, before showing anything — a shopkeeper's opening
-   question, and the thing that turns the guardrail from our rule into the
-   buyer's own. */
-const WELCOME =
-  "Namaste! Main Sakhi Sarees ki AI shopping assistant hoon. Hamare paas authentic Paithani, handloom cotton, aur silk sarees hain. Hindi, Marathi, Hinglish ya English — jo bhi aasaan ho. Pehle bataiye, aapka budget kitna hai?";
-
-/* Spoken, not written. The written welcome lists the stock and the four
-   languages — worth reading, and 212 characters is four seconds of Sarvam
-   before a single word comes out. A shopkeeper's actual greeting is one
-   line, and the rest is on screen for her to read while she decides. */
-const SPOKEN_WELCOME =
-  "Namaste! Main Sakhi Sarees ki AI assistant hoon. Aapka budget kitna hai?";
-
 /* ---------------------------------------------------------------
    The post-payment return, read once.
 
@@ -147,6 +134,14 @@ export function ChatContainer() {
      it, because a limit she did not set is not a limit she agreed to. */
   const [budget, setBudget] = useState<number | null>(null);
 
+  /* The language everything she SAYS resolves through. "auto" means she has
+     not chosen, and Hinglish is the safest opener for an Indian buyer who has
+     not told us otherwise. Derived once so the welcome, the greeting and the
+     speak button cannot drift apart the way they did when each hardcoded
+     "hinglish" separately. */
+  const spokenLanguage: SupportedLanguage =
+    language === "auto" ? "hinglish" : language;
+
   const chooseLanguage = useCallback((next: LanguageChoice) => {
     setLanguageChoice(next);
     try {
@@ -161,7 +156,7 @@ export function ChatContainer() {
     (amount: number) => {
       setBudget(amount);
       setSpendLimit(amount);
-      const lang = language === "auto" ? "hinglish" : language;
+      const lang = spokenLanguage;
       /* Dispatched as her reply rather than printed as a confirmation, so she
          says the number back — the same path every other line she speaks
          travels. */
@@ -175,7 +170,7 @@ export function ChatContainer() {
         },
       });
     },
-    [language],
+    [spokenLanguage],
   );
 
   /* Remove the query param once seen. A refresh or a shared link should not
@@ -199,7 +194,7 @@ export function ChatContainer() {
   useEffect(() => {
     if (!paidFor || closedRef.current) return;
     closedRef.current = true;
-    const spoken = language === "auto" ? "hinglish" : language;
+    const spoken = spokenLanguage;
     dispatch({
       kind: "received",
       response: {
@@ -209,7 +204,7 @@ export function ChatContainer() {
         audit_id: "",
       },
     });
-  }, [paidFor, language]);
+  }, [paidFor, spokenLanguage]);
 
   /* She greets on the first gesture, wherever it lands — not only on a tour
      step. A shopkeeper looks up when you walk in; she does not wait to be
@@ -230,8 +225,8 @@ export function ChatContainer() {
   const { prime } = voice;
   useEffect(() => {
     if (paidFor) return;
-    prime(SPOKEN_WELCOME, "hinglish");
-  }, [prime, paidFor]);
+    prime(welcomeMessage(spokenLanguage), spokenLanguage);
+  }, [prime, paidFor, spokenLanguage]);
 
   const { unlock } = voice;
   useEffect(() => {
@@ -239,14 +234,14 @@ export function ChatContainer() {
        being greeted as a new visitor — "Namaste, kya dikhaun?" — undoes the
        purchase she just made, and the close is the line that belongs here. */
     if (paidFor) return;
-    const greet = () => unlock(SPOKEN_WELCOME, "hinglish");
+    const greet = () => unlock(welcomeMessage(spokenLanguage), spokenLanguage);
     window.addEventListener("pointerdown", greet, { once: true });
     window.addEventListener("keydown", greet, { once: true });
     return () => {
       window.removeEventListener("pointerdown", greet);
       window.removeEventListener("keydown", greet);
     };
-  }, [unlock, paidFor]);
+  }, [unlock, paidFor, spokenLanguage]);
 
   /* Speak each agent reply as it lands — once. Keyed on the message id rather
      than a count, so a re-render never replays a line she already heard. */
@@ -573,10 +568,15 @@ export function ChatContainer() {
           {!paidFor && (
             <MessageBubble
               role="agent"
-              lang="mr"
-              action={<SpeakButton text={WELCOME} language="hinglish" />}
+              lang={spokenLanguage === "mr" ? "mr" : "hi"}
+              action={
+                <SpeakButton
+                  text={welcomeMessage(spokenLanguage)}
+                  language={spokenLanguage}
+                />
+              }
             >
-              {WELCOME}
+              {welcomeMessage(spokenLanguage)}
             </MessageBubble>
           )}
 
@@ -603,7 +603,7 @@ export function ChatContainer() {
             <div className={styles.panel}>
               <FeedbackPrompt
                 sessionId={sessionId}
-                language={language === "auto" ? "hinglish" : language}
+                language={spokenLanguage}
                 productId={paidFor}
                 /* She replies out loud. Silent text after a tap reads as no
                    response at all in a shop where she says everything else. */

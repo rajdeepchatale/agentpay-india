@@ -1,6 +1,6 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { BUDGETS, budgetReply, isBudgetAnswer } from "./opening.ts";
+import { BUDGETS, budgetReply, isBudgetAnswer, welcomeMessage } from "./opening.ts";
 import type { SupportedLanguage } from "@/types";
 
 const LANGUAGES: SupportedLanguage[] = ["hi", "mr", "hinglish", "en"];
@@ -13,6 +13,46 @@ const LANGUAGES: SupportedLanguage[] = ["hi", "mr", "hinglish", "en"];
  * stranger. When the buyer sets it herself, the same refusal is the agent
  * keeping her own word — which is the claim this project is actually making.
  */
+
+describe("welcomeMessage — the first thing she says, in HER language", () => {
+  test("answers in the language chosen, not always Hinglish", () => {
+    /* The bug: the welcome was a hardcoded Hinglish constant, so choosing
+       English in the header still opened with Hinglish. The picker looked
+       broken because the very first line ignored it. */
+    assert.doesNotMatch(welcomeMessage("en"), /[ऀ-ॿ]/u);
+    assert.match(welcomeMessage("en"), /budget/i);
+    assert.match(welcomeMessage("hi"), /[ऀ-ॿ]/u);
+    assert.match(welcomeMessage("mr"), /[ऀ-ॿ]/u);
+    assert.doesNotMatch(welcomeMessage("hinglish"), /[ऀ-ॿ]/u);
+  });
+
+  test("Hindi and Marathi are actually different, not the same string twice", () => {
+    assert.notEqual(welcomeMessage("hi"), welcomeMessage("mr"));
+  });
+
+  test("is short — it is spoken before anything else happens", () => {
+    /* Sarvam's latency scales with length. The old welcome ran to 210
+       characters, which is four seconds of generation before a single word
+       comes out, for a line whose only job is to ask one question. */
+    for (const lang of LANGUAGES) {
+      const w = welcomeMessage(lang);
+      assert.ok(w.length <= 95, `${lang} is ${w.length} chars: ${w}`);
+    }
+  });
+
+  test("ends by asking the budget, in every language", () => {
+    for (const lang of LANGUAGES) {
+      assert.match(welcomeMessage(lang), /\?\s*$/, `${lang}: ${welcomeMessage(lang)}`);
+    }
+  });
+
+  test("never assumes the buyer's gender", () => {
+    const banned = [/(सकती|सकते)\s+हैं/, /(रही|रहे)\s+हैं/, /\b(sakti|sakte)\s+hain\b/i, /\b(rahi|rahe)\s+hain\b/i];
+    for (const lang of LANGUAGES) {
+      for (const re of banned) assert.doesNotMatch(welcomeMessage(lang), re, `${lang}`);
+    }
+  });
+});
 
 describe("BUDGETS — the amounts she offers", () => {
   test("the lowest one blocks the Paithani, or the guardrail is never seen", () => {
