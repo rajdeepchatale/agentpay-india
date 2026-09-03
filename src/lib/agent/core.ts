@@ -226,10 +226,17 @@ export async function runAgent(req: AgentRequest): Promise<AgentResponse> {
 
     auditId = await logDecision({
       sessionId,
-      action: outcome.blocked ? "guardrail_check" : "consent_request",
+      action: outcome.blocked
+        ? "guardrail_check"
+        : outcome.failure
+          ? "failure_recovery"
+          : "consent_request",
       input: { product_id: req.selectedProductId, message },
       output: outcome.result as Record<string, unknown>,
-      guardrailStatus: outcome.blocked ? "blocked" : "passed",
+      /* An out-of-stock saree comes back as `failure`, not `blocked`. Logging
+         it as a consent request that PASSED put a refusal into the trail as an
+         approval — in the one artefact this project asks judges to trust. */
+      guardrailStatus: outcome.blocked ? "blocked" : "n/a",
       reasoning: outcome.reasoning,
     });
 
@@ -251,6 +258,23 @@ export async function runAgent(req: AgentRequest): Promise<AgentResponse> {
             asked_for: outcome.blocked.asked_for,
           },
           products: alternatives,
+        },
+        language: lang,
+        audit_id: auditId,
+      };
+    }
+
+    if (outcome.failure) {
+      /* Out of stock. Answer it here rather than falling through to the model,
+         which re-appended her message and produced a duplicate turn. */
+      const line = FALLBACK.stuck[lang];
+      appendMessages(sessionId, [{ role: "assistant", content: line }]);
+      return {
+        type: "failure_handled",
+        content: line,
+        data: {
+          failure: outcome.failure,
+          products: searchProducts({ max_price: maxSpend }).slice(0, 3),
         },
         language: lang,
         audit_id: auditId,
