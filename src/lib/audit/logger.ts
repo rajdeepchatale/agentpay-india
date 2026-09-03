@@ -149,3 +149,35 @@ export async function markOrderStatus(
   }
   return data && data.length > 0 ? "updated" : "unchanged";
 }
+
+/**
+ * A payment link already minted for this saree, if there is one.
+ *
+ * Razorpay's test mode allows 30 payment links in total, and creating a fresh
+ * one per order exhausted that during development — after which every
+ * purchase failed at the last step, the order was thrown away, and the agent
+ * asked the buyer to confirm again in a loop she could not leave.
+ *
+ * A link carries a fixed amount and product and nothing about who is buying,
+ * so the one made for a saree is equally good for the next buyer of that same
+ * saree. Sixteen sarees, sixteen links, and the ceiling stops mattering.
+ */
+export async function findPaymentLink(productId: string): Promise<string | null> {
+  const db = supabase();
+  if (!db) return null;
+
+  try {
+    const { data, error } = await db
+      .from("orders")
+      .select("payment_link")
+      .eq("product_id", productId)
+      .not("payment_link", "is", null)
+      .limit(1);
+    if (error || !data?.length) return null;
+    const link = (data[0] as { payment_link?: string }).payment_link;
+    return typeof link === "string" && link.startsWith("http") ? link : null;
+  } catch {
+    /* A miss just means we mint one. */
+    return null;
+  }
+}

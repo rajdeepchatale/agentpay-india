@@ -18,6 +18,7 @@ import {
 } from "@/lib/guardrails/engine";
 import { createOrder } from "@/lib/razorpay/orders";
 import { createPaymentLink } from "@/lib/razorpay/payment-links";
+import { findPaymentLink } from "@/lib/audit/logger";
 
 export const TOOL_SPECS: ToolSpec[] = [
   {
@@ -317,12 +318,28 @@ export async function runTool(
           amountInr: product.price,
           sessionId: ctx.sessionId,
         });
-        const link = await createPaymentLink({
-          productId: product.id,
-          productName: product.name,
-          amountInr: product.price,
-          sessionId: ctx.sessionId,
-        });
+        /* Reuse the link already minted for this saree. Razorpay's test mode
+           allows 30 in total, and one per order exhausted that — after which
+           every purchase failed at the last step and the order, which HAD been
+           created, was thrown away with it. */
+        let paymentLink = await findPaymentLink(product.id);
+        if (!paymentLink) {
+          try {
+            paymentLink = (
+              await createPaymentLink({
+                productId: product.id,
+                productName: product.name,
+                amountInr: product.price,
+                sessionId: ctx.sessionId,
+              })
+            ).payment_link;
+          } catch (e) {
+            /* The order exists at Razorpay and is the thing that matters.
+               Losing the convenience link must not lose the purchase. */
+            console.error("[payment-link] could not create:", e);
+            paymentLink = "";
+          }
+        }
 
         recordOrderPlaced(ctx.sessionId);
 
@@ -330,7 +347,7 @@ export async function runTool(
           order: {
             razorpay_order_id: order.razorpay_order_id,
             amount: order.amount,
-            payment_link: link.payment_link,
+            payment_link: paymentLink,
           },
           orderedProduct: product,
           result: {

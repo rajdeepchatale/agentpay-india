@@ -325,7 +325,50 @@ export async function runAgent(req: AgentRequest): Promise<AgentResponse> {
         audit_id: auditId,
       };
     }
-    /* Order could not be created — fall through and let the model explain. */
+    /* An order that could not be created must SAY so. Falling through to the
+       model here is what produced the loop the buyer could not leave: it saw
+       its own earlier question, asked again, and every "haan" restarted the
+       same exchange. */
+    auditId = await logDecision({
+      sessionId,
+      action: "create_order",
+      input: { product_id: productId, message },
+      output: (outcome.result ?? { error: "order_failed" }) as Record<string, unknown>,
+      guardrailStatus: outcome.blocked ? "blocked" : "n/a",
+      reasoning: outcome.reasoning,
+    });
+
+    if (outcome.blocked) {
+      return {
+        type: "guardrail_blocked",
+        content: outcome.blocked.suggestion,
+        data: {
+          guardrail: {
+            rule: outcome.blocked.rule,
+            limit: outcome.blocked.limit,
+            attempted: outcome.blocked.attempted,
+            suggestion: outcome.blocked.suggestion,
+            asked_for: outcome.blocked.asked_for,
+          },
+          products: searchProducts({ max_price: maxSpend }).slice(0, 3),
+        },
+        language: lang,
+        audit_id: auditId,
+      };
+    }
+
+    return {
+      type: "failure_handled",
+      content: FALLBACK.stuck[lang],
+      data: {
+        failure: {
+          type: "payment_failed",
+          recovery_action: "Invited the buyer to try again.",
+        },
+      },
+      language: lang,
+      audit_id: auditId,
+    };
   }
 
   const llm = provider();
