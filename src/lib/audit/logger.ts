@@ -182,3 +182,38 @@ export async function paidProductFor(sessionId: string): Promise<string | null> 
     return null;
   }
 }
+
+/**
+ * Mark an order paid by the payment link the buyer actually used.
+ *
+ * Links are reused across orders — Razorpay's test mode caps them at 30 — so
+ * one short_url can belong to several rows. The oldest still-unpaid row for
+ * that link is the one being settled: earlier orders for the same saree were
+ * either already paid, or abandoned, and marking the newest would leave an
+ * older genuine purchase looking unpaid forever.
+ */
+export async function markOrderPaidByLink(
+  paymentLink: string,
+): Promise<"updated" | "unchanged" | "unavailable"> {
+  const db = supabase();
+  if (!db) return "unavailable";
+
+  try {
+    const { data, error } = await db
+      .from("orders")
+      .select("id")
+      .eq("payment_link", paymentLink)
+      .eq("status", "created")
+      .order("created_at", { ascending: true })
+      .limit(1);
+    if (error || !data?.length) return "unchanged";
+
+    const { error: updateError } = await db
+      .from("orders")
+      .update({ status: "paid" })
+      .eq("id", (data[0] as { id: string }).id);
+    return updateError ? "unavailable" : "updated";
+  } catch {
+    return "unavailable";
+  }
+}

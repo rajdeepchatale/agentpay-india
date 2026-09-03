@@ -117,3 +117,60 @@ describe("parsePaymentEvent", () => {
     assert.equal(parsePaymentEvent('{"payload":{"payment":null}}'), null);
   });
 });
+
+
+describe("parsePaymentEvent — a payment LINK being paid", () => {
+  /* Our flow creates two Razorpay objects: an order via orders.create, and a
+     payment link that carries its OWN internal order. Verified against the
+     live API — a paid link reported order_TXeGi1ZVFk7nHg while the row we
+     stored held a different id entirely.
+
+     So payment.captured from a link payment can never match our order, the row
+     stays "created", and the conversation never learns the money arrived. The
+     link event is the one that can be matched, because we store its short_url
+     when the order is recorded. */
+
+  const linkPaid = (over = {}) =>
+    JSON.stringify({
+      event: "payment_link.paid",
+      payload: {
+        payment_link: {
+          entity: {
+            id: "plink_TXdJyB2M5sq49l",
+            short_url: "https://rzp.io/rzp/8XJtd00p",
+            status: "paid",
+            ...over,
+          },
+        },
+        payment: { entity: { id: "pay_TXeGzaEgG4vvAJ" } },
+      },
+    });
+
+  test("reports the link so the order can be found by it", () => {
+    const e = parsePaymentEvent(linkPaid());
+    assert.equal(e?.status, "paid");
+    assert.equal(e?.paymentLink, "https://rzp.io/rzp/8XJtd00p");
+    assert.equal(e?.paymentId, "pay_TXeGzaEgG4vvAJ");
+  });
+
+  test("a payment.captured event still reports the order id", () => {
+    /* The original path must keep working — an order paid through checkout
+       rather than a link still arrives this way. */
+    const e = parsePaymentEvent(
+      JSON.stringify({
+        event: "payment.captured",
+        payload: { payment: { entity: { id: "pay_1", order_id: "order_1" } } },
+      }),
+    );
+    assert.equal(e?.razorpayOrderId, "order_1");
+    assert.equal(e?.paymentLink, undefined);
+  });
+
+  test("ignores a link event with no short_url to match on", () => {
+    assert.equal(parsePaymentEvent(linkPaid({ short_url: undefined })), null);
+  });
+
+  test("still ignores events we do not act on", () => {
+    assert.equal(parsePaymentEvent(JSON.stringify({ event: "payment_link.cancelled" })), null);
+  });
+});

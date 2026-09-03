@@ -46,15 +46,31 @@ export function verifyWebhookSignature(
 }
 
 export interface PaymentEvent {
-  razorpayOrderId: string;
-  paymentId: string;
   status: "paid" | "failed";
+  paymentId: string;
+  /** Set by payment.* events — matches `orders.razorpay_order_id`. */
+  razorpayOrderId?: string;
+  /**
+   * Set by payment_link.* events — matches `orders.payment_link`.
+   *
+   * Needed because our flow creates TWO Razorpay objects: an order via
+   * orders.create, and a payment link carrying its own internal order.
+   * Verified against the live API — a paid link reported
+   * order_TXeGi1ZVFk7nHg while the row we stored held a different id. So a
+   * payment.captured raised by a link payment can never match our order, and
+   * the short_url is the only thing both sides share.
+   */
+  paymentLink?: string;
 }
 
 /** Events that change an order's status. Everything else is ignored. */
 const HANDLED: Record<string, "paid" | "failed"> = {
   "payment.captured": "paid",
   "payment.failed": "failed",
+  /* The buyer pays a LINK, not the order we created. Without this the order
+     stays "created" forever and the conversation never learns the money
+     arrived. */
+  "payment_link.paid": "paid",
 };
 
 /**
@@ -75,15 +91,25 @@ export function parsePaymentEvent(rawBody: string): PaymentEvent | null {
 
   const b = body as {
     event?: string;
-    payload?: { payment?: { entity?: { id?: string; order_id?: string } } };
+    payload?: {
+      payment?: { entity?: { id?: string; order_id?: string } };
+      payment_link?: { entity?: { short_url?: string } };
+    };
   };
 
   const status = HANDLED[b?.event ?? ""];
   if (!status) return null;
 
-  const entity = b?.payload?.payment?.entity;
-  const razorpayOrderId = entity?.order_id;
+  const payment = b?.payload?.payment?.entity;
+  const paymentId = payment?.id ?? "";
+
+  /* A link event identifies itself by its short_url, which is what we stored
+     alongside the order. */
+  const shortUrl = b?.payload?.payment_link?.entity?.short_url;
+  if (shortUrl) return { status, paymentId, paymentLink: shortUrl };
+
+  const razorpayOrderId = payment?.order_id;
   if (!razorpayOrderId) return null;
 
-  return { razorpayOrderId, paymentId: entity?.id ?? "", status };
+  return { status, paymentId, razorpayOrderId };
 }

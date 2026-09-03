@@ -20,7 +20,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { verifyWebhookSignature, parsePaymentEvent } from "@/lib/razorpay/webhook";
-import { markOrderStatus, logDecision } from "@/lib/audit/logger";
+import { markOrderStatus, markOrderPaidByLink, logDecision } from "@/lib/audit/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -45,22 +45,31 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true, ignored: true });
   }
 
-  const result = await markOrderStatus(event.razorpayOrderId, event.status);
+  /* A link event identifies the order by the link the buyer opened; a payment
+     event identifies it by the order id. Both end at the same row. */
+  const subject = event.razorpayOrderId ?? event.paymentLink ?? "";
+  const result = event.paymentLink
+    ? await markOrderPaidByLink(event.paymentLink)
+    : await markOrderStatus(event.razorpayOrderId!, event.status);
 
   /* The audit trail is the point of this project, so a payment outcome belongs
      in it as much as a guardrail decision does. Never let logging break the
      acknowledgement. */
   try {
     await logDecision({
-      sessionId: `webhook:${event.razorpayOrderId}`,
+      sessionId: `webhook:${subject}`,
       action: "create_order",
-      input: { razorpay_order_id: event.razorpayOrderId, payment_id: event.paymentId },
+      input: {
+        ...(event.razorpayOrderId ? { razorpay_order_id: event.razorpayOrderId } : {}),
+        ...(event.paymentLink ? { payment_link: event.paymentLink } : {}),
+        payment_id: event.paymentId,
+      },
       output: { status: event.status, db: result },
       guardrailStatus: "n/a",
       reasoning:
         result === "updated"
-          ? `Razorpay confirmed payment ${event.status} for ${event.razorpayOrderId}. Order moved created → ${event.status}.`
-          : `Razorpay reported ${event.status} for ${event.razorpayOrderId}, but no order was in 'created' state (${result}). Likely a retry of an event already handled.`,
+          ? `Razorpay confirmed payment ${event.status} for ${subject}. Order moved created → ${event.status}.`
+          : `Razorpay reported ${event.status} for ${subject}, but no order was in 'created' state (${result}). Likely a retry of an event already handled.`,
     });
   } catch (e) {
     console.error("[webhook] audit write failed:", e);
