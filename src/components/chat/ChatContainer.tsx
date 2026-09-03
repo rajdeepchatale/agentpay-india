@@ -15,6 +15,7 @@ import { useAgentVoice } from "@/lib/chat/useAgentVoice";
 import { turnLanguage } from "@/lib/chat/language";
 import { uiText } from "@/lib/chat/ui-text";
 import { closingMessage } from "@/lib/chat/closing";
+import { speakableName } from "@/lib/catalog/name";
 import { budgetReply, isBudgetAnswer, welcomeMessage } from "@/lib/chat/opening";
 import { BudgetPrompt } from "./BudgetPrompt";
 import { getProductById } from "@/lib/catalog/search";
@@ -293,6 +294,8 @@ export function ChatContainer() {
 
   /* Which saree the agent last asked her to confirm, mirrored for the request
      body the same way the thread is. */
+  /* Set for exactly one request — the one that carries her tap. */
+  const selectedRef = useRef<string | null>(null);
   const pendingRef = useRef<string | null>(null);
   useEffect(() => {
     const last = [...state.messages].reverse().find((m) => m.role === "agent");
@@ -356,6 +359,10 @@ export function ChatContainer() {
                history: the server's own note of it does not survive a change
                of instance. */
             ...(pendingRef.current ? { pending_product_id: pendingRef.current } : {}),
+            /* A tap on Select is unambiguous. Sending the id means the
+               guardrail runs on the saree she actually tapped, rather than on
+               whatever the model decides the sentence meant. */
+            ...(selectedRef.current ? { selected_product_id: selectedRef.current } : {}),
           }),
           signal: controller.signal,
         });
@@ -376,6 +383,9 @@ export function ChatContainer() {
             : t.errorOffline,
         });
       } finally {
+        /* One request only — a later typed message must not be read as
+           another tap on the same card. */
+        selectedRef.current = null;
         clearTimeout(timer);
       }
     },
@@ -574,8 +584,18 @@ export function ChatContainer() {
     }
   };
 
+  /**
+   * She tapped Select.
+   *
+   * The message still reads as something a person said, because it appears in
+   * the thread as her turn. But the id travels with it, so the guardrail runs
+   * on the saree she actually tapped rather than on whatever the model decides
+   * the sentence meant — which is how a tap once produced "shall I proceed
+   * with the order?" alongside a fresh grid of four sarees.
+   */
   function selectProduct(product: Product) {
-    send(`Mujhe ${product.name} chahiye`);
+    selectedRef.current = product.id;
+    send(`Mujhe ${speakableName(product, spokenLanguage)} chahiye`);
   }
 
   return (

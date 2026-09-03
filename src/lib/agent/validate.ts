@@ -35,6 +35,8 @@ export type ChatValidation =
       history?: Array<{ role: "user" | "assistant"; content: string }>;
       /** The saree the agent last asked her to confirm. Catalog-checked. */
       pendingProductId?: string;
+      /** The saree she just tapped Select on. Catalog-checked. */
+      selectedProductId?: string;
     }
   | { ok: false; status: number; error: string; message: string };
 
@@ -141,6 +143,12 @@ export function validateChatRequest(body: unknown): ChatValidation {
       ? rawPending.trim()
       : undefined;
 
+  const rawSelected = b.selected_product_id;
+  const selectedProductId =
+    typeof rawSelected === "string" && getProductById(rawSelected.trim())
+      ? rawSelected.trim()
+      : undefined;
+
   return {
     ok: true,
     message,
@@ -150,5 +158,6 @@ export function validateChatRequest(body: unknown): ChatValidation {
     ...(language ? { language } : {}),
     ...(history ? { history } : {}),
     ...(pendingProductId ? { pendingProductId } : {}),
+    ...(selectedProductId ? { selectedProductId } : {}),
   };
 }

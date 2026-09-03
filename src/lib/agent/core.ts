@@ -25,6 +25,8 @@ import {
 } from "./conversation.ts";
 import { logDecision, recordOrder } from "@/lib/audit/logger";
 import { toPaise } from "@/lib/razorpay/amounts";
+import { searchProducts } from "@/lib/catalog/search";
+import { confirmLine } from "@/lib/chat/confirm";
 
 const MERCHANT = { name: "Sakhi Sarees", city: "Pune" };
 /** How many times the model may call tools before we force a text answer. */
@@ -95,6 +97,16 @@ export interface AgentRequest {
    * catalog by the validator; the guardrail engine still re-reads the price.
    */
   pendingProductId?: string;
+  /**
+   * The saree she just tapped Select on.
+   *
+   * When the client knows exactly which one it is, asking the model to work
+   * it out again is a gamble taken immediately before money moves — and one
+   * that has already been lost: a real session answered a tap with "shall I
+   * proceed with the order?" AND a fresh grid of four sarees, because the
+   * model narrated consent while calling search_products.
+   */
+  selectedProductId?: string;
 }
 
 /** Fallback copy, in the buyer's own language. */
@@ -176,6 +188,71 @@ export async function runAgent(req: AgentRequest): Promise<AgentResponse> {
   let failure: ToolOutcome["failure"];
   let blocked: ToolOutcome["blocked"];
   let auditId = "";
+
+  /* A tap on Select is not a question for the model. Run the consent tool
+     directly — the SAME path the model would have taken, so the guardrail
+     engine still decides whether this saree may be offered at all — and
+     answer with a fixed sentence. The words and the machinery cannot
+     disagree if only one of them is free to vary. */
+  if (req.selectedProductId) {
+    const outcome = await runTool(
+      "request_consent",
+      { product_id: req.selectedProductId },
+      {
+        sessionId,
+        maxSpend,
+        buyerSaid: message,
+        ...(allowedCategories ? { allowedCategories } : {}),
+        hasConsentFor: (id: string) => hasConsent(sessionId, id),
+        recordConsentRequest: (id: string) => markConsentRequested(sessionId, id),
+      },
+    );
+
+    auditId = await logDecision({
+      sessionId,
+      action: outcome.blocked ? "guardrail_check" : "consent_request",
+      input: { product_id: req.selectedProductId, message },
+      output: outcome.result as Record<string, unknown>,
+      guardrailStatus: outcome.blocked ? "blocked" : "passed",
+      reasoning: outcome.reasoning,
+    });
+
+    appendMessages(sessionId, [{ role: "user", content: message }]);
+
+    if (outcome.blocked) {
+      /* What she CAN have, at her own cap. A refusal carrying real, buyable
+         options is protection; one carrying only a sentence is a dead end. */
+      const alternatives = searchProducts({ max_price: maxSpend }).slice(0, 3);
+      return {
+        type: "guardrail_blocked",
+        content: outcome.blocked.suggestion,
+        data: {
+          guardrail: {
+            rule: outcome.blocked.rule,
+            limit: outcome.blocked.limit,
+            attempted: outcome.blocked.attempted,
+            suggestion: outcome.blocked.suggestion,
+            asked_for: outcome.blocked.asked_for,
+          },
+          products: alternatives,
+        },
+        language: lang,
+        audit_id: auditId,
+      };
+    }
+
+    if (outcome.consent) {
+      const line = confirmLine(outcome.consent.product, lang);
+      appendMessages(sessionId, [{ role: "assistant", content: line }]);
+      return {
+        type: "consent_required",
+        content: line,
+        data: { products: [outcome.consent.product] },
+        language: lang,
+        audit_id: auditId,
+      };
+    }
+  }
 
   const llm = provider();
 
