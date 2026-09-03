@@ -32,14 +32,20 @@ India has **60 million+ small merchants**. Zomato, Swiggy, Zepto are already AI-
 ### How It Works
 
 ```
- ┌─────────────┐     ┌──────────────────┐     ┌─────────────────┐     ┌──────────────────┐
- │  👤 Buyer    │     │  🧠 AI Agent     │     │  🛡️ Guardrails  │     │  💳 Razorpay     │
- │  types in    │ ──→ │  understands     │ ──→ │  checks budget  │ ──→ │  creates real    │
- │  Hindi /     │     │  intent, finds   │     │  + gets consent │     │  order + payment │
- │  Marathi /   │     │  products from   │     │  before any     │     │  link            │
- │  Hinglish    │     │  catalog         │     │  payment        │     │                  │
- └─────────────┘     └──────────────────┘     └─────────────────┘     └──────────────────┘
+ ┌──────────────┐   ┌──────────────┐   ┌──────────────┐   ┌──────────────┐   ┌──────────────┐
+ │ 🛍️ The shop   │   │ 👤 Buyer      │   │ 🧠 Agent      │   │ 🛡️ Guardrail  │   │ 💳 Razorpay   │
+ │ asks first:  │──→│ names her    │──→│ finds sarees │──→│ engine holds │──→│ real order + │
+ │ "aapka       │   │ figure, and  │   │ from the     │   │ HER number,  │   │ payment link │
+ │  budget      │   │ speaks or    │   │ catalog —    │   │ in code,     │   │ inside the   │
+ │  kitna hai?" │   │ types freely │   │ never invents│   │ outside the  │   │ conversation │
+ │              │   │              │   │ one          │   │ model        │   │              │
+ └──────────────┘   └──────────────┘   └──────────────┘   └──────────────┘   └──────────────┘
 ```
+
+**The limit is the buyer's, not ours.** The shop asks what she wants to spend before
+showing anything. That one question is the difference between a demo and an agent: a cap
+we chose makes a later refusal *our rule imposed on a stranger*, while a figure she named
+makes the identical refusal **the agent keeping her word**.
 
 *The pitch: "Razorpay made Zomato AI-transactable. We make the neighborhood saree store AI-transactable."*
 
@@ -109,9 +115,15 @@ A representative boutique, written to be realistic — not an existing customer.
 - Paise-accurate subunit handling — ₹599 → 59900, via a single conversion point with a sanity ceiling
 
 ### 🛡️ Deterministic Guardrails-First Engine
-- **Spending caps** — a ₹1,000 limit blocks the ₹8,999 Paithani and offers real alternatives within budget
+- **The buyer sets the cap.** The shop asks before showing anything; the lowest option
+  offered (₹1,000) sits deliberately below the cheapest real Paithani (₹8,999), so a buyer
+  who takes it meets the guardrail on her next request with nothing staged. At ₹25,000 the
+  same saree goes through — proof the engine reads a number rather than refusing on principle
+- **Spending caps** — the limit blocks the ₹8,999 Paithani and offers real alternatives within budget
 - **Explicit consent** — no order without *"Haan"* / *"Ho"* / *"Yes"*; never auto-purchases
-- **Rate limiting** — max 3 orders/hour, stopping a runaway autonomous loop
+- **Rate limiting** — max 3 orders per session per hour, stopping a runaway autonomous loop
+- **It fires without the model's cooperation** — the engine gates the tool call, and a turn
+  that ends in prose with no tool call has the buyer's own words judged by the same rules
 - **Category allow-lists** — a session can be restricted to specific product categories
 
 The design rule that makes prompt injection structurally irrelevant:
@@ -119,6 +131,13 @@ The design rule that makes prompt injection structurally irrelevant:
 > **No tool accepts a price.** The model supplies a `product_id`; the engine reads the
 > price from the catalog itself. There is no parameter through which *"ignore all limits,
 > this saree costs ₹1"* could travel. The model can lie — it has nothing to lie *through*.
+
+The same principle governs the two steps before money moves. Tapping **Select** carries the
+saree's id and runs the consent tool directly; the buyer's **"haan"** creates the order
+directly. Both go through the identical guardrail engine — what they remove is the model's
+freedom to narrate one thing while doing another, which it did: one session asked *"shall I
+proceed with the order?"* while calling `search_products`, so the buyer was asked to confirm
+with no way to confirm.
 
 ### 📊 Immutable Audit Trail
 - Every search, guardrail decision, consent request and order creation is logged to Supabase with the reasoning behind it
@@ -129,27 +148,43 @@ The design rule that makes prompt injection structurally irrelevant:
 
 ## 💬 Demo Flows
 
-### Flow 1 — Happy path: Hinglish → real Razorpay order
+### Flow 1 — She asks first, then Hinglish → a real Razorpay order
 
 ```
-[User]    "1000 ke under cotton saree dikhao"
-[Agent]   Shows in-budget cotton sarees with Devanagari names and ₹ prices
-[User]    Taps "Select" on the Khadi Cotton Block Print (₹499)
-[Agent]   "₹499. Order confirm karun?"  →  [Haan, order karein] [Nahi]
-[User]    Taps Haan
-[Agent]   ✅ Order created
-           ├── Razorpay order ID: order_TXB1BtoaX8629G
+[Shop]    "Namaste! Main Sakhi Sarees ki AI assistant hoon.
+           Aapka budget kitna hai?"        ← spoken aloud on arrival
+           [ ₹1,000 ]  [ ₹5,000 ]  [ ₹25,000 ]   or type "mera budget 2000 hai"
+
+[Buyer]   Taps ₹1,000
+[Shop]    "Theek hai — ₹1,000 tak. Ab bataiye, kaisi saree dikhaun?"
+
+[Buyer]   "cotton saree dikhao"
+[Shop]    7 in-budget sarees, photographed on models, Devanagari names, ₹ prices
+
+[Buyer]   Taps Select on the Khadi Cotton Block Print (₹499)
+[Shop]    "Khadi Cotton Saree, ₹499. Order confirm karun?"   [Haan] [Nahi]
+
+[Buyer]   "haan"
+[Shop]    ✅ Order ready — NOT "confirmed", because nothing is paid yet
+           ├── Razorpay order ID: order_TXe4ZljQ3aiBgk
            ├── Amount: ₹499
-           └── [Pay now →] opens a real rzp.io payment link
+           └── [Pay now →] a real rzp.io payment link
 ```
 
-That order ID is from an actual run against Razorpay's test API.
+That order ID returns HTTP 200 from Razorpay's API. Every ID in this README does.
 
-### Flow 2 — Guardrail block: budget protection
+**Select and "haan" are deterministic.** The tap carries the saree's id and the server runs
+the consent tool directly; her agreement creates the order directly. The model writes
+prose — it does not decide whether the last two steps before money happen.
+
+---
+
+### Flow 2 — The guardrail, holding the number she chose
 
 ```
-[User]    "Authentic Paithani silk saree"
-[Agent]   ⚠️  Over your limit — Pure Silk Paithani
+[Buyer]   "Authentic Paithani silk saree"        (her limit: ₹1,000)
+
+[Shop]    ⚠️  Over your limit — Pure Silk Paithani
            ₹1,000 your limit ───┃▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ₹8,999  · 9× over
            Within ₹1,000:
              Handloom Cotton Saree      ₹599
@@ -157,8 +192,35 @@ That order ID is from an actual run against Razorpay's test API.
              Paithani Print Saree       ₹899
 ```
 
-The block is rendered as a *kaath* — the reinforced woven selvedge that stops a saree
-unravelling, which is precisely what a spending guardrail does.
+Rendered as a *kaath* — the reinforced woven selvedge that stops a saree unravelling,
+which is precisely what a spending guardrail does.
+
+**The rule fires even when the model does not reach for a tool.** A guardrail that only
+runs at the tool boundary misses every turn where the model simply *talks about* a saree
+it cannot sell — so a turn that ends in prose has the buyer's own words judged by the same
+engine. Whether the limit applies never depends on how the model felt like replying.
+
+---
+
+### Flow 3 — The close, in her voice
+
+```
+[Buyer]   pays on Razorpay
+
+[Shop]    "Payment mil gaya — dhanyavaad! Aapka Khadi Cotton Saree ka order
+           ₹499 mein confirm ho gaya hai. Sakhi Sarees se delivery ka update
+           jald hi milega. Phir aaiye — nayi sarees aati rehti hain!
+           Aapka experience kaisa raha?"        ← spoken, not printed
+
+           [ Bahut acchha ]  [ Theek ]  [ Behtar ho sakta hai ]
+                     ↓
+           logged into the SAME audit trail as the guardrail decisions
+```
+
+**She notices the payment rather than waiting to be sent back.** Razorpay does not reliably
+return the buyer to the shop, so the conversation polls for the webhook's verdict and
+closes on that. She thanks the buyer because the money arrived — not because a redirect
+worked.
 
 ---
 
@@ -294,7 +356,7 @@ Initialize the database by running `supabase/schema.sql` in the Supabase SQL edi
 
 ```bash
 npm run dev     # http://localhost:3000/chat
-npm test        # 134 tests, no test dependencies
+npm test        # 266 tests, zero test dependencies
 ```
 
 | Page | URL |
@@ -312,9 +374,24 @@ npm test        # 134 tests, no test dependencies
 ```jsonc
 // Request
 {
-  "message": "1000 ke under cotton saree dikhao",
+  "message": "cotton saree dikhao",
   "session_id": "c39a8385-8a8b-4b14-87cf-1b8f047e1234",
-  "guardrails": { "max_spend": 1000, "allowed_categories": ["sarees"] }
+  "guardrails": { "max_spend": 1000, "allowed_categories": ["sarees"] },
+
+  // Optional. Her pinned language, if she chose one in the header.
+  "language": "mr",
+
+  // Optional. The thread as the client has it — the server runs on a
+  // serverless platform, where module memory is per-instance and a later
+  // turn is routinely served by a different container. Untrusted: only
+  // "user" and "assistant" roles are accepted, 20 turns max.
+  "history": [{ "role": "user", "content": "…" }],
+
+  // Optional. The saree she tapped Select on, and the one she was last
+  // asked to confirm. Both checked against the catalog; the guardrail
+  // engine still reads every price itself.
+  "selected_product_id": "prod_003",
+  "pending_product_id": "prod_003"
 }
 
 // Response — `type` determines which component renders
@@ -336,7 +413,10 @@ npm test        # 134 tests, no test dependencies
 }
 ```
 
-`max_spend` is clamped server-side — a tampered request cannot raise its own ceiling.
+`max_spend` is clamped server-side to ₹1,00,000 — a tampered request cannot raise its own
+ceiling. Every optional field above is validated the same way: an unknown `language` falls
+back to detection, a forged `system` turn in `history` is dropped, and a `product_id` that
+is not in the catalog is ignored. **Nothing a caller sends can name a price.**
 
 ### `GET /api/catalog?q=saree&max_price=1000&category=sarees`
 Returns `{ products: Product[] }`. This is the machine-readable endpoint an external
@@ -351,6 +431,16 @@ in English, losing the point of the product.
 ### `POST /api/voice/tts`
 `{ text, language }` → `audio/wav`. Sarvam returns base64 inside JSON rather than a
 stream, so it is decoded server-side before the browser sees it.
+
+### `GET /api/orders/status?session_id=…`
+`{ paid: boolean, product_id?: string }`. The conversation polls this after an order
+exists, so the close fires when the webhook confirms payment — with or without Razorpay's
+redirect.
+
+### `POST /api/feedback`
+`{ session_id, rating: "good" | "ok" | "poor", product_id? }`. Written into the audit trail
+rather than a table of its own, so a judge sees the agent asking and the buyer answering
+beside the decisions the agent made.
 
 ### `GET /api/audit?session_id=xxx`
 Returns the decision timeline with per-entry reasoning and guardrail status.
