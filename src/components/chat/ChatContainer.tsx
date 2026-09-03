@@ -229,16 +229,11 @@ export function ChatContainer() {
      1.8 to 8.5 warm. A judge's opening question is by definition the cold one,
      so the worst number in the system is the first one anyone sees.
      
-     Deliberately a malformed body. It is rejected at the validator before any
-     model call, so this costs a container start and nothing else — no Gemini
-     tokens, no audit row, no session. */
+     A GET, which the route answers immediately: this costs a container start
+     and nothing else — no Gemini tokens, no audit row, no session — and does
+     not print a 400 in the console of anyone who opens devtools. */
   useEffect(() => {
-    void fetch("/api/agent/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: "{}",
-      keepalive: true,
-    }).catch(() => {
+    void fetch("/api/agent/chat", { method: "GET", keepalive: true }).catch(() => {
       /* A failed warm-up changes nothing; the real request still works. */
     });
   }, []);
