@@ -58,7 +58,8 @@ This section exists so every other claim in this README can be checked and found
 | Full-screen chat UI | ✅ Built — `/chat` |
 | Design-system specimen sheet | ✅ Built — `/design` |
 | 16-saree catalog + search API | ✅ Built |
-| Voice in / out (Sarvam AI) | ✅ Built — speak to the agent, hear the reply in the same language |
+| Voice in / out (Sarvam AI) | ✅ Built — speak to the agent, and she answers aloud unprompted |
+| Language picker | ✅ Built — pin Hindi, Marathi, Hinglish or English; detection is the default |
 | Audit dashboard | ✅ Built — `/dashboard?session_id=…` |
 | Landing page | ✅ Built — `/` |
 | Payment webhook (signed) | ✅ Built — orders move `created → paid` on a verified `payment.captured` |
@@ -87,9 +88,23 @@ A representative boutique, written to be realistic — not an existing customer.
 
 ### 🗣️ Native Multilingual Commerce
 - Chat in **Hindi, Marathi, Hinglish, or English** — the agent replies in the same language
+- **Or pin one.** A picker in the header fixes the language for every turn. Detection is a
+  good default, but it reads the message in front of it — and `"ok"` or `"haan"` carries no
+  marker at all, so a Marathi conversation could slip into Hindi on the exact turn that
+  confirms a purchase. A choice outranks detection in the prompt, in the reply, and as a
+  hint to the transcriber
 - **Speak instead of typing** — Sarvam AI transcribes her speech and reads the reply back
   in the language she used. Typing Devanagari on a phone is slow enough that most buyers
   give up and type romanised Hinglish; speaking removes that tax
+- **She talks first.** The shop greets on the buyer's first gesture and speaks every reply
+  after it — no speaker icon to hunt for. Browsers refuse audio before a gesture, so that
+  is the earliest honest moment; a greeting on page load plays to nobody. Sending a message
+  or opening the mic silences her mid-sentence, because talking over a customer is the one
+  thing a shopkeeper never does
+- **She announces, she does not narrate.** Sarvam's TTS latency scales with input length —
+  measured live: 48 chars 1.0s, 133 chars 2.8s, 267 chars 4.8s. Reading a whole reply aloud
+  lands the voice seconds after text the buyer has already finished. So she says
+  *"ये रहीं 7 साड़ियाँ। देखिए, कौन सी पसंद आई?"* and leaves the detail on screen
 - Authentic Maharashtrian textile vocabulary: *पैठणी, हातमाग, जरी, पदर, आंबा मोटिफ*
 - Devanagari is first-class: script detection is Unicode-aware, not ASCII `\b`
 

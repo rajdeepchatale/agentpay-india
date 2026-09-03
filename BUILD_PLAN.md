@@ -21,6 +21,26 @@
 | 👉 Next | **Step 14 — the video.** Every buildable step is done |
 | 🟢 Blockers | None. Every 🔴 Tier 1 item is done |
 | 🟡 Pending | Nothing blocking. All 16 saree photographs are in |
+| 📅 Deadline | **5 Sep** (working to 4 Sep) |
+
+### After Step 13 — what landed since (Sep 3)
+
+Recorded because Step 13 signed off a build that was, in one respect, broken.
+
+| | |
+|---|---|
+| 🔴 **The microphone never worked in production** | Sarvam string-matches the upload's Content-Type against an allowlist. Chrome's MediaRecorder stamps `audio/webm;codecs=opus`, which is not on it → 400. The same bytes under an allowed type transcribe perfectly, so it was never a format problem. Now uploaded as `application/octet-stream`, which covers Chrome/Firefox webm and Safari mp4 alike |
+| Why Step 13 missed it | The STT route fails soft — a Sarvam 400 becomes `200 {"text":""}` — so a dead mic looked like a working one mishearing every time. The verification probe hand-wrote the Content-Type instead of using a browser's. **Every check since is driven through a real Chromium MediaRecorder against production** |
+| She greets on arrival | Was wired only to a tour step, so typing or tapping the mic met a silent shop. Now fires on the first gesture anywhere; a gesture that starts a conversation cancels it, so a buyer who walks in already asking gets an answer, not a formality |
+| The mic silences her | She would otherwise speak into the recording — rude, and a transcription bug, since Sarvam hears her over the buyer |
+| She announces, not narrates | Sarvam TTS scales with length (48 chars 1.0s · 133 chars 2.8s · 267 chars 4.8s). Reading full replies aloud put the voice ~5s behind the text. `spokenLine` returns one short line per outcome; the spoken greeting went 212 → 70 chars |
+| Language picker | Header control pinning Hindi / Marathi / Hinglish / English. Outranks detection in the prompt, the reply, and the STT hint — detection cannot read `"ok"`, which is exactly the turn that confirms a purchase. Validated against an explicit list like the spend cap is |
+| Moved to Mumbai | Production reported `x-vercel-id: bom1::iad1` — the edge answered from Mumbai while the function ran in Virginia, so every clip went India → Virginia → Sarvam (in India) → back. `vercel.json` pins `bom1`; TTS round trip 2.3s → 1.6s. A per-route `preferredRegion` was tried first and is ignored on this plan |
+
+Verified on production after all of the above: greeting speaks on arrival · mic
+transcribes `मला पैठणी सिल्क साडी दाखवा.` · mic silences her · agent answers
+aloud · pinned मराठी answers a bare `"ok"` in Devanagari. 210 tests, lint,
+detector, build clean.
 
 **Step 13 verified on production, not asserted** (Sep 3):
 
@@ -701,22 +721,83 @@ block, the dashboard, and mobile at 375px.
 > [`PROBLEM_STATEMENT.md`](PROBLEM_STATEMENT.md). Re-read it before recording —
 > especially the "do not overclaim" section.
 
+> **This script was rewritten on Sep 3.** The original had voice as one bullet
+> inside the architecture section — it was written before voice existed and
+> nobody updated it. Voice is not a section here. It is *how she is used*
+> throughout, and the guardrail is spoken aloud in Marathi so the two strongest
+> claims land in the same ten seconds instead of competing for airtime.
+
+### Timings are measured, not estimated
+
+Every wait below is a real number from production. Fill them with narration —
+this is where a demo video dies.
+
+| Beat | Actual |
+|---|---|
+| Text reply on screen | **~2.8s** after send |
+| Her voice starts | **~4.5s** after send (~1.7s after the text) |
+| Order creation | ~3s |
+| First spoken line of a session | ~0.9s slower — the function is cold |
+
 ```
-00:00–00:30  HOOK — 60M merchants. Zomato is AI-transactable.
+00:00–00:30  HOOK
+             60M merchants. Zomato is AI-transactable.
              The Pune saree seller whose Reel got 50,000 views isn't.
-00:30–01:00  MEET SAKHI SAREES — 200 DMs/day, answers 30, loses 70%.
-01:00–02:30  HAPPY PATH — full-screen chat
-             "1000 ke under cotton saree dikhao" → 3 cards
-             → select → consent → "Haan" → real order_xxxxx → Pay Now
-02:30–03:30  GUARDRAILS — the dramatic moment
-             "Authentic Paithani silk saree dikhao" → BLOCKED
-             ₹1,000 limit vs ₹8,999 → agent suggests alternatives
-             → show /dashboard audit trail
-03:30–04:15  ARCHITECTURE — real Razorpay APIs, not mocks.
-             Guardrails are architecture, not a checkbox.
-             Sarvam for Hindi + Marathi.
-04:15–05:00  VISION — NPCI UAP, Razorpay MCP, WhatsApp webhook.
+
+00:30–00:55  THE SHOP
+             Sakhi Sarees — a representative demo merchant, say so once.
+             200 DMs after a Reel. She answers 30.
+
+00:55–01:20  SHE WALKS IN                                    ← the agentic beat
+             Open /chat. Click once, anywhere.
+             Sakhi GREETS OUT LOUD, unprompted. Say nothing over this.
+             Show the header: language picker + "Voice on" going to "Speaking".
+
+01:20–02:20  HAPPY PATH — typed Hinglish
+             "1000 ke under cotton saree dikhao"
+             → 7 real sarees. She says: "Ye rahin 7 sarees. Dekhiye,
+               kaun si pasand aayi?"  — announces, does not read the reply
+             → pick one → consent prompt → "Haan"
+             → real order_xxxxxxxxxxxx + working Pay Now link
+             NARRATE over the ~3s order wait: this is a real Razorpay
+             test-mode order, not a mock.
+
+02:20–03:20  THE GUARDRAIL, IN HER VOICE                          ← the peak
+             Tap the mic. SPEAK, in Marathi:
+                 "मला पैठणी सिल्क साडी दाखवा"
+             → transcribed in Marathi, not translated to English
+             → ₹8,999 against a ₹1,000 cap → BLOCKED
+             → and she SAYS the refusal, in Marathi:
+                 "हे तुमच्या मर्यादेपेक्षा जास्त आहे. या पाहा, तुमच्या बजेटमध्ये."
+             Land the line: the model never saw the price. The engine did.
+
+03:20–04:00  THE PROOF
+             /dashboard?session_id=… — every decision, with its reasoning,
+             the block marked. Point at the row for what just happened.
+
+04:00–04:35  ARCHITECTURE
+             Guardrails run OUTSIDE the LLM — code gates the tool call, and
+             the price is read from the catalog, never from the model.
+             Real Razorpay APIs. Sarvam saarika in, bulbul out.
+             Functions run in Mumbai, next to both.
+
+04:35–05:00  VISION — NPCI UAP, Razorpay MCP, WhatsApp webhook.
 ```
+
+### Recording mechanics — read before the first take
+
+- **Wear headphones.** Playing her through speakers while the demo's own
+  microphone is open puts her voice into the recording twice. Opening the mic
+  silences her, so this will not corrupt the transcription — but it sounds bad.
+- **Warm her up before recording.** Load `/chat`, click once, let the greeting
+  play, then reload. The first spoken line of a cold session is ~0.9s slower.
+- **Speak the Marathi line yourself.** A typed Marathi message proves the
+  language support; a spoken one proves Sarvam, the language support, and the
+  guardrail in a single take.
+- **Do not cut the pause before she speaks.** ~1.7s of a shop thinking reads as
+  real. Cutting it makes the whole thing look pre-rendered.
+- **One browser tab.** The guardrail rail (≥1280px) is on screen beside the
+  conversation and updates live — it is free evidence, so record wide.
 
 **Submit**: GitHub (public) + video + Vercel URL at razorpay.com/buildathon.
 
