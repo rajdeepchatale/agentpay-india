@@ -377,7 +377,7 @@ flowchart TB
 
 ```
 agentpay-india/
-├── public/products/                 # Saree photography + generation brief
+├── public/products/                 # 16 saree photographs, on models
 ├── src/
 │   ├── app/
 │   │   ├── layout.tsx               # Root layout, Devanagari fonts, metadata
@@ -391,21 +391,28 @@ agentpay-india/
 │   │       ├── voice/stt/route.ts   # Sarvam Saarika — speech in, language preserved
 │   │       ├── voice/tts/route.ts   # Sarvam Bulbul — the reply, spoken
 │   │       ├── catalog/route.ts     # Product search & filtering
+│   │       ├── orders/status/route.ts  # Has this session paid yet? (polled after an order)
+│   │       ├── feedback/route.ts    # Post-purchase rating → the same audit trail
+│   │       ├── razorpay/webhook/route.ts  # Signed; created → paid
 │   │       └── audit/route.ts       # Audit log retrieval
 │   ├── components/
-│   │   ├── chat/                    # ChatContainer, MessageBubble, ProductCard,
+│   │   ├── chat/                    # ChatContainer, ChatInput, MessageBubble, ProductCard,
+│   │   │                            # BudgetPrompt, DemoTour, LanguagePicker,
 │   │   │                            # VoiceButton, SpeakButton, GuardrailRail,
 │   │   │                            # ConsentPrompt, GuardrailAlert, OrderConfirmation,
-│   │   │                            # FailureCard, ErrorCard, TypingIndicator,
-│   │   │                            # SuggestionChips, SettingsModal, ChatInput
+│   │   │                            # FeedbackPrompt, FailureCard, ErrorCard,
+│   │   │                            # TypingIndicator, SettingsModal
 │   │   └── ui/                      # Button, Card, Badge, Input, Modal, Icon
 │   ├── lib/
 │   │   ├── agent/                   # Agent loop, tools, prompt, provider abstraction
 │   │   ├── guardrails/              # Spending cap engine, consent, rate limits
 │   │   ├── razorpay/                # SDK client, orders, payment links, paise maths
-│   │   ├── chat/                    # State machine, session, colour swatches
+│   │   ├── chat/                    # State machine, session, and the copy the shop
+│   │   │                            # speaks: opening (budget), confirm, closing,
+│   │   │                            # ui-text (one table per language), language
+│   │   │                            # precedence, useAgentVoice
 │   │   ├── voice/                   # Sarvam client — saarika STT, bulbul TTS
-│   │   ├── catalog/                 # 16 saree products (3 price tiers) + search
+│   │   ├── catalog/                 # 16 saree products (3 price tiers) + search + names
 │   │   ├── audit/                   # Structured decision logger
 │   │   └── db/                      # Supabase client
 │   └── types/index.ts               # Shared TypeScript interfaces
