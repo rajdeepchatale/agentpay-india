@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
+import type { SupportedLanguage } from "@/types";
 import { Button } from "@/components/ui/Button";
 import { SendIcon, ShieldIcon } from "@/components/ui/Icon";
 import { VoiceButton } from "./VoiceButton";
@@ -24,6 +25,8 @@ export interface ChatInputProps {
   onVoiceInput?: (text: string) => void;
   /** Fired when the mic opens, so the agent can stop talking into it. */
   onVoiceStart?: () => void;
+  /** Her chosen language, handed to Sarvam as a transcription hint. */
+  voiceLanguage?: SupportedLanguage;
   disabled?: boolean;
 }
 
@@ -37,6 +40,7 @@ export function ChatInput({
   onEditLimit,
   onVoiceInput,
   onVoiceStart,
+  voiceLanguage,
   disabled = false,
 }: ChatInputProps) {
   const [value, setValue] = useState("");
@@ -91,6 +95,7 @@ export function ChatInput({
           <VoiceButton
             onTranscript={onVoiceInput}
             onStart={onVoiceStart}
+            language={voiceLanguage}
             disabled={isBlocked}
           />
         )}

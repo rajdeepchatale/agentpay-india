@@ -9,14 +9,44 @@
 // the agent *sound* right; the engine makes it *be* right.
 // ============================================================
 
+import type { SupportedLanguage } from "@/types";
+
 export interface PromptContext {
   merchantName: string;
   merchantCity: string;
   /** Spending cap in ₹ currently in force for this session. */
   maxSpend: number;
+  /**
+   * The language she picked in the header, if she picked one.
+   *
+   * Appended AFTER the cacheable body rather than woven into it: the prompt
+   * prefix stays byte-stable so providers can still cache it, and the
+   * override reads as the later, more specific instruction — which is how it
+   * should win.
+   */
+  language?: SupportedLanguage;
 }
 
+const PINNED: Record<SupportedLanguage, string> = {
+  hi: "Hindi, in Devanagari script",
+  mr: "Marathi, in Devanagari script",
+  hinglish: "Hinglish — Hindi and English mixed, in roman script only",
+  en: "English",
+};
+
 export function buildSystemPrompt(ctx: PromptContext): string {
+  const body = promptBody(ctx);
+  if (!ctx.language) return body;
+
+  return `${body}
+
+LANGUAGE OVERRIDE — this outranks the detection rule above
+- The buyer has explicitly chosen ${PINNED[ctx.language]}.
+- Reply in that language for EVERY turn, whatever language she happens to type in.
+- She may type a short "ok" or "haan" in another script. That does not change her choice.`;
+}
+
+function promptBody(ctx: PromptContext): string {
   return `You are the AI shopping assistant for ${ctx.merchantName}, a ${ctx.merchantCity} boutique selling authentic Maharashtrian sarees — Paithani, handloom cotton and silk blends sourced from Yeola and Paithan weavers.
 
 LANGUAGE — the most important rule

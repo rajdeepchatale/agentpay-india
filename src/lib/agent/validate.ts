@@ -6,8 +6,20 @@
 // ============================================================
 
 import { clampSpendLimit } from "@/lib/guardrails/engine";
+import type { SupportedLanguage } from "@/types";
 
 const MAX_MESSAGE_LENGTH = 2000;
+
+/* An explicit list, not a cast. The value indexes phrase tables and reaches
+   the system prompt, so "__proto__" or an unknown tag must fall through to
+   detection rather than either of those. */
+const LANGUAGES: readonly SupportedLanguage[] = ["hi", "mr", "hinglish", "en"];
+
+function readLanguage(raw: unknown): SupportedLanguage | undefined {
+  return typeof raw === "string" && LANGUAGES.includes(raw as SupportedLanguage)
+    ? (raw as SupportedLanguage)
+    : undefined;
+}
 
 export type ChatValidation =
   | {
@@ -16,6 +28,8 @@ export type ChatValidation =
       sessionId: string;
       maxSpend: number;
       allowedCategories?: string[];
+      /** Her explicit choice. Absent means detect it from what she wrote. */
+      language?: SupportedLanguage;
     }
   | { ok: false; status: number; error: string; message: string };
 
@@ -61,11 +75,14 @@ export function validateChatRequest(body: unknown): ChatValidation {
     ? rawCategories.filter((c): c is string => typeof c === "string")
     : undefined;
 
+  const language = readLanguage(b.language);
+
   return {
     ok: true,
     message,
     sessionId,
     maxSpend,
     ...(allowedCategories?.length ? { allowedCategories } : {}),
+    ...(language ? { language } : {}),
   };
 }

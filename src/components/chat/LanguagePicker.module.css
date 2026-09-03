@@ -1,0 +1,73 @@
+/* Sits beside the voice toggle and reads as its sibling: same pill, same
+   muted-until-touched treatment. The two controls in this header are the two
+   things a buyer can tune about how the shop talks to her. */
+.wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: none;
+}
+
+.icon {
+  position: absolute;
+  left: var(--space-3);
+  color: currentColor;
+  pointer-events: none;
+}
+
+/* A native select, deliberately. On a phone this opens the OS picker, which
+   is faster and more familiar than any listbox we could build — and this is a
+   product whose buyers are on phones. */
+.select {
+  appearance: none;
+  padding: var(--space-2) var(--space-6) var(--space-2) calc(var(--space-3) + 20px);
+  font-family: inherit;
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  background-color: transparent;
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-standard),
+    background-color var(--dur-fast) var(--ease-standard);
+}
+
+.select:hover {
+  color: var(--text-primary);
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.select:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+/* Chosen rather than inferred — the same weight the voice toggle carries when
+   it is on. Zari, never saffron: saffron is the colour of spending money. */
+.wrap[data-pinned] .select,
+.wrap[data-pinned] .icon {
+  color: var(--zari-bright);
+}
+
+.chevron {
+  position: absolute;
+  right: var(--space-2);
+  color: currentColor;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* The list itself is drawn by the OS, so it needs the page's colours stated
+   explicitly or it renders white-on-white in a dark theme. */
+.select option {
+  color: var(--text-primary);
+  background-color: var(--bg-surface);
+}
+
+@media (max-width: 720px) {
+  /* The flag of what it is stays; the word goes. Two labelled pills plus a
+     wordmark do not fit a 360px header without wrapping. */
+  .select {
+    padding-right: var(--space-5);
+  }
+}

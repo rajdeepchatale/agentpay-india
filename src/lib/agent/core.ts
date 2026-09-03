@@ -64,6 +64,15 @@ export interface AgentRequest {
   maxSpend: number;
   /** Optional category allow-list from the client. */
   allowedCategories?: string[];
+  /**
+   * The language she picked in the header. Absent means detect it.
+   *
+   * A choice outranks detection: a buyer who selects मराठी and then types
+   * "ok" — four ASCII characters with no marker in them — must still be
+   * answered in Marathi. Detection is a good default, not a better answer
+   * than her own.
+   */
+  language?: SupportedLanguage;
 }
 
 /** Fallback copy, in the buyer's own language. */
@@ -90,8 +99,15 @@ const FALLBACK = {
 
 export async function runAgent(req: AgentRequest): Promise<AgentResponse> {
   const { message, sessionId, maxSpend, allowedCategories } = req;
-  /* Detected from HER message, so a failure still answers in her language. */
-  const lang = detectLanguage(message);
+  /* Her choice first, detection second — and either way it is derived from
+     HER, so a failure still answers in her language. */
+  const lang = req.language ?? detectLanguage(message);
+
+  /* The reply's own language is normally the most accurate signal — the model
+     wrote it. But a pinned choice outranks that too, or a Marathi buyer whose
+     agent slips into Hindi would be answered, and spoken to, in Hindi. */
+  const replyLanguage = (text: string): SupportedLanguage =>
+    req.language ?? detectLanguage(text);
 
   /* Consent is granted by the BUYER, never by the model. If her message reads
      as agreement, promote whatever the agent last asked her to confirm. */
@@ -115,6 +131,7 @@ export async function runAgent(req: AgentRequest): Promise<AgentResponse> {
     merchantName: MERCHANT.name,
     merchantCity: MERCHANT.city,
     maxSpend,
+    ...(req.language ? { language: req.language } : {}),
   });
 
   const messages: AgentMessage[] = [
@@ -156,7 +173,7 @@ export async function runAgent(req: AgentRequest): Promise<AgentResponse> {
             type: "order_created",
             content: text,
             data: { order },
-            language: detectLanguage(text),
+            language: replyLanguage(text),
             audit_id: auditId,
           };
         }
@@ -165,7 +182,7 @@ export async function runAgent(req: AgentRequest): Promise<AgentResponse> {
             type: "consent_required",
             content: text,
             data: { products: [consent.product] },
-            language: detectLanguage(text),
+            language: replyLanguage(text),
             audit_id: auditId,
           };
         }
@@ -186,7 +203,7 @@ export async function runAgent(req: AgentRequest): Promise<AgentResponse> {
                  one that carries only a sentence is a dead end. */
               products,
             },
-            language: detectLanguage(text),
+            language: replyLanguage(text),
             audit_id: auditId,
           };
         }
@@ -195,7 +212,7 @@ export async function runAgent(req: AgentRequest): Promise<AgentResponse> {
             type: "failure_handled",
             content: text,
             data: { failure, products },
-            language: detectLanguage(text),
+            language: replyLanguage(text),
             audit_id: auditId,
           };
         }
@@ -203,7 +220,7 @@ export async function runAgent(req: AgentRequest): Promise<AgentResponse> {
           type: products?.length ? "products" : "text",
           content: text,
           data: products?.length ? { products } : undefined,
-          language: detectLanguage(text),
+          language: replyLanguage(text),
           audit_id: auditId,
         };
       }

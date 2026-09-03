@@ -12,6 +12,8 @@ import type { AgentResponse, Product } from "@/types";
 import { chatReducer, initialChatState } from "@/lib/chat/machine";
 import { readSessionId } from "@/lib/chat/session";
 import { useAgentVoice } from "@/lib/chat/useAgentVoice";
+import { spokenLine } from "@/lib/voice/speech";
+import { LanguagePicker, type LanguageChoice } from "./LanguagePicker";
 import { ChatInput } from "./ChatInput";
 import { MessageBubble } from "./MessageBubble";
 import { SpeakButton } from "./SpeakButton";
@@ -42,6 +44,13 @@ const TOUR_SENDS = [
 const WELCOME =
   "Namaste! Main Sakhi Sarees ki AI shopping assistant hoon. Hamare paas authentic Paithani, handloom cotton, aur silk sarees hain. Aap Hindi, Marathi, Hinglish ya English mein baat kar sakti hain! Kya dhundh rahi hain?";
 
+/* Spoken, not written. The written welcome lists the stock and the four
+   languages — worth reading, and 212 characters is four seconds of Sarvam
+   before a single word comes out. A shopkeeper's actual greeting is one
+   line, and the rest is on screen for her to read while she decides. */
+const SPOKEN_WELCOME =
+  "Namaste! Main Sakhi Sarees ki AI assistant hoon. Kya dhundh rahi hain?";
+
 /* ---------------------------------------------------------------
    The post-payment return, read once.
 
@@ -70,6 +79,25 @@ const getSession = () => {
 };
 const getSessionServer = () => "";
 
+/* Her language choice, read once at module scope like the two above. Read in
+   an effect instead and the first render would answer "auto", which is a
+   visible flip of the picker on every load. */
+const LANGUAGE_KEY = "agentpay_language";
+const CHOICES: readonly LanguageChoice[] = ["auto", "hi", "mr", "hinglish", "en"];
+let storedLanguage: LanguageChoice | undefined;
+const getLanguage = (): LanguageChoice => {
+  if (storedLanguage === undefined) {
+    try {
+      const raw = window.localStorage.getItem(LANGUAGE_KEY) as LanguageChoice | null;
+      storedLanguage = raw && CHOICES.includes(raw) ? raw : "auto";
+    } catch {
+      storedLanguage = "auto";
+    }
+  }
+  return storedLanguage;
+};
+const getLanguageServer = (): LanguageChoice => "auto";
+
 export function ChatContainer() {
   const [state, dispatch] = useReducer(chatReducer, initialChatState);
   const [spendLimit, setSpendLimit] = useState(DEFAULT_SPEND);
@@ -85,6 +113,26 @@ export function ChatContainer() {
      module scope so a later URL rewrite cannot make them change underneath. */
   const sessionId = useSyncExternalStore(subscribeNever, getSession, getSessionServer);
   const paidFor = useSyncExternalStore(subscribeNever, getPaid, getPaidServer);
+
+  /* Null until she touches the picker; then this session's choice wins — the
+     same shape useAgentVoice uses for its toggle. */
+  const persistedLanguage = useSyncExternalStore(
+    subscribeNever,
+    getLanguage,
+    getLanguageServer,
+  );
+  const [languageChoice, setLanguageChoice] = useState<LanguageChoice | null>(null);
+  const language = languageChoice ?? persistedLanguage;
+
+  const chooseLanguage = useCallback((next: LanguageChoice) => {
+    setLanguageChoice(next);
+    try {
+      window.localStorage.setItem(LANGUAGE_KEY, next);
+      storedLanguage = next;
+    } catch {
+      /* Not persisted; the session still honours the choice. */
+    }
+  }, []);
 
   /* Remove the query param once seen. A refresh or a shared link should not
      replay a payment confirmation. This is a write to an external system —
@@ -107,7 +155,7 @@ export function ChatContainer() {
      buyer who walks in already asking gets an answer, not a formality. */
   const { unlock } = voice;
   useEffect(() => {
-    const greet = () => unlock(WELCOME, "hinglish");
+    const greet = () => unlock(SPOKEN_WELCOME, "hinglish");
     window.addEventListener("pointerdown", greet, { once: true });
     window.addEventListener("keydown", greet, { once: true });
     return () => {
@@ -128,7 +176,11 @@ export function ChatContainer() {
     const msg = state.messages.find((m) => m.id === lastAgentId);
     if (!msg?.response?.content) return;
     spokenRef.current = lastAgentId;
-    speak(msg.response.content, msg.response.language);
+    /* She announces the outcome; she does not read the paragraph. Sarvam's
+       latency scales with length — a full reply is three to five seconds of
+       generation, which arrives long after the text she is already reading. */
+    const line = spokenLine(msg.response);
+    if (line) speak(line, msg.response.language);
     /* Keyed on the message id, not the array: a re-render must never replay a
        line she has already heard. */
   }, [lastAgentId, speak, state.messages]);
@@ -154,6 +206,9 @@ export function ChatContainer() {
             message,
             session_id: sessionId,
             guardrails: { max_spend: spendLimit },
+            /* Omitted when she has not chosen, so the agent detects as before.
+               Sent, it outranks detection for every turn. */
+            ...(language !== "auto" ? { language } : {}),
           }),
           signal: controller.signal,
         });
@@ -177,7 +232,10 @@ export function ChatContainer() {
         clearTimeout(timer);
       }
     },
-    [spendLimit, sessionId],
+    /* `language` belongs here: without it the request keeps the choice that
+       was current when this closure was built, and switching to मराठी would
+       not take effect until something else happened to rebuild it. */
+    [spendLimit, sessionId, language],
   );
 
   const send = useCallback(
@@ -357,6 +415,8 @@ export function ChatContainer() {
           </span>
         </div>
 
+        <LanguagePicker value={language} onChange={chooseLanguage} />
+
         {/* Without this the audit trail is unreachable in a live demo, and the
             guardrail evidence never gets seen. */}
         <button
@@ -469,6 +529,7 @@ export function ChatContainer() {
              and then press send would make voice slower than typing. */
           onVoiceInput={send}
           onVoiceStart={silenceVoice}
+          voiceLanguage={language === "auto" ? undefined : language}
         />
       </div>
 

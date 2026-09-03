@@ -106,6 +106,28 @@ export function ChevronRightIcon(props: IconProps) {
   );
 }
 
+export function ChevronDownIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="m5.5 9.5 6.5 6.5 6.5-6.5" />
+    </Svg>
+  );
+}
+
+/**
+ * Language. A globe with a meridian and a parallel — the standard sign, drawn
+ * on this set's grid rather than pulled from a library.
+ */
+export function LanguageIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M3.5 12h17" />
+      <path d="M12 3.5a13 13 0 0 1 0 17a13 13 0 0 1 0-17Z" />
+    </Svg>
+  );
+}
+
 /** Speaker. Two arcs for sound, drawn on the same grid as everything else. */
 export function SpeakerIcon(props: IconProps) {
   return (

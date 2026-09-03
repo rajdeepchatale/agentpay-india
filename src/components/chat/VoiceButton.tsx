@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import type { SupportedLanguage } from "@/types";
 import { MicIcon, SpinnerIcon } from "@/components/ui/Icon";
 import styles from "./VoiceButton.module.css";
 
@@ -15,6 +16,14 @@ export interface VoiceButtonProps {
    * also a transcription bug, because Sarvam hears her over you.
    */
   onStart?: () => void;
+  /**
+   * Her chosen language, passed to Sarvam as a hint.
+   *
+   * Detection is good but not free: told the language, saarika stops having to
+   * decide, and a Marathi speaker saying one English brand name mid-sentence
+   * no longer risks the whole utterance being read as English.
+   */
+  language?: SupportedLanguage;
   disabled?: boolean;
 }
 
@@ -36,6 +45,7 @@ type State = "idle" | "recording" | "transcribing" | "denied" | "unsupported";
 export function VoiceButton({
   onTranscript,
   onStart,
+  language,
   disabled = false,
 }: VoiceButtonProps) {
   const [state, setState] = useState<State>("idle");
@@ -93,6 +103,7 @@ export function VoiceButton({
       try {
         const form = new FormData();
         form.append("audio", blob, "speech.webm");
+        if (language) form.append("language", language);
         const res = await fetch("/api/voice/stt", { method: "POST", body: form });
         const data = (await res.json()) as { text?: string; message?: string };
         const text = data.text?.trim();
@@ -114,7 +125,7 @@ export function VoiceButton({
 
     recorder.start();
     setState("recording");
-  }, [onTranscript, onStart]);
+  }, [onTranscript, onStart, language]);
 
   if (state === "unsupported") return null;
 
