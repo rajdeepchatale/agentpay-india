@@ -99,6 +99,62 @@ A representative boutique, written to be realistic — not an existing customer.
 
 ---
 
+## 🤔 "Why not just build her a website?"
+
+She could. Plenty have. Here is what happens anyway.
+
+Her Reel goes out at 9pm. By midnight there are **200 DMs**:
+
+> *"kitna hai?"* · *"green mein hai?"* · *"shaadi ke liye theek rahega?"* ·
+> *"aur photo bhejo"*
+
+A product page answers none of those. They are addressed to **her**. So she
+replies to 30 of them the next morning, and the rest have already bought
+somewhere else.
+
+**The website did not fail. It was never in the conversation.**
+
+And when she does send a link, look at what she is asking a buyer to do:
+
+```
+Reel  →  bio link  →  site  →  find the saree  →  checkout  →  pay
+```
+
+Six steps, each one shedding people, for a buyer who was ready at step zero.
+The agent removes the handoff entirely — she never leaves the chat she was
+already in.
+
+Then there is who her buyer actually is. A checkout form assumes English, a
+keyboard, and comfort with a payment flow. Her buyer types romanised Hinglish
+because typing Devanagari on a phone is slow — or would simply rather speak.
+**Voice and native language are not polish here. They are how she gets in.**
+
+### Razorpay already answered this question
+
+Every merchant in Razorpay's 2026 agentic pilots — **Zomato, PVR INOX,
+Vodafone Idea, Bluestone, Honasa** — already had an app. Vodafone Idea had a
+working recharge page.
+
+Razorpay built conversational checkout into them anyway: the in-app agent
+recognised the user's usual plan, recommended it, and took the payment inside
+the chat. If a storefront were the answer, those pilots would not exist. Their
+own brief names the direction — *"Conversational in-app checkout."*
+
+The difference here is who it reaches. **Every one of those pilot partners is
+an enterprise with an app. The saree shop has no app.** That is the long tail
+those pilots structurally cannot reach.
+
+### What this does not claim
+
+**AgentPay does not replace her storefront. It replaces the 200 unanswered
+DMs.**
+
+If she has a website, keep it. It still will not answer *"kitna hai?"* at 11pm
+in Marathi. She does — for 30 of them, hours late. That gap is the whole
+product.
+
+---
+
 ## ✨ Key Features
 
 ### 🗣️ Native Multilingual Commerce
