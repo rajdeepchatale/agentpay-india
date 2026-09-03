@@ -65,6 +65,20 @@ makes the identical refusal **the agent keeping her word**.
 | 16-saree catalog with a machine-readable search API | `/api/catalog` |
 | Landing page and design-system specimen sheet | `/` · `/design` |
 
+### Scored against the track's bar
+
+Track 01 states the bar outright: *"Every money action explainable, bounded and
+gated. Show the audit trail and one failure handled gracefully."* Each row below
+names where that lives, so it can be checked rather than taken on trust.
+
+| The bar | Where it lives |
+|---|---|
+| Every money action **explainable** | Every search, block, consent request and order is logged with the reasoning behind it — `src/lib/audit/logger.ts` |
+| **bounded** | `src/lib/guardrails/` — spending cap, 3 orders per session per hour, category allow-list, and a ₹1,00,000 ceiling a tampered request cannot raise |
+| **gated** | No order without the buyer's own words, judged server-side. The model never asserts consent, and neither does the client — `src/lib/agent/conversation.ts` |
+| **Show the audit trail** | `/dashboard?session_id=…`, grouped into turns, each entry expandable to its exact input/output JSON |
+| **one failure handled gracefully** | Ask for the Nauvari Saree — it is out of stock. The agent says so plainly and offers three in-stock alternatives instead of failing: `type: "failure_handled"`, `recovery_action: "Offered 3 in-stock alternative(s)."` |
+
 **Razorpay runs in test mode.** `src/lib/razorpay/client.ts` refuses to start with any key that does not begin with `rzp_test_`. No real money moves.
 
 **"Sakhi Sarees" is a representative demo merchant, not a real client.** There are no real customers, revenue figures, order volumes, or testimonials anywhere in this project, and none should be inferred.
