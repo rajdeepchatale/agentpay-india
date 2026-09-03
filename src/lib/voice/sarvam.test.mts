@@ -157,6 +157,39 @@ describe("parseTranscript", () => {
   });
 });
 
+describe("chunkForSpeech — a small first chunk, so she starts talking sooner", () => {
+  /* Sarvam's latency scales with input length, so the first thing she says has
+     to be short or there is dead air before any sound. Everything after it is
+     fetched while the previous clip plays, where its cost is hidden. */
+
+  test("the first chunk obeys its own smaller limit", () => {
+    const text = "Pehla vaakya. Dusra vaakya thoda lamba hai. Teesra bhi hai yahan.";
+    const [first] = chunkForSpeech(text, 300, 20);
+    assert.ok(first.length <= 20, `first chunk was ${first.length}: "${first}"`);
+  });
+
+  test("later chunks use the larger limit — fewer requests once she is talking", () => {
+    const sentence = "Yeh saree bahut sundar hai. ";
+    const chunks = chunkForSpeech(sentence.repeat(20), 300, 30);
+    assert.ok(chunks.length > 1);
+    assert.ok(chunks[0].length <= 30, "first stays small");
+    assert.ok(
+      chunks.slice(1).some((c) => c.length > 30),
+      "later chunks should pack more than the first limit allows",
+    );
+  });
+
+  test("nothing is lost to the split — every word still survives", () => {
+    const text = "Ek do teen. Chaar paanch chhe. Saat aath nau. Das gyarah barah.";
+    const joined = chunkForSpeech(text, 40, 15).join(" ");
+    for (const w of text.split(/\s+/)) assert.ok(joined.includes(w), `lost "${w}"`);
+  });
+
+  test("a short reply is still a single chunk", () => {
+    assert.deepEqual(chunkForSpeech("Namaste!", 300, 120), ["Namaste!"]);
+  });
+});
+
 describe("chunkForSpeech — the agent's replies are longer than one request allows", () => {
   test("short text stays as one chunk", () => {
     assert.deepEqual(chunkForSpeech("Namaste!"), ["Namaste!"]);

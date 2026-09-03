@@ -24,7 +24,7 @@ const LANGUAGES = ["hi", "mr", "en", "hinglish"] as const;
 const MAX_CHARS = 2000;
 
 export async function POST(request: NextRequest) {
-  let body: { text?: unknown; language?: unknown };
+  let body: { text?: unknown; language?: unknown; chunk?: unknown };
   try {
     body = await request.json();
   } catch {
@@ -54,10 +54,18 @@ export async function POST(request: NextRequest) {
       : "hi"
   ) as SupportedLanguage;
 
-  try {
-    const wav = await textToSpeech(text, language);
+  /* Which clip of the reply this is. A reply is spoken clip by clip so the
+     first can start playing while the rest are still being generated — only
+     the first clip's latency is ever heard. Anything malformed means the
+     first clip, which is the safe reading of a bad index. */
+  const raw = body.chunk;
+  const chunk =
+    typeof raw === "number" && Number.isInteger(raw) && raw >= 0 ? raw : 0;
 
-    if (!wav) {
+  try {
+    const spoken = await textToSpeech(text, language, chunk);
+
+    if (!spoken) {
       /* No audio is not an error the buyer needs to see — the reply is already
          on screen in front of her. The speaker button just goes quiet. */
       return NextResponse.json(
@@ -66,13 +74,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return new NextResponse(new Uint8Array(wav), {
+    return new NextResponse(new Uint8Array(spoken.audio), {
       status: 200,
       headers: {
         "Content-Type": "audio/wav",
-        "Content-Length": String(wav.length),
-        /* Same text and language always produce the same audio, so let the
-           browser keep it — replaying a message should not cost a request. */
+        "Content-Length": String(spoken.audio.length),
+        /* How many clips this reply is in total, so the caller knows whether
+           to ask for another once this one finishes. */
+        "X-Chunk-Count": String(spoken.total),
+        "X-Chunk-Index": String(chunk),
+        /* Same text, language and index always produce the same audio, so let
+           the browser keep it — replaying a message costs no requests. */
         "Cache-Control": "public, max-age=3600",
       },
     });

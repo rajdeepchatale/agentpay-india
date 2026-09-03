@@ -189,7 +189,11 @@ export function parseTranscript(payload: unknown): Transcript | null {
  * Devanagari danda — keeps each clip a natural unit, so the joins land where a
  * speaker would pause anyway.
  */
-export function chunkForSpeech(text: string, limit = TTS_CHAR_LIMIT): string[] {
+export function chunkForSpeech(
+  text: string,
+  limit = TTS_CHAR_LIMIT,
+  firstLimit = limit,
+): string[] {
   const trimmed = text.trim();
   if (!trimmed) return [];
 
@@ -200,21 +204,28 @@ export function chunkForSpeech(text: string, limit = TTS_CHAR_LIMIT): string[] {
 
   const chunks: string[] = [];
   let current = "";
+  /* The first clip is the one the buyer waits on in silence, so it gets a
+     tighter budget. Every later clip is generated while the previous one is
+     playing, which is where its cost disappears. */
+  const capFor = () => (chunks.length === 0 ? firstLimit : limit);
 
   for (const sentence of sentences) {
     /* A single sentence over the limit is hard-split rather than dropped. */
-    if (sentence.length > limit) {
+    if (sentence.length > capFor()) {
       if (current) {
         chunks.push(current);
         current = "";
       }
-      for (let i = 0; i < sentence.length; i += limit) {
-        chunks.push(sentence.slice(i, i + limit));
+      let i = 0;
+      while (i < sentence.length) {
+        const cap = capFor();
+        chunks.push(sentence.slice(i, i + cap));
+        i += cap;
       }
       continue;
     }
     const joined = current ? `${current} ${sentence}` : sentence;
-    if (joined.length > limit) {
+    if (joined.length > capFor()) {
       chunks.push(current);
       current = sentence;
     } else {
@@ -281,22 +292,40 @@ export async function speechToText(
   return parseTranscript(await res.json());
 }
 
-/** Text out → one wav of her language being spoken. */
+/** How much she says before the first sound — kept short deliberately. */
+export const FIRST_CHUNK_LIMIT = 90;
+
+export interface Speech {
+  audio: Buffer;
+  /** How many clips this reply is in total, so the caller can play them all. */
+  total: number;
+}
+
+/**
+ * One clip of a reply, spoken.
+ *
+ * Replies are split and fetched clip by clip rather than stitched server-side:
+ * concatenating wavs means rewriting RIFF headers, and the split has a better
+ * property anyway — the caller can start playing clip 0 while clip 1 is still
+ * being generated, so only the first clip's latency is ever heard.
+ *
+ * This used to synthesise `chunks[0]` and stop, which meant she said one line
+ * of a four-line reply and fell silent. That read as a broken agent, and it
+ * was: a shopkeeper finishes her sentence.
+ */
 export async function textToSpeech(
   text: string,
   language: SupportedLanguage,
-): Promise<Buffer | null> {
-  const chunks = chunkForSpeech(text);
-  if (!chunks.length) return null;
+  index = 0,
+): Promise<Speech | null> {
+  const chunks = chunkForSpeech(text, TTS_CHAR_LIMIT, FIRST_CHUNK_LIMIT);
+  if (!chunks.length || index < 0 || index >= chunks.length) return null;
 
-  /* One request, first chunk only. Concatenating wavs means rewriting RIFF
-     headers, and a clipped reply that plays is better than a stitched one that
-     crackles — she can read the rest, which is on screen already. */
   const res = await call("/text-to-speech", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      inputs: [chunks[0]],
+      inputs: [chunks[index]],
       target_language_code: toBcp47(language),
       model: TTS_MODEL,
       speaker: TTS_SPEAKER,
@@ -307,5 +336,6 @@ export async function textToSpeech(
     console.warn("[sarvam:tts]", res.status, (await res.text()).slice(0, 200));
     return null;
   }
-  return decodeAudios(await res.json());
+  const audio = decodeAudios(await res.json());
+  return audio ? { audio, total: chunks.length } : null;
 }

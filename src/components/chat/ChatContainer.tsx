@@ -12,7 +12,6 @@ import type { AgentResponse, Product } from "@/types";
 import { chatReducer, initialChatState } from "@/lib/chat/machine";
 import { readSessionId } from "@/lib/chat/session";
 import { useAgentVoice } from "@/lib/chat/useAgentVoice";
-import { spokenLine } from "@/lib/voice/speech";
 import { LanguagePicker, type LanguageChoice } from "./LanguagePicker";
 import { ChatInput } from "./ChatInput";
 import { MessageBubble } from "./MessageBubble";
@@ -176,11 +175,12 @@ export function ChatContainer() {
     const msg = state.messages.find((m) => m.id === lastAgentId);
     if (!msg?.response?.content) return;
     spokenRef.current = lastAgentId;
-    /* She announces the outcome; she does not read the paragraph. Sarvam's
-       latency scales with length — a full reply is three to five seconds of
-       generation, which arrives long after the text she is already reading. */
-    const line = spokenLine(msg.response);
-    if (line) speak(line, msg.response.language);
+    /* The whole reply, not a summary of it. This used to speak a one-line
+       announcement, which cut her off mid-thought and read as the agent
+       breaking. The reply is now spoken clip by clip — the first clip is kept
+       short so she starts quickly, and each later clip is generated while the
+       previous one plays, so finishing the sentence costs no extra silence. */
+    speak(msg.response.content, msg.response.language);
     /* Keyed on the message id, not the array: a re-render must never replay a
        line she has already heard. */
   }, [lastAgentId, speak, state.messages]);

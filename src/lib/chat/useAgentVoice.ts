@@ -69,7 +69,7 @@ export function useAgentVoice(): AgentVoice {
   const greetedRef = useRef(false);
   /* Same reply, same audio. A judge replaying the guardrail three times should
      not cost three TTS calls. */
-  const cacheRef = useRef(new Map<string, string>());
+  const cacheRef = useRef(new Map<string, { url: string; total: number }>());
   /* Mirrors `enabled` for the async paths — a fetch that resolves after she
      has muted must not still make a sound. Synced in an effect rather than
      during render; `toggle` also sets it directly, so the guard is never stale
@@ -98,6 +98,33 @@ export function useAgentVoice(): AgentVoice {
     setSpeaking(false);
   }, []);
 
+  /* Fetch one clip. Cached by text+language+index, so replaying a reply — a
+     judge running the guardrail three times — costs nothing after the first. */
+  const fetchClip = useCallback(
+    async (text: string, language: SupportedLanguage, index: number) => {
+      const key = `${language}:${index}:${text}`;
+      const cached = cacheRef.current.get(key);
+      if (cached) return cached;
+
+      const res = await fetch("/api/voice/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, language, chunk: index }),
+      });
+      if (!res.ok) return null;
+      const blob = await res.blob();
+      if (blob.size === 0) return null;
+
+      const clip = {
+        url: URL.createObjectURL(blob),
+        total: Number(res.headers.get("X-Chunk-Count") ?? 1) || 1,
+      };
+      cacheRef.current.set(key, clip);
+      return clip;
+    },
+    [],
+  );
+
   const play = useCallback(
     async (text: string, language: SupportedLanguage) => {
       if (!enabledRef.current) return;
@@ -108,43 +135,52 @@ export function useAgentVoice(): AgentVoice {
          conversation, and the newest reply is always the relevant one. */
       silence();
       const gen = genRef.current;
+      const live = () => enabledRef.current && genRef.current === gen;
 
-      const key = `${language}:${body}`;
       try {
-        let url = cacheRef.current.get(key);
+        let index = 0;
+        let total = 1;
+        /* The reply is spoken clip by clip. She used to say the first clip and
+           stop, which meant one line of a four-line answer and then silence —
+           a shopkeeper finishes her sentence. */
+        while (index < total) {
+          const clip = await fetchClip(body, language, index);
+          if (!clip || !live()) return;
+          total = clip.total;
 
-        if (!url) {
-          const res = await fetch("/api/voice/tts", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text: body, language }),
+          /* Start the NEXT clip generating while this one plays, so the gap
+             between clips is hidden behind audio the buyer is already
+             hearing. Only the first clip's latency is ever silence. */
+          const ahead =
+            index + 1 < total
+              ? fetchClip(body, language, index + 1).catch(() => null)
+              : null;
+
+          const audio = new Audio(clip.url);
+          audioRef.current = audio;
+          urlRef.current = clip.url;
+
+          await new Promise<void>((resolve) => {
+            audio.onplay = () => setSpeaking(true);
+            /* Resolve on end, pause and error alike — a clip that fails must
+               not strand the rest of the reply unspoken. */
+            audio.onended = () => resolve();
+            audio.onpause = () => resolve();
+            audio.onerror = () => resolve();
+            void audio.play().catch(() => resolve());
           });
-          if (!res.ok) return;
-          const blob = await res.blob();
-          if (blob.size === 0) return;
-          url = URL.createObjectURL(blob);
-          cacheRef.current.set(key, url);
+
+          if (!live()) return;
+          await ahead;
+          index += 1;
         }
-
-        /* A toggle-off mid-fetch, or anything that silenced her while this was
-           in flight — a sent message, an opened microphone — must not still
-           produce sound. */
-        if (!enabledRef.current || genRef.current !== gen) return;
-
-        const audio = new Audio(url);
-        audio.onplay = () => setSpeaking(true);
-        audio.onended = () => setSpeaking(false);
-        audio.onpause = () => setSpeaking(false);
-        audio.onerror = () => setSpeaking(false);
-        audioRef.current = audio;
-        urlRef.current = url;
-        await audio.play().catch(() => setSpeaking(false));
       } catch {
         /* The reply is on screen. A failed read-aloud is not worth a message. */
-        setSpeaking(false);
+      } finally {
+        if (genRef.current === gen) setSpeaking(false);
       }
     },
-    [silence],
+    [silence, fetchClip],
   );
 
   const speak = useCallback(
@@ -180,7 +216,7 @@ export function useAgentVoice(): AgentVoice {
     const cache = cacheRef.current;
     return () => {
       audioRef.current?.pause();
-      for (const url of cache.values()) URL.revokeObjectURL(url);
+      for (const clip of cache.values()) URL.revokeObjectURL(clip.url);
       cache.clear();
     };
   }, []);

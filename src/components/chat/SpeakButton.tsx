@@ -25,18 +25,24 @@ type State = "idle" | "loading" | "playing";
 export function SpeakButton({ text, language }: SpeakButtonProps) {
   const [state, setState] = useState<State>("idle");
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const urlRef = useRef<string | null>(null);
+  const clipsRef = useRef(new Map<number, { url: string; total: number }>());
+  const genRef = useRef(0);
 
   /* Release the object URL when this message scrolls out of the conversation,
      or a long session leaks every clip it ever played. */
   useEffect(() => {
+    const clips = clipsRef.current;
     return () => {
       audioRef.current?.pause();
-      if (urlRef.current) URL.revokeObjectURL(urlRef.current);
+      for (const clip of clips.values()) URL.revokeObjectURL(clip.url);
+      clips.clear();
     };
   }, []);
 
   const stop = useCallback(() => {
+    /* Bump first: pausing only ends the clip that is playing, and the loop
+       would otherwise fetch and play the next one straight after. */
+    genRef.current += 1;
     audioRef.current?.pause();
     if (audioRef.current) audioRef.current.currentTime = 0;
     setState("idle");
@@ -47,49 +53,63 @@ export function SpeakButton({ text, language }: SpeakButtonProps) {
      some autoplay policies and on machines with no output device, which would
      leave the button showing "idle" while sound was coming out, or stuck on
      "loading" forever. onplay/onended/onpause are what actually happened. */
-  const attach = useCallback((audio: HTMLAudioElement) => {
+  const attach = useCallback((audio: HTMLAudioElement, done: () => void) => {
     audio.onplay = () => setState("playing");
-    audio.onended = () => setState("idle");
-    audio.onpause = () => setState("idle");
-    audio.onerror = () => setState("idle");
+    /* Resolve on end, pause and error alike — one clip failing must not strand
+       the rest of the reply unspoken. */
+    audio.onended = done;
+    audio.onpause = done;
+    audio.onerror = done;
   }, []);
 
   const play = useCallback(async () => {
-    /* Already fetched once — replay costs nothing. */
-    if (audioRef.current) {
-      void audioRef.current.play().catch(() => setState("idle"));
-      return;
-    }
-
     setState("loading");
+    /* A fresh generation for this press; a Stop mid-reply must abandon the
+       clips still queued behind the one playing. */
+    const gen = ++genRef.current;
+    const live = () => genRef.current === gen;
+
     try {
-      const res = await fetch("/api/voice/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, language }),
-      });
-      if (!res.ok) {
-        setState("idle");
-        return;
+      let index = 0;
+      let total = 1;
+      /* Every clip of the reply, not just the first. This button used to make
+         one request and play one clip, so a four-sentence answer stopped after
+         the first sentence — the same truncation the agent's own voice had. */
+      while (index < total) {
+        let clip = clipsRef.current.get(index);
+        if (!clip) {
+          const res = await fetch("/api/voice/tts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text, language, chunk: index }),
+          });
+          if (!res.ok) break;
+          const blob = await res.blob();
+          if (blob.size === 0) break;
+          clip = {
+            url: URL.createObjectURL(blob),
+            total: Number(res.headers.get("X-Chunk-Count") ?? 1) || 1,
+          };
+          clipsRef.current.set(index, clip);
+        }
+        if (!live()) return;
+        total = clip.total;
+
+        const audio = new Audio(clip.url);
+        audioRef.current = audio;
+        await new Promise<void>((resolve) => {
+          attach(audio, resolve);
+          void audio.play().catch(() => resolve());
+        });
+
+        if (!live()) return;
+        index += 1;
       }
-
-      const blob = await res.blob();
-      if (blob.size === 0) {
-        setState("idle");
-        return;
-      }
-
-      const url = URL.createObjectURL(blob);
-      urlRef.current = url;
-      const audio = new Audio(url);
-      attach(audio);
-      audioRef.current = audio;
-
-      await audio.play().catch(() => setState("idle"));
     } catch {
       /* The text is already on screen. A failed read-aloud is not worth an
          error message. */
-      setState("idle");
+    } finally {
+      if (genRef.current === gen) setState("idle");
     }
   }, [text, language, attach]);
 
