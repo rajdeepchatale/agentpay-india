@@ -58,7 +58,7 @@ export function DemoTour({ onPick, sent, disabled = false }: DemoTourProps) {
   return (
     <div className={styles.tour}>
       <p className={styles.lead}>
-        Three steps, about a minute — the middle one is the point.
+        Or try one of these.
       </p>
 
       <ol className={styles.list}>
