@@ -28,6 +28,7 @@ export interface UiText {
   budgetAria: string;
   tourHeading: string;
   feedbackAria: string;
+  auditTrail: string;
   languageAria: string;
   errorGeneric: string;
   errorTimeout: string;
@@ -56,6 +57,7 @@ export const UI_TEXT: Record<SupportedLanguage, UiText> = {
     budgetAria: "Kharch ki limit chuniye",
     tourHeading: "Ya inmein se koi ek.",
     feedbackAria: "Aapka experience kaisa raha?",
+    auditTrail: "Faislon ka record",
     languageAria: "Dukaan kis bhasha mein jawab de",
     errorGeneric: "Kuch galat ho gaya. Dobara try karein?",
     errorTimeout: "Agent thoda waqt le rahi hai. Ruk jaiye ya dobara try karein.",
@@ -82,6 +84,7 @@ export const UI_TEXT: Record<SupportedLanguage, UiText> = {
     budgetAria: "खर्च की सीमा चुनिए",
     tourHeading: "या इनमें से कोई एक।",
     feedbackAria: "आपका अनुभव कैसा रहा?",
+    auditTrail: "फ़ैसलों का रिकॉर्ड",
     languageAria: "दुकान किस भाषा में जवाब दे",
     errorGeneric: "कुछ गड़बड़ हो गई। दोबारा कोशिश करें?",
     errorTimeout: "एजेंट को थोड़ा समय लग रहा है। रुकिए या दोबारा कोशिश करें।",
@@ -108,6 +111,7 @@ export const UI_TEXT: Record<SupportedLanguage, UiText> = {
     budgetAria: "खर्चाची मर्यादा निवडा",
     tourHeading: "किंवा यापैकी एक.",
     feedbackAria: "तुमचा अनुभव कसा होता?",
+    auditTrail: "निर्णयांची नोंद",
     languageAria: "दुकानाने कोणत्या भाषेत उत्तर द्यावं",
     errorGeneric: "काहीतरी चुकलं. पुन्हा प्रयत्न कराल?",
     errorTimeout: "एजंटला थोडा वेळ लागतो आहे. थांबा किंवा पुन्हा प्रयत्न करा.",
@@ -134,6 +138,7 @@ export const UI_TEXT: Record<SupportedLanguage, UiText> = {
     budgetAria: "Choose a spending limit",
     tourHeading: "Or try one of these.",
     feedbackAria: "How was your experience?",
+    auditTrail: "Audit trail",
     languageAria: "Language the shop replies in",
     errorGeneric: "Something went wrong. Try again?",
     errorTimeout: "The agent is taking longer than usual. Please wait or try again.",

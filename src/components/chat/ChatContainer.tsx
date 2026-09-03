@@ -579,7 +579,7 @@ export function ChatContainer() {
           href={sessionId ? `/dashboard?session_id=${encodeURIComponent(sessionId)}` : "/dashboard"}
         >
           <ShieldIcon size={15} />
-          <span className={styles.auditLabel}>Audit trail</span>
+          <span className={styles.auditLabel}>{t.auditTrail}</span>
         </a>
 
         <button
@@ -588,7 +588,14 @@ export function ChatContainer() {
           onClick={() => setSettingsOpen(true)}
           aria-label={`${t.change} — ${t.limitLabel}`}
         >
-          <SpendLimitIcon size={18} />
+          <SpendLimitIcon size={16} />
+          {/* Labelled like every other control in this header. A bare glyph
+              beside three labelled ones is what left it open to being read as
+              a theme switch — the label closes that for good, and the amount
+              is the most useful thing it could say. */}
+          <span className={styles.auditLabel}>
+            ₹{spendLimit.toLocaleString("en-IN")}
+          </span>
         </button>
         <span className={styles.selvedge} aria-hidden="true" />
       </header>
