@@ -231,10 +231,28 @@ export function ChatContainer() {
   const { unlock } = voice;
   useEffect(() => {
     /* Not when she has just paid. Walking back in from the payment page and
-       being greeted as a new visitor — "Namaste, kya dikhaun?" — undoes the
-       purchase she just made, and the close is the line that belongs here. */
+       being greeted as a new visitor undoes the purchase she just made. */
     if (paidFor) return;
+
     const greet = () => unlock(welcomeMessage(spokenLanguage), spokenLanguage);
+
+    /* If the visitor arrived by CLICKING "Try the demo", the browser already
+       has user activation and audio is allowed right now — waiting for
+       another gesture on this page means waiting for one that never comes,
+       which is why the chat opened in silence. Client-side navigation keeps
+       the document, so the activation from that click survives the trip.
+
+       A direct load of /chat has no activation and still has to wait; that is
+       the browser's rule, not a choice. */
+    const active =
+      typeof navigator !== "undefined" &&
+      navigator.userActivation?.hasBeenActive === true;
+
+    if (active) {
+      greet();
+      return;
+    }
+
     window.addEventListener("pointerdown", greet, { once: true });
     window.addEventListener("keydown", greet, { once: true });
     return () => {
