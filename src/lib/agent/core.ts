@@ -26,6 +26,7 @@ import {
 import { logDecision, recordOrder } from "@/lib/audit/logger";
 import { toPaise } from "@/lib/razorpay/amounts";
 import { searchProducts } from "@/lib/catalog/search";
+import { checkSearchIntent } from "@/lib/guardrails/engine";
 import { confirmLine, orderReadyLine } from "@/lib/chat/confirm";
 import { getProductById } from "@/lib/catalog/search";
 
@@ -341,6 +342,50 @@ export async function runAgent(req: AgentRequest): Promise<AgentResponse> {
       });
 
       if (result.toolCalls.length === 0) {
+        /* The model answered in prose without touching a tool — so no rule
+           ran. That is the one hole the guardrail cannot cover by sitting at
+           the tool boundary: asked for a Paithani over her cap, the model
+           sometimes just TALKS about Paithanis, and a limit that depends on
+           the model choosing to invoke it is not a limit.
+           
+           Her own words are judged here instead, by the same engine, so the
+           answer does not change with how the model felt like replying. */
+        const intent = checkSearchIntent(message, maxSpend, allowedCategories, message);
+        if (intent.kind === "blocked" && !order && !consent) {
+          auditId = await logDecision({
+            sessionId,
+            action: "guardrail_check",
+            input: { message },
+            output: {
+              rule: intent.rule,
+              limit: intent.limit,
+              attempted: intent.attempted,
+            },
+            guardrailStatus: "blocked",
+            reasoning: intent.reasoning,
+          });
+          appendMessages(sessionId, [
+            { role: "user", content: message },
+            { role: "assistant", content: intent.suggestion },
+          ]);
+          return {
+            type: "guardrail_blocked",
+            content: intent.suggestion,
+            data: {
+              guardrail: {
+                rule: intent.rule,
+                limit: intent.limit,
+                attempted: intent.attempted,
+                suggestion: intent.suggestion,
+                asked_for: message,
+              },
+              products: searchProducts({ max_price: maxSpend }).slice(0, 3),
+            },
+            language: lang,
+            audit_id: auditId,
+          };
+        }
+
         const text = result.text || FALLBACK.confused[lang];
 
         appendMessages(sessionId, [
