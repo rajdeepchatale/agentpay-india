@@ -79,11 +79,16 @@ that dashboard and pasted into WhatsApp; a **Payment Page** is a hosted,
 no-code storefront. Neither asks a merchant to own a website or hire a
 developer.
 
-**This is a Payment Page that talks back** — she gets a URL and pastes it in
-her bio, which is the entire integration. That is not a roadmap item: the
-`/chat` link in this repo is the link she would paste. The end state removes
-even that, with the agent running inside her existing WhatsApp number, where
-the DMs already arrive.
+**This is shaped like a Payment Page that talks back** — she gets a URL and
+pastes it in her bio, and the shape is the part that is already true: the
+`/chat` link in this repo is a link, not an app she had to build.
+
+Where the analogy stops matters as much as where it holds. A Payment Page is
+created by the merchant herself, from a dashboard Razorpay hosts. What exists
+here is one merchant's shop with a seeded catalog — **the self-serve creation
+and the catalog ingestion above are argued, not built.** The end state removes
+the link entirely, with the agent running inside her existing WhatsApp number,
+where the DMs already arrive.
 
 ---
 
