@@ -48,3 +48,13 @@ CLAUDE.md
 
 # Local working notes — never pushed.
 *.local.md
+
+# Working notes, not part of the submission.
+# Kept locally — the plan, the problem statement, the image-generation prompts
+# and the AI tooling files are how this was built, not what was built.
+AGENTS.md
+CLAUDE.md
+BUILD_PLAN.md
+PRODUCT.md
+PROBLEM_STATEMENT.md
+public/products/README.md

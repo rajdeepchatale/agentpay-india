@@ -241,4 +241,96 @@ the rules that matter can be proven without a browser and without spending an LL
 
 What it does **not** cover is stated plainly: the rate limit has three unit tests but
 was never exercised end to end, because proving it live costs four real Razorpay orders.
-That gap is recorded in `BUILD_PLAN.md` rather than papered over.
+That gap is stated here rather than papered over.
+
+---
+
+## 10. The microphone was broken in production, and looked like it worked
+
+Sarvam string-matches the uploaded audio's Content-Type against an allowlist.
+Chrome's `MediaRecorder` stamps every recording `audio/webm;codecs=opus`, which
+is not on that list:
+
+```
+400 Invalid file type: audio/webm;codecs=opus
+```
+
+The identical bytes under an allowed type transcribe perfectly, so this was
+never a format problem — the `codecs` parameter alone broke every recording a
+browser made.
+
+**Why it survived a verification pass.** The STT route fails soft: a Sarvam 400
+becomes `200 {"text":""}`, so a dead microphone is indistinguishable from a
+working one that heard nothing. And the check that "passed" had hand-written
+the Content-Type instead of using a browser's. The probe was broken, not the
+thing under test.
+
+**Fixed** by uploading as `application/octet-stream` — on the allowlist, and
+Sarvam sniffs the real bytes, so one constant covers Chrome/Firefox webm and
+Safari mp4. Every check since drives a real Chromium `MediaRecorder` against
+production.
+
+---
+
+## 11. The agent had no memory, on a platform that has none
+
+Conversation history and pending consent lived in a module-scope `Map`. On a
+serverless platform that memory is **per-instance**: turn one is written into
+one container and turn two is routinely served by another. The model was handed
+a blank page and asked to continue a conversation it had never seen — so it
+asked what the buyer wanted after she had already said, and answered *"order
+kara"* with *"which saree would you like to see?"*.
+
+Easy to misread as a weak model. It was never shown the thread.
+
+**Fixed** by carrying the thread from the client, treated as untrusted like
+everything else that crosses that boundary: only `user` and `assistant` roles
+are accepted — a forged `system` turn is the obvious way to try to rewrite the
+agent's instructions — capped at twenty turns, and the guardrail engine still
+reads every price from the catalog, so nothing carried can move money.
+
+---
+
+## 12. A tap on Select was still a question for the model
+
+Selecting a saree sent *"Mujhe {name} chahiye"* and left the model to work out
+that this meant `request_consent`. It usually did. One session produced *"shall
+I proceed with the order?"* **alongside a fresh grid of four sarees** — it had
+narrated consent while calling `search_products`, so the words and the
+machinery disagreed and the buyer was asked to confirm with no way to confirm.
+
+Agreeing had the same shape: *"haan"* was answered with another consent
+request, because the model saw its own earlier question in the history.
+
+**Fixed** by making both deterministic. The tap carries the saree's id and the
+server runs the consent tool directly; her agreement creates the order
+directly. Same guardrail engine, same server-side judgement of her words — the
+model simply loses the freedom to ask a third time. It is the same lesson as
+§1, arriving at the last two steps before money moves.
+
+---
+
+## 13. Reuse handed out a payment link that was already paid
+
+Razorpay's test mode allows thirty payment links in total, and development
+exhausted the quota. Every order after that created the Razorpay order
+successfully, failed at the link, threw, and lost the order with it — so
+*"haan"* looped forever.
+
+The first fix reused a link already minted for that saree, which is sound: a
+link carries a fixed amount and product and nothing about who is buying. But it
+reused **any** link recorded for the saree, including ones already paid — and a
+paid link cannot be paid again. The buyer landed on Razorpay's own *"already
+paid"* page, never paid, was never redirected back, and sat looking at
+something that reads like success.
+
+**Fixed** by asking Razorpay rather than our own orders table, which only knows
+what a webhook told it. A link is reused only when its status is `created`, the
+amount matches to the paise, and its callback names the same saree.
+
+**And then made independent of the redirect entirely.** Razorpay does not
+reliably return the buyer to the shop. The webhook already knows the money
+landed, so the conversation polls for it and closes on that — she is thanked
+because payment arrived, not because a third party remembered to send her home.
+
+---

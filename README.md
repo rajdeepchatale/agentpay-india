@@ -15,7 +15,7 @@
 
 **Making 60 Million Bharat Merchants AI-Transactable — in Hindi, Marathi, Hinglish & English**
 
-[🏗️ Architecture](#-system-architecture) · [🛡️ Guardrails](#-deterministic-guardrails-first-engine) · [📊 Audit Trail](#-immutable-audit-trail) · [✅ What's built](#-status--what-is-and-is-not-built)
+[✨ What it does](#what-it-does) · [🏗️ Architecture](#-system-architecture) · [🛡️ Guardrails](#-deterministic-guardrails-first-engine) · [📊 Audit Trail](#-immutable-audit-trail) · [🐛 What broke, and how](docs/CHALLENGES.md)
 
 </div>
 
@@ -45,24 +45,19 @@ India has **60 million+ small merchants**. Zomato, Swiggy, Zepto are already AI-
 
 ---
 
-## ✅ Status — what is and is not built
+## What it does
 
-This section exists so every other claim in this README can be checked and found true.
-
-| | Status |
+| | Where |
 |---|---|
-| Multilingual chat agent (hi / mr / hinglish / en) | ✅ Built |
-| Deterministic guardrail engine | ✅ Built |
-| Real Razorpay test-mode orders + payment links | ✅ Built |
-| Supabase audit trail with per-decision reasoning | ✅ Built |
-| Full-screen chat UI | ✅ Built — `/chat` |
-| Design-system specimen sheet | ✅ Built — `/design` |
-| 16-saree catalog + search API | ✅ Built |
-| Voice in / out (Sarvam AI) | ✅ Built — speak to the agent, and she answers aloud unprompted |
-| Language picker | ✅ Built — pin Hindi, Marathi, Hinglish or English; detection is the default |
-| Audit dashboard | ✅ Built — `/dashboard?session_id=…` |
-| Landing page | ✅ Built — `/` |
-| Payment webhook (signed) | ✅ Built — orders move `created → paid` on a verified `payment.captured` |
+| Multilingual chat agent — Hindi, Marathi, Hinglish, English | `/chat` |
+| Deterministic guardrail engine, outside the LLM | `src/lib/guardrails/` |
+| Real Razorpay test-mode orders and payment links | `src/lib/razorpay/` |
+| Voice in and out — she listens, and answers aloud unprompted | Sarvam saarika + bulbul |
+| Language picker — pin one, and the whole shop speaks it | header |
+| Supabase audit trail, with the reasoning behind each decision | `/dashboard?session_id=…` |
+| Signed payment webhook — `created → paid` on `payment.captured` | `/api/razorpay/webhook` |
+| 16-saree catalog with a machine-readable search API | `/api/catalog` |
+| Landing page and design-system specimen sheet | `/` · `/design` |
 
 **Razorpay runs in test mode.** `src/lib/razorpay/client.ts` refuses to start with any key that does not begin with `rzp_test_`. No real money moves.
 
@@ -77,7 +72,7 @@ A representative boutique, written to be realistic — not an existing customer.
 | | |
 |---|---|
 | **Who** | Pune saree boutique run by a woman entrepreneur |
-| **What she sells** | Paithani sarees from Yeola/Paithan weavers + handloom cottons (₹499 – ₹25,000) |
+| **What she sells** | Paithani sarees from Yeola/Paithan weavers + handloom cottons (₹499 – ₹78,000) |
 | **How she sells** | Instagram Reels, WhatsApp DMs |
 | **The friction** | Viral Reel → 200+ DMs → she can answer 30–40 |
 | **With AgentPay** | The agent answers all of them, 24/7, in Hindi/Marathi/Hinglish — with real Razorpay checkout inside the conversation |
@@ -255,8 +250,7 @@ agentpay-india/
 ├── docs/
 │   ├── CHALLENGES.md                # Engineering challenges & resolutions
 │   └── SCALING.md                   # One merchant → sixty million
-├── DESIGN.md                        # The design system, as built
-└── BUILD_PLAN.md                    # The full stepwise build plan
+└── DESIGN.md                        # The design system, as built
 ```
 
 ---

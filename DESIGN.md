@@ -1,7 +1,7 @@
 # Design
 
-Recorded from the built system after Step 2, not from intention.
-World: **woven / zari** · seed `a527c7f3` · mode: operate.
+Recorded from the built system, not from intention.
+World: **woven / zari**.
 
 ## The idea
 
@@ -206,10 +206,12 @@ empty state is a welcome bubble with several hundred pixels of void beneath it.
 
 ## Open
 
-- No product photography exists. `ProductCard` degrades to the woven fallback
-  above, so the demo is complete without it — real photos simply sit on top.
-- `/` is a temporary design-system specimen sheet. **Step 9 replaces it**
-  with the landing page. Consider moving the specimen to `/design` rather than
-  deleting it — a browsable gallery of the real components, free.
-- Dashboard and voice surfaces are not built yet and inherit this system
-  rather than introducing a new one.
+- All sixteen sarees are photographed on models. `ProductCard` still degrades to
+  the woven fallback if a file is missing, so a broken image can never appear.
+- `/` is the landing page; the design-system specimen sheet lives at `/design` —
+  a browsable gallery of the real components rather than a deleted one.
+- The dashboard and the voice controls inherit this system rather than
+  introducing a second one: the same zari hairline, the same weave, and saffron
+  still reserved for the button that commits money. A speaking agent is drawn
+  in zari, never in saffron — she is a material of the shop, not an action that
+  spends.
