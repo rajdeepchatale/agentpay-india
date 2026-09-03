@@ -27,6 +27,8 @@ type State = "idle" | "recording" | "transcribing" | "denied" | "unsupported";
  */
 export function VoiceButton({ onTranscript, disabled = false }: VoiceButtonProps) {
   const [state, setState] = useState<State>("idle");
+  /** Why nothing happened, when nothing happened. Cleared on the next tap. */
+  const [notice, setNotice] = useState<string | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
 
@@ -35,6 +37,7 @@ export function VoiceButton({ onTranscript, disabled = false }: VoiceButtonProps
   }, []);
 
   const start = useCallback(async () => {
+    setNotice(null);
     if (typeof MediaRecorder === "undefined" || !navigator.mediaDevices) {
       setState("unsupported");
       return;
@@ -70,15 +73,24 @@ export function VoiceButton({ onTranscript, disabled = false }: VoiceButtonProps
       }
 
       setState("transcribing");
+      setNotice(null);
       try {
         const form = new FormData();
         form.append("audio", blob, "speech.webm");
         const res = await fetch("/api/voice/stt", { method: "POST", body: form });
-        const data = (await res.json()) as { text?: string };
-        if (data.text?.trim()) onTranscript(data.text.trim());
+        const data = (await res.json()) as { text?: string; message?: string };
+        const text = data.text?.trim();
+        if (text) {
+          onTranscript(text);
+        } else {
+          /* Silence here is what hid a broken microphone in production: the
+             route answers a Sarvam failure with 200 and an empty transcript,
+             so a swallowed empty result looks exactly like a working mic that
+             heard nothing. She gets told either way now. */
+          setNotice(data.message ?? "I couldn't catch that. Try again, or type it.");
+        }
       } catch {
-        /* Swallowed on purpose: the composer still works, and an error toast
-           for a failed transcription is more disruptive than silence. */
+        setNotice("Couldn't reach the transcriber. Type it instead.");
       } finally {
         setState("idle");
       }
@@ -112,11 +124,12 @@ export function VoiceButton({ onTranscript, disabled = false }: VoiceButtonProps
         {recording && <span className={styles.pulse} aria-hidden="true" />}
       </button>
 
-      {(recording || busy || state === "denied") && (
+      {(recording || busy || state === "denied" || notice) && (
         <span className={styles.hint} role="status">
           {recording && "Listening — tap to stop"}
           {busy && "Transcribing…"}
           {state === "denied" && "Microphone blocked. Type instead."}
+          {!recording && !busy && state !== "denied" && notice}
         </span>
       )}
     </div>

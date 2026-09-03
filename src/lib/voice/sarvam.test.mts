@@ -6,8 +6,44 @@ import {
   decodeAudios,
   parseTranscript,
   chunkForSpeech,
+  uploadType,
   TTS_CHAR_LIMIT,
 } from "./sarvam.ts";
+
+describe("uploadType — the MIME string Sarvam will actually accept", () => {
+  /* Found by reproducing the real failure, not by reading docs. Sarvam
+     string-matches the part's Content-Type against an allowlist. Chrome's
+     MediaRecorder stamps blobs `audio/webm;codecs=opus`, which is not on it:
+        400 Invalid file type: audio/webm;codecs=opus
+     The identical bytes sent as an allowed type transcribe perfectly, so this
+     was never a format problem — the codecs parameter alone broke it. */
+
+  test("never passes a browser recording type through unchanged", () => {
+    assert.notEqual(uploadType("audio/webm;codecs=opus"), "audio/webm;codecs=opus");
+  });
+
+  test("normalises every container a browser can hand us to one allowed type", () => {
+    /* Chrome and Firefox record webm/opus; Safari records mp4. Sarvam sniffs
+       the real bytes, and application/octet-stream is explicitly on its
+       allowlist — so one constant covers every browser without us maintaining
+       a per-container mapping that a Safari release could invalidate. */
+    for (const recorded of [
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "audio/mp4",
+      "audio/ogg;codecs=opus",
+    ]) {
+      assert.equal(uploadType(recorded), "application/octet-stream");
+    }
+  });
+
+  test("survives a browser that reports no mimeType at all", () => {
+    /* MediaRecorder.mimeType is "" before the first start() in Chromium, and
+       a blob built from those chunks carries an empty type. */
+    assert.equal(uploadType(""), "application/octet-stream");
+    assert.equal(uploadType(undefined), "application/octet-stream");
+  });
+});
 
 describe("language codes", () => {
   test("maps the app's languages to Sarvam's BCP-47", () => {

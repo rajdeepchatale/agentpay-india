@@ -87,6 +87,39 @@ export function decodeAudios(payload: unknown): Buffer | null {
   }
 }
 
+/**
+ * The Content-Type to put on the uploaded audio part.
+ *
+ * Sarvam string-matches this against an allowlist, and the string a browser
+ * produces is not on it. Chrome's MediaRecorder stamps its blobs
+ * `audio/webm;codecs=opus`, which Sarvam answers with:
+ *
+ *     400 Invalid file type: audio/webm;codecs=opus
+ *
+ * The identical bytes under an allowed type transcribe perfectly — so the
+ * codecs parameter alone was breaking every recording the browser made. This
+ * cost a working microphone in production, and it was invisible because a 400
+ * here becomes an empty transcript rather than an error.
+ *
+ * `application/octet-stream` is explicitly on the allowlist and Sarvam sniffs
+ * the real bytes, so one constant covers Chrome and Firefox (webm/opus) and
+ * Safari (mp4) alike. That beats a per-container map, which would silently
+ * break again the next time a browser changed its default encoder.
+ */
+export const STT_UPLOAD_TYPE = "application/octet-stream";
+
+/**
+ * The browser's recorded type, replaced with one Sarvam accepts.
+ *
+ * Deliberately ignores what it is given: there is no browser value worth
+ * forwarding, and a per-container map is the version of this that breaks
+ * again the next time an encoder default changes.
+ */
+export function uploadType(recorded?: string): string {
+  void recorded;
+  return STT_UPLOAD_TYPE;
+}
+
 export interface Transcript {
   text: string;
   language: SupportedLanguage;
@@ -195,7 +228,15 @@ export async function speechToText(
   language?: SupportedLanguage,
 ): Promise<Transcript | null> {
   const form = new FormData();
-  form.append("file", audio, "speech.webm");
+  /* Re-wrap rather than forwarding the browser's blob: its `type` becomes the
+     part's Content-Type, and the browser's own value is the one Sarvam
+     rejects. See uploadType. */
+  const bytes = await audio.arrayBuffer();
+  form.append(
+    "file",
+    new Blob([bytes], { type: uploadType(audio.type) }),
+    "speech.webm",
+  );
   form.append("model", STT_MODEL);
   /* Given a language, say so — it improves accuracy. Otherwise let Sarvam
      detect, which is what a buyer switching mid-conversation needs. */
