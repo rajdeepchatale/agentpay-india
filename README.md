@@ -47,7 +47,9 @@ showing anything. That one question is the difference between a demo and an agen
 we chose makes a later refusal *our rule imposed on a stranger*, while a figure she named
 makes the identical refusal **the agent keeping her word**.
 
-*The pitch: "Razorpay made Zomato AI-transactable. We make the neighborhood saree store AI-transactable."*
+*The pitch: "An AI shopkeeper for the 60 million merchants who don't have an app."*
+
+She answers every DM in her buyer's language, takes the payment inside the conversation, and holds a spending limit nobody can talk her out of.
 
 ---
 

@@ -359,9 +359,9 @@ export default function LandingPage() {
         {/* ---- Close ---- */}
         <footer className={styles.close}>
           <h2 className={styles.closeHead}>
-            Razorpay made Zomato AI-transactable.
+            An AI shopkeeper for the 60 million merchants
             <br />
-            This makes the saree shop AI-transactable.
+            who don&rsquo;t have an app.
           </h2>
           <Link className={styles.cta} href="/chat">
             Try the demo
