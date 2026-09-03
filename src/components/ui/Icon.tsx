@@ -82,22 +82,22 @@ export function ShieldIcon(props: IconProps) {
 /**
  * The spending limit.
  *
- * What stood here was called SettingsIcon and drawn as a circle with eight
- * radiating lines — which is not a gear, it is a sun, the universal
- * dark-mode glyph. It opened a dialog titled "Spending limit", so it was
- * wrong twice: the wrong picture for a gear, and a gear was the wrong idea
- * for a control that only ever edits one number.
+ * Two wrong marks preceded this one. First a circle with eight radiating
+ * lines, called SettingsIcon but drawn as a sun — the universal dark-mode
+ * glyph, and so exactly what it was mistaken for. Then a shield, which was
+ * the right IDEA but the wrong picture in place: the audit-trail link beside
+ * it is already a shield, and two near-identical shields in one header is
+ * worse than the sun was.
  *
- * A shield with a ceiling line inside it: this product's own mark for the
- * guardrail, which is exactly what the number is. The same shield carries the
- * block card and the decision rail, so the header button and the refusal it
- * produces now read as one idea.
+ * A tag. It is what a cloth shop hangs a price from, it matches the tag the
+ * limit itself is now worn on in the composer, and at 18px it cannot be
+ * mistaken for anything else in this header.
  */
 export function SpendLimitIcon(props: IconProps) {
   return (
     <Svg {...props}>
-      <path d="M12 2.8 19 5.6v5.2c0 4.6-2.9 7.7-7 9.4-4.1-1.7-7-4.8-7-9.4V5.6l7-2.8Z" />
-      <path d="M8.6 11.6h6.8" />
+      <path d="M13.4 3H20a1 1 0 0 1 1 1v6.6a1.4 1.4 0 0 1-.41.99l-9 9a1.4 1.4 0 0 1-1.98 0l-6.2-6.2a1.4 1.4 0 0 1 0-1.98l9-9A1.4 1.4 0 0 1 13.4 3Z" />
+      <path d="M16.9 7.1h.01" />
     </Svg>
   );
 }
