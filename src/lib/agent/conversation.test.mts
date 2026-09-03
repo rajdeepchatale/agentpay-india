@@ -7,6 +7,7 @@ import {
   consumeConsent,
   hasConsent,
   isAffirmative,
+  isDecline,
   resetSession,
 } from "./conversation.ts";
 
@@ -120,4 +121,46 @@ describe("isAffirmative", () => {
   for (const no of ["nahi", "nako", "no", "cancel", "show me more", "kitne ka hai"]) {
     test(`"${no}" is not agreement`, () => assert.equal(isAffirmative(no), false));
   }
+});
+
+
+describe("isAffirmative — negation must not match inside ordinary words", () => {
+  /* NEGATION had no boundaries while AFFIRMATIVE right beside it did. "mat"
+     lives inside "material" and "matches", so a buyer who agreed could not
+     complete an order however many times she said yes. */
+
+  test("agreement survives words that merely contain a negative", () => {
+    for (const said of [
+      "haan, material acchha hai",
+      "yes, the colour matches",
+      "haan bhejo",
+      "ho, chalega",
+    ]) {
+      assert.equal(isAffirmative(said), true, `should still be consent: ${said}`);
+    }
+  });
+
+  test("a real refusal is still a refusal", () => {
+    for (const said of ["nahi", "nahi chahiye", "mat karo", "नको", "नहीं", "don't order"]) {
+      assert.equal(isAffirmative(said), false, `must refuse: ${said}`);
+    }
+  });
+});
+
+describe("isDecline — the other half of consent", () => {
+  /* core.ts had its own narrower ASCII-only decline regex, so "नको" and
+     "नहीं" never cleared the pending saree. Combined with the client
+     re-sending it, her next "ठीक" would have bought the thing she refused. */
+
+  test("recognises a refusal in every supported language", () => {
+    for (const said of ["nahi", "nako", "no", "cancel", "rehne do", "नको", "नाही", "नहीं", "मत करा"]) {
+      assert.equal(isDecline(said), true, `should decline: ${said}`);
+    }
+  });
+
+  test("does not fire inside ordinary words", () => {
+    for (const said of ["material acchha hai", "the colour matches", "haan"]) {
+      assert.equal(isDecline(said), false, `should not decline: ${said}`);
+    }
+  });
 });

@@ -25,7 +25,11 @@ type State = "idle" | "loading" | "playing";
 export function SpeakButton({ text, language }: SpeakButtonProps) {
   const [state, setState] = useState<State>("idle");
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const clipsRef = useRef(new Map<number, { url: string; total: number }>());
+  /* Keyed by language, index AND text — the same key useAgentVoice uses.
+     Keying by index alone replayed the Hinglish greeting after the buyer
+     switched the header to मराठी, because the component stays mounted and
+     only its props change. */
+  const clipsRef = useRef(new Map<string, { url: string; total: number }>());
   const genRef = useRef(0);
 
   /* Release the object URL when this message scrolls out of the conversation,
@@ -76,7 +80,8 @@ export function SpeakButton({ text, language }: SpeakButtonProps) {
          one request and play one clip, so a four-sentence answer stopped after
          the first sentence — the same truncation the agent's own voice had. */
       while (index < total) {
-        let clip = clipsRef.current.get(index);
+        const key = `${language}:${index}:${text}`;
+        let clip = clipsRef.current.get(key);
         if (!clip) {
           const res = await fetch("/api/voice/tts", {
             method: "POST",
@@ -90,7 +95,7 @@ export function SpeakButton({ text, language }: SpeakButtonProps) {
             url: URL.createObjectURL(blob),
             total: Number(res.headers.get("X-Chunk-Count") ?? 1) || 1,
           };
-          clipsRef.current.set(index, clip);
+          clipsRef.current.set(key, clip);
         }
         if (!live()) return;
         total = clip.total;

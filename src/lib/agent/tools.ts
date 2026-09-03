@@ -123,7 +123,21 @@ export async function runTool(
   switch (name) {
     case "search_products": {
       const query = asString(args.query);
-      const cap = Math.min(asNumber(args.max_price) ?? ctx.maxSpend, ctx.maxSpend);
+
+      /* Two different numbers, and conflating them was a real defect.
+      
+         The CAP is the buyer's, always. It decides whether a rule fires and
+         what limit the refusal and the audit row report. Deriving it from the
+         model's max_price let the model manufacture a spending_cap block
+         citing a limit she never set — and write that number into the trail
+         as fact. Math.min meant nothing could be overspent, but a fabricated
+         refusal is still a lie about her.
+      
+         The FILTER may be the model's, because narrowing is a real request:
+         "under ₹500" should show only sarees under ₹500. It changes what is
+         displayed and nothing else. */
+      const cap = ctx.maxSpend;
+      const filterMax = Math.min(asNumber(args.max_price) ?? cap, cap);
 
       /* The guardrail runs on INTENT, before the model sees any prices or
          stock flags. A rule that only fires when the model calls a tool
@@ -196,7 +210,7 @@ export async function runTool(
          from ₹1,000 to ₹25,000 still returned four sarees — the buyer widened
          her budget and the shop showed her the same shelf. Everything she can
          actually afford is hers to see; the rail scrolls. */
-      const affordable = all.filter((p) => p.price <= cap);
+      const affordable = all.filter((p) => p.price <= filterMax);
       const overCap = all.filter((p) => p.price > cap);
 
       return {

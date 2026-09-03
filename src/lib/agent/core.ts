@@ -21,6 +21,7 @@ import {
   grantPendingConsent,
   hasConsent,
   isAffirmative,
+  isDecline,
   markConsentRequested,
 } from "./conversation.ts";
 import { logDecision, recordOrder } from "@/lib/audit/logger";
@@ -56,8 +57,14 @@ function provider(): LlmProvider {
    दाखवा against Hindi दिखाओ, काय against क्या, किंमत against कीमत. */
 const MARATHI_MARKERS =
   /(आहे|नाही|तुम्ही|तुमच|आपल|मला|दाखवा|आवडेल|नमस्कार|साड्या|छान|किंमत|काय)/u;
+/* Anchored at BOTH ends. Anchoring only the start made short markers match as
+   prefixes of ordinary English: "ke" in keep and key, "ki" in kind and kids,
+   "hai" in hair. Five plain English sentences were classified Hinglish, so an
+   English speaker was answered — and spoken to — in Hindi, since
+   toBcp47("hinglish") is hi-IN. The Marathi list above was fixed for the
+   mirror-image problem; this one had not been. */
 const HINGLISH_MARKERS =
-  /(^|\s)(hai|hain|kya|aap|aapke|aapko|mujhe|dikhao|chahiye|karo|nahi|haan|mein|ke|ki|bahut|acch)/i;
+  /(^|\s)(hai|hain|kya|aap|aapke|aapko|mujhe|dikhao|chahiye|karo|nahi|haan|mein|ke|ki|bahut|accha|acchi)(?=\s|$|[.,!?])/i;
 
 function detectLanguage(text: string): SupportedLanguage {
   if (/[ऀ-ॿ]/u.test(text)) {
@@ -168,7 +175,11 @@ export async function runAgent(req: AgentRequest): Promise<AgentResponse> {
         reasoning: `Buyer agreed. Consent granted for: ${justGranted.join(", ")}.`,
       });
     }
-  } else if (/\b(nahi|nako|no|nope|cancel|rehne do)\b/i.test(message)) {
+  } else if (isDecline(message)) {
+    /* The same check isAffirmative uses, rather than a narrower copy. The
+       copy here was ASCII-only, so "नको" and "नहीं" never cleared the pending
+       saree — and with the client re-sending it, her next "ठीक" would have
+       bought the thing she had just refused. */
     clearPendingConsent(sessionId);
   }
 

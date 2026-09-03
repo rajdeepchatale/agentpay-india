@@ -20,7 +20,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { verifyWebhookSignature, parsePaymentEvent } from "@/lib/razorpay/webhook";
-import { markOrderStatus, markOrderPaidByLink, logDecision } from "@/lib/audit/logger";
+import { markOrderStatus, markOrderStatusByLink, logDecision } from "@/lib/audit/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
      event identifies it by the order id. Both end at the same row. */
   const subject = event.razorpayOrderId ?? event.paymentLink ?? "";
   const result = event.paymentLink
-    ? await markOrderPaidByLink(event.paymentLink)
+    ? await markOrderStatusByLink(event.paymentLink, event.status)
     : await markOrderStatus(event.razorpayOrderId!, event.status);
 
   /* The audit trail is the point of this project, so a payment outcome belongs

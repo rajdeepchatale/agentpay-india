@@ -184,7 +184,12 @@ export async function paidProductFor(sessionId: string): Promise<string | null> 
 }
 
 /**
- * Mark an order paid by the payment link the buyer actually used.
+ * Move an order to its settled state, found by the link the buyer actually used.
+ *
+ * Takes the status rather than assuming "paid": Razorpay raises
+ * payment.failed against a link too, and both payloads carry a
+ * payment_link entity — so hardcoding "paid" recorded a failed payment as a
+ * completed purchase and thanked the buyer for it.
  *
  * Links are reused across orders — Razorpay's test mode caps them at 30 — so
  * one short_url can belong to several rows. The oldest still-unpaid row for
@@ -192,8 +197,9 @@ export async function paidProductFor(sessionId: string): Promise<string | null> 
  * either already paid, or abandoned, and marking the newest would leave an
  * older genuine purchase looking unpaid forever.
  */
-export async function markOrderPaidByLink(
+export async function markOrderStatusByLink(
   paymentLink: string,
+  status: "paid" | "failed",
 ): Promise<"updated" | "unchanged" | "unavailable"> {
   const db = supabase();
   if (!db) return "unavailable";
@@ -210,7 +216,7 @@ export async function markOrderPaidByLink(
 
     const { error: updateError } = await db
       .from("orders")
-      .update({ status: "paid" })
+      .update({ status })
       .eq("id", (data[0] as { id: string }).id);
     return updateError ? "unavailable" : "updated";
   } catch {

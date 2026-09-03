@@ -369,11 +369,17 @@ export function ChatContainer() {
   const pendingRef = useRef<string | null>(null);
   useEffect(() => {
     const last = [...state.messages].reverse().find((m) => m.role === "agent");
-    if (last?.response?.type === "consent_required") {
-      pendingRef.current = last.response.data?.products?.[0]?.id ?? null;
-    } else if (last?.response?.type === "order_created") {
-      pendingRef.current = null;
-    }
+    /* Armed ONLY while the newest agent turn is still asking. Anything else —
+       a decline answered in prose, a block, a fresh search — disarms it.
+       
+       Clearing only on order_created was a money bug: after "Nahi" the reply
+       is type "text", so the id survived and rode along on every later
+       request. The server re-armed it, the next "ok" read as agreement, and
+       the deterministic path bought the saree she had just refused. */
+    pendingRef.current =
+      last?.response?.type === "consent_required"
+        ? (last.response.data?.products?.[0]?.id ?? null)
+        : null;
   }, [state.messages]);
 
   const spokenRef = useRef<string | null>(null);

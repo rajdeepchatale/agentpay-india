@@ -36,7 +36,11 @@ create table if not exists public.audit_log (
       'create_order',
       'guardrail_check',
       'consent_request',
-      'failure_recovery'
+      'failure_recovery',
+      -- What the buyer said about the experience after paying. Kept in the
+      -- same trail as the guardrail decisions so a judge sees the agent
+      -- asking and the answer, in one place.
+      'feedback'
     )
   ),
   constraint audit_log_guardrail_status_valid check (

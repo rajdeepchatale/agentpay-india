@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { SupportedLanguage } from "@/types";
 import { uiText } from "@/lib/chat/ui-text";
 import { MicIcon, SpinnerIcon } from "@/components/ui/Icon";
@@ -69,6 +69,18 @@ export function VoiceButton({
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
 
+  /* Release the microphone if this unmounts mid-recording. Without it, a
+     buyer who taps the mic and then navigates away leaves the browser's
+     recording indicator lit and the tab holding the device until the page is
+     closed — recorder.onstop, which does the releasing, never fires. */
+  const streamRef = useRef<MediaStream | null>(null);
+  useEffect(() => {
+    return () => {
+      if (recorderRef.current?.state === "recording") recorderRef.current.stop();
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+    };
+  }, []);
+
   const stop = useCallback(() => {
     recorderRef.current?.stop();
   }, []);
@@ -94,6 +106,7 @@ export function VoiceButton({
       return;
     }
 
+    streamRef.current = stream;
     chunksRef.current = [];
     const recorder = new MediaRecorder(stream);
     recorderRef.current = recorder;

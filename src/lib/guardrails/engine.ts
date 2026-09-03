@@ -198,8 +198,13 @@ function check(
     return {
       allowed: false,
       rule: "rate_limit",
-      limit: DEFAULTS.maxOrdersPerHour,
-      attempted: placed + 1,
+      /* Both fields are documented as ₹ and every consumer renders them with
+         a rupee sign, so a count here read as "asked for ₹4 against a ₹3
+         limit". The cap and the price of the saree she was actually trying to
+         buy are the honest values; the counts live in the reasoning, which is
+         where the dashboard shows them. */
+      limit: ctx.maxSpend,
+      attempted: product.price,
       suggestion: `Ek ghante mein ${DEFAULTS.maxOrdersPerHour} orders ho chuke hain. Thodi der baad phir try karein.`,
       reasoning: `BLOCKED rate_limit: ${placed} orders already placed this hour (max ${DEFAULTS.maxOrdersPerHour}). Stops a runaway loop.`,
     };

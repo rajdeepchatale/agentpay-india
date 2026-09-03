@@ -120,9 +120,24 @@ const ORDER_INTENT =
  * Anything that turns a sentence into a refusal. Checked BEFORE consent, so a
  * message containing both loses — the safe direction when the outcome is
  * spending someone's money.
+ *
+ * Bounded, unlike the first version. "mat" lives inside "material" and
+ * "matches", so an unbounded match turned "haan, material acchha hai" into a
+ * refusal and the buyer could not complete an order however often she agreed.
+ * The Latin half uses \b; the Devanagari half uses a lookahead, because \b
+ * only recognises ASCII word characters — the same trap documented in the
+ * affirmative pattern below and in the agent's language detection.
  */
-const NEGATION =
-  /(nahi|nahin|mat|nako|don'?t|do not|cancel|rehne do|ruko|abhi nahi|नाही|नको|नहीं|मत|रुको)/iu;
+const NEGATION_LATIN =
+  /\b(nahi|nahin|nako|mat|don'?t|do not|cancel|rehne do|ruko|nope|no)\b/i;
+const NEGATION_DEVANAGARI =
+  /(नाही|नको|नहीं|मत|रुको)(?![\p{L}\p{N}])/u;
+
+/** True when the message reads as a refusal, in any supported language. */
+export function isDecline(text: string): boolean {
+  const t = (text ?? "").trim();
+  return NEGATION_LATIN.test(t) || NEGATION_DEVANAGARI.test(t);
+}
 
 /** A question about ordering is not an instruction to order. */
 const QUESTION = /[?？]\s*$|\b(kaise|kaisa|kya|how|कैसे|कसं)\b/iu;
@@ -130,7 +145,7 @@ const QUESTION = /[?？]\s*$|\b(kaise|kaisa|kya|how|कैसे|कसं)\b/iu
 export function isAffirmative(text: string): boolean {
   const trimmed = text.trim();
   /* Refusal wins outright. */
-  if (NEGATION.test(trimmed)) return false;
+  if (isDecline(trimmed)) return false;
   if (AFFIRMATIVE.test(trimmed)) return true;
   if (QUESTION.test(trimmed)) return false;
   return ORDER_INTENT.test(trimmed);
