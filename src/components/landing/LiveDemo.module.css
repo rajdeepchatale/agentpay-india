@@ -66,11 +66,15 @@
      ever moves. */
   justify-content: flex-start;
   gap: var(--space-3);
-  /* Sized to the TALLEST arrangement — products AND the block together —
-     rather than to a comfortable average. Still a fixed height, so the zero
-     CLS this was introduced for is unchanged; it is simply the right fixed
-     number instead of one that forced its own content to crop. */
-  height: 468px;
+  /* The replay now ends on the block and stays there, so this height is
+     chosen for the RESTING frame rather than an average one: tall enough that
+     the sarees and the guardrail are on screen together, which is the single
+     image the page exists to leave behind. The opening line and the thinking
+     dots scroll away above, which costs nothing — they have already played.
+     
+     Still a fixed height, so the 358px layout shift this was introduced to
+     kill stays at zero. */
+  height: 560px;
   padding: var(--space-4);
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -309,6 +313,6 @@
 }
 
 @media (max-width: 520px) {
-  .thread { height: 392px; padding: var(--space-3); }
+  .thread { height: 440px; padding: var(--space-3); }
   .cardDeva { display: none; }
 }
