@@ -98,6 +98,14 @@ export default function LandingPage() {
         {/* ---- Motif: the DM bottleneck ---- */}
         <section className={styles.motif}>
           <h2 className={styles.motifHead}>The 500-metre trap</h2>
+          {/* The heading is from PROBLEM_STATEMENT.md and the page used to
+              borrow it without ever explaining what 500 metres referred to.
+              This is the sharpest idea in that document; it costs a sentence. */}
+          <p className={styles.motifBody}>
+            A physical UPI QR code reaches 500 metres. An Instagram Reel reaches
+            millions. The gap between what her marketing reaches and what her
+            payments can capture is the whole problem.
+          </p>
           <p className={styles.motifBody}>
             Zomato, Swiggy and Zepto are already AI-transactable. The neighbourhood
             saree shop is not. A viral Reel brings two hundred DMs to a woman who
@@ -278,11 +286,19 @@ export default function LandingPage() {
 
         {/* ---- Motif: machine-readable. Backed, not asserted. ---- */}
         <section className={styles.motif}>
-          <h2 className={styles.motifHead}>Ready for AI buyers</h2>
+          {/* Was "Ready for AI buyers", which promised the OTHER half of
+              Track 01 — transactable by an AI buyer end to end — and that is
+              not built. The endpoint is real and read-only: an agent can
+              discover her and read her prices, it cannot autonomously buy.
+              Framing it as the same catalog serving a second reader keeps the
+              page on one story instead of implying a second product. */}
+          <h2 className={styles.motifHead}>One catalog, two readers</h2>
           <p className={styles.motifBody}>
-            When an autonomous assistant goes looking for a saree, it needs a
-            machine-readable catalog, not a carousel. That endpoint is live right
-            now — call it yourself:
+            Her buyer talks to the agent. An autonomous assistant wants the same
+            catalog as JSON, not a carousel — and reads the identical source the
+            agent quotes its prices from, so neither can be shown a saree that
+            is not really there. That endpoint is live right now — call it
+            yourself:
           </p>
 
           <pre className={styles.code}>
@@ -293,6 +309,12 @@ export default function LandingPage() {
               {`{ "products": [ { "id": "prod_003",\n    "name": "Khadi Cotton Saree — Block Print",\n    "name_hindi": "खादी कॉटन साडी — ब्लॉक प्रिंट",\n    "price": 499, "in_stock": true } ... ] }`}
             </code>
           </pre>
+
+          <p className={styles.motifBody}>
+            Discovery is built: an agent can find her and read her prices.
+            Autonomous agent-to-agent purchase — MCP, NPCI&rsquo;s UAP — is
+            architecture we have argued, not shipped.
+          </p>
         </section>
 
         {/* ---- Motif: the audit trail ---- */}
