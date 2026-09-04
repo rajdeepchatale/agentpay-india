@@ -21,16 +21,24 @@ type Beat =
   | { kind: "user"; text: string }
   | { kind: "thinking" }
   | { kind: "agent"; text: string }
+  /** The three amounts the shop offers, with ₹1,000 taken. */
+  | { kind: "budget" }
   | { kind: "products" }
   | { kind: "block" };
 
+/* The shop asks FIRST, because that is what the product does — and because it
+   is the reason the refusal three beats later carries any weight. The earlier
+   version opened with the buyer typing "1000 ke under…", which reads as a
+   search filter and quietly gives away the argument: a cap she typed into a
+   query is a preference, a figure the shop asked her for is her word being
+   kept. It also no longer matched /chat, so a judge who watched this and then
+   clicked through met a different opening. */
 const SCRIPT: Beat[] = [
-  { kind: "user", text: "1000 ke under cotton saree dikhao" },
+  { kind: "agent", text: "Namaste! Aapka budget kitna hai?" },
+  { kind: "budget" },
+  { kind: "agent", text: "Theek hai — ₹1,000 tak. Kaisi saree dikhaun?" },
+  { kind: "user", text: "cotton saree dikhao" },
   { kind: "thinking" },
-  {
-    kind: "agent",
-    text: "Aapke ₹1,000 ke budget mein yeh sundar cotton sarees hain:",
-  },
   { kind: "products" },
   { kind: "user", text: "authentic Paithani silk saree" },
   { kind: "thinking" },
@@ -72,6 +80,9 @@ const DWELL: Record<Beat["kind"], number> = {
   user: 900,
   thinking: 1100,
   agent: 1000,
+  /* Longer than a message: the chips have to be seen being offered, and one
+     of them seen being taken, or the point of asking is lost. */
+  budget: 1800,
   products: 2400,
   block: 5200,
 };
@@ -160,6 +171,24 @@ export function LiveDemo() {
                 <p key={i} className={styles.agent} lang="mr">
                   {beat.text}
                 </p>
+              );
+
+            case "budget":
+              /* The chips as the shop offers them, with the one she took
+                 marked. The whole argument of the block four beats later
+                 rests on the ₹1,000 having been HER choice. */
+              return (
+                <div key={i} className={styles.budgets}>
+                  {["₹1,000", "₹5,000", "₹25,000"].map((amount) => (
+                    <span
+                      key={amount}
+                      className={styles.budget}
+                      data-taken={amount === "₹1,000" || undefined}
+                    >
+                      {amount}
+                    </span>
+                  ))}
+                </div>
               );
 
             case "products":

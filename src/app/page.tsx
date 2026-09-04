@@ -120,12 +120,19 @@ export default function LandingPage() {
             The model proposes. It never disposes. Every tool call it asks for is
             checked by a deterministic engine before anything reaches Razorpay.
           </p>
+          <p className={styles.motifBody}>
+            And the cap that engine enforces is not ours. The shop asks what the
+            buyer wants to spend before showing her anything, so a refusal later
+            is not a rule imposed on a stranger — it is the agent keeping her
+            word.
+          </p>
 
           <ol className={styles.flow}>
             <li className={styles.step} data-step="1">
-              <p className={styles.stepHead}>A buyer types</p>
+              <p className={styles.stepHead}>A buyer asks</p>
               <p className={styles.stepBody}>
-                Hindi, Marathi, Hinglish or English — often mixed mid-sentence.
+                Typed or spoken, in Hindi, Marathi, Hinglish or English — often
+                mixed mid-sentence.
               </p>
               <code className={styles.stepCode}>&ldquo;पैठणी साडी दाखवा&rdquo;</code>
             </li>
