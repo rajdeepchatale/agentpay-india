@@ -729,7 +729,10 @@ export function ChatContainer() {
               a theme switch — the label closes that for good, and the amount
               is the most useful thing it could say. */}
           <span className={styles.auditLabel}>
-            ₹{spendLimit.toLocaleString("en-IN")}
+            {/* A dash until she has chosen. Same reason as the composer chip:
+                announcing a limit before she sets one contradicts the claim
+                that the limit is hers. */}
+            {budget === null ? "—" : `₹${spendLimit.toLocaleString("en-IN")}`}
           </span>
         </button>
         <span className={styles.selvedge} aria-hidden="true" />
@@ -827,7 +830,15 @@ export function ChatContainer() {
         <ChatInput
           onSend={send}
           isLoading={isBusy}
-          spendLimit={spendLimit}
+          /* Nothing until she has answered.
+
+             `spendLimit` starts at the default so the engine always has a cap
+             to enforce, but showing that number while the shop is still asking
+             "आपका बजट कितना है?" made the page contradict its own argument:
+             the whole claim is that the limit is the BUYER's, and the
+             interface had already picked one for her. Undefined here hides
+             the chip until `budget` is set. */
+          spendLimit={budget === null ? undefined : spendLimit}
           onEditLimit={() => setSettingsOpen(true)}
           /* Spoken words go straight out as a message — asking her to speak
              and then press send would make voice slower than typing. */
