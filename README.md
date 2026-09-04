@@ -15,7 +15,7 @@
 
 **Making 60 Million Bharat Merchants AI-Transactable — in Hindi, Marathi, Hinglish & English**
 
-[✨ What it does](#what-it-does) · [🏗️ Architecture](docs/ARCHITECTURE.md) · [🛡️ Guardrails](#-deterministic-guardrails-first-engine) · [📊 Audit Trail](#-immutable-audit-trail) · [🐛 What broke, and how](docs/CHALLENGES.md)
+[🎯 Scored against the bar](#scored-against-the-tracks-bar) · [✨ What it does](#what-it-does) · [🏗️ Architecture](docs/ARCHITECTURE.md) · [🛡️ Guardrails](#-deterministic-guardrails-first-engine) · [📊 Audit Trail](#-immutable-audit-trail) · [🐛 What broke, and how](docs/CHALLENGES.md)
 
 </div>
 
