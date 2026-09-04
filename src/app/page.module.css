@@ -177,7 +177,12 @@
   .copy { grid-column: 1; }
   .demo {
     grid-column: 2;
-    grid-row: 1 / span 2;
+    /* No grid-row span. The hero has exactly two children, so spanning a
+       second row invented an empty one: the replay centred across rows 1+2
+       while the copy centred inside row 1 alone, leaving the headline 186px
+       above the panel's middle — aligned to neither its top nor its centre,
+       which is why it read as unresolved rather than deliberate. Measured at
+       1600×1000 before removing it. */
     align-self: center;
     max-width: none;
     margin-top: 0;
