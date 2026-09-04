@@ -14,7 +14,8 @@ which currently leaks away.
 So the claim is not *"we built a shop assistant."* It is:
 
 > **We built the agentic commerce layer for Razorpay's existing merchant base.
-> One toggle, and a merchant becomes transactable by any AI buyer.**
+> One toggle, and a merchant is reachable — by human buyers in their own
+> language today, and by AI buyers as the protocols land.**
 
 Sakhi Sarees is the **proof instance**, not the product.
 
@@ -152,7 +153,14 @@ makes agentic commerce auditable.
 ## Machine-readable today, not someday
 
 `GET /api/catalog` already returns structured JSON any external agent can
-consume. That is the "AI buyer" surface, working now — not a roadmap item.
+consume. **Discovery is built**: an agent can find this merchant and read the
+prices, today, without a bespoke integration.
+
+Be exact about where that stops. **Autonomous agent-to-agent purchase is not
+built.** An AI can read the catalog; it cannot complete a checkout on its own.
+Track 01 offers "transactable by an AI buyer end to end" as the *other* branch
+of an "or", and this project took the revenue branch. The landing page says the
+same thing in the same words, deliberately.
 
 The forward path:
 
@@ -163,6 +171,33 @@ The forward path:
    payment standards as they land.
 3. **WhatsApp Business webhook** — deploy the agent into the merchant's
    existing WhatsApp number, where the DMs already arrive.
+
+---
+
+## Two limits found by running it, not by planning
+
+The rest of this document argues. This section does not — both of these were
+measured in production, and both are the kind of thing a scaling plan usually
+discovers too late.
+
+**Razorpay test mode caps payment links at 30.** Orders are uncapped; links are
+not. Past that ceiling the system reuses links that are still unpaid, and an
+order created with none available comes back without a Pay Now button rather
+than failing — the order is the thing that matters, and it exists at Razorpay.
+In production the cap does not apply, but the lesson does: **the scarce resource
+was not compute or tokens, it was a quota nobody had read.**
+
+**One model provider is a single point of failure.** On 4 Sep, Google returned
+`503 UNAVAILABLE` on the pinned model and every buyer got a connection error —
+no deploy, no code change. Measured across the key that afternoon, four of six
+models were unavailable and one was ten times slower than usual. The fix was a
+fallback chain in
+[`gemini.ts`](../src/lib/agent/providers/gemini.ts) that walks models on 429,
+5xx and timeouts, and fails fast on 400/403/404 where the next model would fail
+identically. Full write-up: [`CHALLENGES.md`](CHALLENGES.md) #19.
+
+Neither of these appears in an architecture diagram. Both would have taken a
+merchant's shop offline.
 
 ---
 
