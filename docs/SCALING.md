@@ -145,14 +145,17 @@ Honesty matters here; judges can tell the difference.
 - Real Razorpay test-mode orders and payment links
 - Guardrails enforced outside the model, with an audit trail
 - A machine-readable catalog endpoint
-- *(if built)* a second merchant in a different category, proving the agent is
-  not saree-specific
 
 **Argued, not built** — and labelled as such
 - Route-based multi-merchant settlement
 - Instagram catalog ingestion
 - The Razorpay dashboard toggle
 - MCP / UAP exposure
+- **A second merchant.** The live catalog is one merchant, `merch_test_001`,
+  seeded by hand. There is no self-serve creation, so a real merchant cannot
+  onboard herself today — say that plainly rather than letting a reader assume
+  otherwise. The data model is already keyed by merchant; the flow that would
+  fill it is not built.
 
 Nothing in this document should be presented as shipped. The architecture is
 the claim; the demo is the evidence that the hard part — an agent that handles

@@ -63,7 +63,7 @@ The agent answers every DM in the buyer's own language, takes the payment inside
 | Voice in and out — the agent listens, and answers aloud unprompted | Sarvam saarika + bulbul |
 | Language picker — pin one, and the whole shop speaks it | header |
 | Supabase audit trail, with the reasoning behind each decision | `/dashboard?session_id=…` |
-| Signed payment webhook — `created → paid` on `payment.captured` | `/api/razorpay/webhook` |
+| Signed payment webhook, settled by the session in the payment's own notes | `/api/razorpay/webhook` |
 | 16-saree catalog with a machine-readable search API | `/api/catalog` |
 | Landing page and design-system specimen sheet | `/` · `/design` |
 
@@ -213,13 +213,24 @@ product.
 ### 💳 Real Razorpay Integration (Not Mocks)
 - Direct `orders.create()` and `paymentLink.create()` via the Razorpay Node SDK
 - Real test-mode order IDs (`order_TXB1BtoaX8629G`) and clickable `rzp.io` payment links
+- **Two Razorpay objects per purchase, and it matters.** We create an order; the buyer pays
+  a *payment link*, which carries an internal order of its own. So the id above stays
+  `created` forever and `order_TXe7JwyOqdEfaT` is the one that shows `captured`. Both are on
+  the same test key — paste either
+- **Test mode caps payment links at 30** (orders are uncapped). Links are therefore reused
+  while still unpaid, and an order created past that ceiling comes back without a Pay Now
+  button rather than failing — the order is the thing that matters, and it exists at Razorpay
 - Paise-accurate subunit handling — ₹599 → 59900, via a single conversion point with a sanity ceiling
 
 ### 🛡️ Deterministic Guardrails-First Engine
 - **The buyer sets the cap.** The shop asks before showing anything; the lowest option
-  offered (₹1,000) sits deliberately below the cheapest real Paithani (₹8,999), so a buyer
+  offered (₹1,000) sits deliberately below the cheapest *silk* Paithani (₹8,999), so a buyer
   who takes it meets the guardrail on her next request with nothing staged. At ₹25,000 the
   same saree goes through — proof the engine reads a number rather than refusing on principle
+- **"Paithani" alone is answered, not refused.** The catalog holds two: a ₹899 Paithani
+  *Print* on cotton, which is inside the ₹1,000 cap, and the ₹8,999 Pure Silk Paithani,
+  which is nine times over it. Ask for *"authentic Paithani silk saree"* to see the block.
+  The cap is precise rather than blunt, and that precision is the point
 - **Spending caps** — the limit blocks the ₹8,999 Paithani and offers real alternatives within budget
 - **Explicit consent** — no order without *"Haan"* / *"Ho"* / *"Yes"*; never auto-purchases
 - **Rate limiting** — max 3 orders per session per hour, stopping a runaway autonomous loop
@@ -464,7 +475,7 @@ Initialize the database by running `supabase/schema.sql` in the Supabase SQL edi
 
 ```bash
 npm run dev     # http://localhost:3000/chat
-npm test        # 277 tests, zero test dependencies
+npm test        # 282 tests, zero test dependencies
 ```
 
 | Page | URL |
