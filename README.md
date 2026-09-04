@@ -15,7 +15,7 @@
 
 **Making 60 Million Bharat Merchants AI-Transactable — in Hindi, Marathi, Hinglish & English**
 
-[✨ What it does](#what-it-does) · [🏗️ Architecture](#-system-architecture) · [🛡️ Guardrails](#-deterministic-guardrails-first-engine) · [📊 Audit Trail](#-immutable-audit-trail) · [🐛 What broke, and how](docs/CHALLENGES.md)
+[✨ What it does](#what-it-does) · [🏗️ Architecture](docs/ARCHITECTURE.md) · [🛡️ Guardrails](#-deterministic-guardrails-first-engine) · [📊 Audit Trail](#-immutable-audit-trail) · [🐛 What broke, and how](docs/CHALLENGES.md)
 
 </div>
 
@@ -429,6 +429,7 @@ agentpay-india/
 │   └── types/index.ts               # Shared TypeScript interfaces
 ├── supabase/schema.sql              # Database schema
 ├── docs/
+│   ├── ARCHITECTURE.md              # The flow, drawn — model proposes, engine disposes
 │   ├── CHALLENGES.md                # Engineering challenges & resolutions
 │   └── SCALING.md                   # One merchant → sixty million
 └── DESIGN.md                        # The design system, as built
