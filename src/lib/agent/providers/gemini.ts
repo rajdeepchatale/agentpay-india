@@ -221,88 +221,84 @@ async function callModel(
   key: string,
   req: CompletionRequest,
 ): Promise<CompletionResult> {
-  {
-    {
-      const body = {
-        systemInstruction: { parts: [{ text: req.system }] },
-        contents: toGeminiContents(req.messages),
-        tools: req.tools.length
-          ? [{ functionDeclarations: req.tools.map(toGeminiSchema) }]
-          : undefined,
-        generationConfig: {
-          /* Deterministic: the same buyer question should not produce a
-             different shop every time. */
-          temperature: 0,
-          maxOutputTokens: req.maxTokens ?? 2048,
-        },
-      };
+  const body = {
+    systemInstruction: { parts: [{ text: req.system }] },
+    contents: toGeminiContents(req.messages),
+    tools: req.tools.length
+      ? [{ functionDeclarations: req.tools.map(toGeminiSchema) }]
+      : undefined,
+    generationConfig: {
+      /* Deterministic: the same buyer question should not produce a
+         different shop every time. */
+      temperature: 0,
+      maxOutputTokens: req.maxTokens ?? 2048,
+    },
+  };
 
-      let res: Response;
-      try {
-        res = await fetch(`${ENDPOINT}/${MODELS[0]}:generateContent`, {
-          method: "POST",
-          headers: { "x-goog-api-key": key, "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-          /* Warm, this model answers in ~300ms. Cold, the free tier can take
-             ~30s to schedule the first request. warmUp() below hides that;
-             this ceiling exists so a genuine stall still fails cleanly. */
-          signal: AbortSignal.timeout(45_000),
-        });
-      } catch (e) {
-        throw new ProviderError(
-          e instanceof Error && e.name === "TimeoutError"
-            ? "The model took too long to respond."
-            : `Could not reach Gemini: ${(e as Error).message}`,
-        );
-      }
-
-      const json = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        const msg =
-          (json as { error?: { message?: string } })?.error?.message ??
-          `Gemini returned ${res.status}`;
-        throw new ProviderError(msg, res.status);
-      }
-
-      const candidate = (
-        json as { candidates?: { content?: { parts?: GeminiPart[] } }[] }
-      ).candidates?.[0];
-      const parts = candidate?.content?.parts ?? [];
-
-      const text = parts
-        .map((p) => p.text ?? "")
-        .join("")
-        .trim();
-
-      const toolCalls: ToolCall[] = parts
-        .filter((p) => p.functionCall)
-        .map((p, i) => ({
-          /* Gemini does not return call ids; synthesise one so results can be
-             matched back in the neutral message format. */
-          id: `call_${Date.now()}_${i}`,
-          name: p.functionCall!.name,
-          args: p.functionCall!.args ?? {},
-          /* Carry the signature so the next turn can replay it. Without this
-             Gemini 3.x rejects the whole request. */
-          ...(p.thoughtSignature
-            ? { providerMeta: { thoughtSignature: p.thoughtSignature } }
-            : {}),
-        }));
-
-      const um = (
-        json as {
-          usageMetadata?: { promptTokenCount?: number; candidatesTokenCount?: number };
-        }
-      ).usageMetadata;
-
-      return {
-        text,
-        toolCalls,
-        usage: um
-          ? { input: um.promptTokenCount ?? 0, output: um.candidatesTokenCount ?? 0 }
-          : undefined,
-      };
-    }
+  let res: Response;
+  try {
+    res = await fetch(`${ENDPOINT}/${MODELS[0]}:generateContent`, {
+      method: "POST",
+      headers: { "x-goog-api-key": key, "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      /* Warm, this model answers in ~300ms. Cold, the free tier can take
+         ~30s to schedule the first request. warmUp() below hides that;
+         this ceiling exists so a genuine stall still fails cleanly. */
+      signal: AbortSignal.timeout(45_000),
+    });
+  } catch (e) {
+    throw new ProviderError(
+      e instanceof Error && e.name === "TimeoutError"
+        ? "The model took too long to respond."
+        : `Could not reach Gemini: ${(e as Error).message}`,
+    );
   }
+
+  const json = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    const msg =
+      (json as { error?: { message?: string } })?.error?.message ??
+      `Gemini returned ${res.status}`;
+    throw new ProviderError(msg, res.status);
+  }
+
+  const candidate = (
+    json as { candidates?: { content?: { parts?: GeminiPart[] } }[] }
+  ).candidates?.[0];
+  const parts = candidate?.content?.parts ?? [];
+
+  const text = parts
+    .map((p) => p.text ?? "")
+    .join("")
+    .trim();
+
+  const toolCalls: ToolCall[] = parts
+    .filter((p) => p.functionCall)
+    .map((p, i) => ({
+      /* Gemini does not return call ids; synthesise one so results can be
+         matched back in the neutral message format. */
+      id: `call_${Date.now()}_${i}`,
+      name: p.functionCall!.name,
+      args: p.functionCall!.args ?? {},
+      /* Carry the signature so the next turn can replay it. Without this
+         Gemini 3.x rejects the whole request. */
+      ...(p.thoughtSignature
+        ? { providerMeta: { thoughtSignature: p.thoughtSignature } }
+        : {}),
+    }));
+
+  const um = (
+    json as {
+      usageMetadata?: { promptTokenCount?: number; candidatesTokenCount?: number };
+    }
+  ).usageMetadata;
+
+  return {
+    text,
+    toolCalls,
+    usage: um
+      ? { input: um.promptTokenCount ?? 0, output: um.candidatesTokenCount ?? 0 }
+      : undefined,
+  };
 }
