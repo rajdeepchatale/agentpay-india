@@ -9,6 +9,8 @@ import styles from "./GuardrailRail.module.css";
 export interface GuardrailRailProps {
   sessionId: string;
   spendLimit: number;
+  /** False until the buyer has answered the budget question. */
+  budgetSet?: boolean;
   /** Bumped when a turn settles, so the rail refetches at the right moment. */
   turn: number;
   /** Highest amount the buyer has reached for this session, in ₹. */
@@ -30,6 +32,7 @@ export interface GuardrailRailProps {
 export function GuardrailRail({
   sessionId,
   spendLimit,
+  budgetSet = true,
   turn,
   attempted,
 }: GuardrailRailProps) {
@@ -74,16 +77,26 @@ export function GuardrailRail({
 
       <section className={styles.capBlock}>
         <p className={styles.capLabel}>Spending limit</p>
-        <div className={styles.track} data-over={over}>
-          <span
-            className={styles.within}
-            style={{ "--pct": capPct / 100 } as React.CSSProperties}
-          />
+        {/* Empty until the buyer sets one.
+
+            A full gold bar reading "₹1,000" while the shop is still asking
+            what she wants to spend says the limit is ours. It is not, and the
+            whole argument depends on that. The engine still holds the default
+            cap the moment a tool is called — this is display only. */}
+        <div className={styles.track} data-over={over} data-unset={!budgetSet || undefined}>
+          {budgetSet && (
+            <span
+              className={styles.within}
+              style={{ "--pct": capPct / 100 } as React.CSSProperties}
+            />
+          )}
           {over && <span className={styles.over} style={{ left: `${capPct}%` }} />}
           {over && <span className={styles.mark} style={{ left: `${capPct}%` }} />}
         </div>
         <div className={styles.capScale}>
-          <span className={styles.money}>₹{spendLimit.toLocaleString("en-IN")}</span>
+          <span className={styles.money}>
+            {budgetSet ? `₹${spendLimit.toLocaleString("en-IN")}` : "not set yet"}
+          </span>
           {over && (
             <span className={styles.attempted}>
               asked for ₹{attempted.toLocaleString("en-IN")}

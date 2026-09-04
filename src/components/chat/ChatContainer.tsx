@@ -852,6 +852,7 @@ export function ChatContainer() {
       <GuardrailRail
         sessionId={sessionId}
         spendLimit={spendLimit}
+        budgetSet={budget !== null}
         turn={turn}
         attempted={attempted}
       />
