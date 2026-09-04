@@ -152,7 +152,14 @@ export default function LandingPage() {
                 Typed or spoken, in Hindi, Marathi, Hinglish or English — often
                 mixed mid-sentence.
               </p>
-              <code className={styles.stepCode}>&ldquo;पैठणी साडी दाखवा&rdquo;</code>
+              {/* Was "पैठणी साडी दाखवा", which made these four cards tell a
+                  story the audit trail below contradicts twice: that search
+                  returns the ₹899 print and withholds four, and the expensive
+                  Paithani is BLOCKED — it never produces the order named in
+                  step 4, which was for a Khadi Cotton Saree. "कॉटन साडी दाखवा"
+                  searches "cotton" and returns that exact saree at ₹499, so
+                  the chain is now one true run end to end. Verified live. */}
+              <code className={styles.stepCode}>&ldquo;कॉटन साडी दाखवा&rdquo;</code>
             </li>
 
             <li className={styles.step} data-step="2">
@@ -161,7 +168,7 @@ export default function LandingPage() {
                 Gemini picks a tool and a <code>product_id</code>. It never names a
                 price — there is no parameter for one.
               </p>
-              <code className={styles.stepCode}>search_products(&quot;paithani&quot;)</code>
+              <code className={styles.stepCode}>search_products(&quot;cotton&quot;)</code>
             </li>
 
             <li className={`${styles.step} ${styles.gate}`} data-step="3">
@@ -180,7 +187,8 @@ export default function LandingPage() {
             <li className={styles.step} data-step="4">
               <p className={styles.stepHead}>Razorpay</p>
               <p className={styles.stepBody}>
-                A real order and payment link. A signed webhook marks it paid.
+                A real order and payment link. The buyer pays the link, and a
+                signed webhook settles it.
               </p>
               <code className={styles.stepCode}>order_TXB1BtoaX8629G</code>
             </li>
