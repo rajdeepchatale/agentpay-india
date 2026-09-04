@@ -70,9 +70,39 @@ That is the actual innovation surface, and it fits the merchant story exactly:
    already maintain one.
 3. **CSV** as the boring fallback.
 
-Distribution is then trivial, because **Razorpay already owns the merchant
-relationship**: no new signup, no new KYC, no integration project. A toggle in
-a dashboard she already logs into.
+For a merchant **already on Razorpay**, distribution is trivial: no new signup,
+no new KYC, no integration project. A toggle in a dashboard she already logs
+into.
+
+### And the sellers who are not on Razorpay?
+
+Most of the 60 million are not, and it is worth being exact about this rather
+than letting the sentence above carry more than it should.
+
+**They would need a Razorpay account first. Nothing here removes that step**,
+and this project should not be read as claiming otherwise.
+
+But that is the growth argument, not a hole in it:
+
+> **Nobody wants a payment gateway.** She wants the hundred and seventy
+> conversations she loses every day. If the AI shopkeeper runs on Razorpay's
+> rails, then the shopkeeper is the reason to open the account — and the
+> account is a consequence, not the pitch.
+
+Two things make that more than a slogan:
+
+- **The friction is smaller than it sounds.** A seller already taking UPI QR
+  payments has a bank account and does business digitally. Razorpay onboarding
+  is an existing funnel with an existing conversion rate — not a new problem
+  this project has to solve.
+- **This is the AI *Growth* track.** Growth means merchants who are not on the
+  platform yet, not only more volume from the ones who are. An agent that only
+  runs on Razorpay's rails is a reason to be on them.
+
+And where it genuinely stops: a seller who wants nothing to do with a payment
+provider at all is not reachable by this, and that is fine. **The claim is not
+60 million users. It is 60 million who are reachable on rails that already
+exist.**
 
 And the delivery mechanism already exists too. A **Payment Link** is created in
 that dashboard and pasted into WhatsApp; a **Payment Page** is a hosted,
