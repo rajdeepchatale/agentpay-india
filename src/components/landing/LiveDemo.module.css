@@ -96,8 +96,13 @@
      dots scroll away above, which costs nothing — they have already played.
      
      Still a fixed height, so the 358px layout shift this was introduced to
-     kill stays at zero. */
-  height: 560px;
+     kill stays at zero.
+
+     Raised from 560 when the budget question was added to the script: two more
+     beats pushed the content to 820px, and at 560 the photographs had scrolled
+     off by the time the block arrived — losing the sarees at exactly the moment
+     the page makes its case. Measured, not guessed. */
+  height: 648px;
   padding: var(--space-4);
   overflow-y: auto;
   overscroll-behavior: contain;
