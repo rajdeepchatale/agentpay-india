@@ -57,8 +57,8 @@ describe("isRetryableStatus", () => {
     assert.equal(isRetryableStatus(502), true);
   });
 
-  test("404 is NOT retryable — a wrong model name fails the same way twice", () => {
-    assert.equal(isRetryableStatus(404), false);
+  test("404 IS retryable — a retired model name is per-model, not per-request", () => {
+    assert.equal(isRetryableStatus(404), true);
   });
 
   test("400 is NOT retryable — a malformed request is our bug, not theirs", () => {
@@ -71,5 +71,69 @@ describe("isRetryableStatus", () => {
 
   test("a timeout, which has no status, is retryable", () => {
     assert.equal(isRetryableStatus(undefined), true);
+  });
+});
+
+/* ------------------------------------------------------------------
+   The fallback loop itself — not just the helpers that feed it.
+
+   The first version of these tests covered modelChain() and
+   isRetryableStatus() and stopped there. complete() shipped calling
+   MODELS[0] on every iteration instead of the model it was handed, so the
+   chain retried one model four times while logging that it had moved on —
+   and 295 tests stayed green through all of it.
+
+   These drive complete() with a stubbed fetch and assert on WHICH model was
+   asked, which is the only thing that makes the feature real.
+   ------------------------------------------------------------------ */
+describe("complete — the fallback actually walks the chain", () => {
+  const ok = () => new Response(JSON.stringify({
+    candidates: [{ content: { parts: [{ text: "hi" }] } }],
+  }), { status: 200, headers: { "content-type": "application/json" } });
+  const err = (status: number) => new Response(
+    JSON.stringify({ error: { message: "nope", status: "X" } }),
+    { status, headers: { "content-type": "application/json" } });
+
+  const req = { system: "s", messages: [], tools: [], maxTokens: 16 };
+
+  /** Runs complete() against a stub fetch, returning the models actually hit. */
+  async function run(responses: Response[]) {
+    const realFetch = globalThis.fetch;
+    const realKey = process.env.GEMINI_API_KEY;
+    const realModel = process.env.GEMINI_MODEL;
+    const hits: string[] = [];
+    process.env.GEMINI_API_KEY = "k";
+    let i = 0;
+    globalThis.fetch = (async (url: string) => {
+      hits.push(String(url).split("/models/")[1].split(":")[0]);
+      return responses[i++] ?? ok();
+    }) as unknown as typeof fetch;
+    try {
+      const { geminiProvider } = await import(`./gemini.ts?fb=${Math.random()}`);
+      await geminiProvider().complete(req).catch(() => {});
+    } finally {
+      globalThis.fetch = realFetch;
+      if (realKey === undefined) delete process.env.GEMINI_API_KEY;
+      else process.env.GEMINI_API_KEY = realKey;
+      if (realModel === undefined) delete process.env.GEMINI_MODEL;
+      else process.env.GEMINI_MODEL = realModel;
+    }
+    return hits;
+  }
+
+  test("a 503 on the first model sends the next request to a DIFFERENT model", async () => {
+    const hits = await run([err(503), ok()]);
+    assert.equal(hits.length, 2, "should have tried twice");
+    assert.notEqual(hits[0], hits[1], "the retry hit the same model — the chain is dead");
+  });
+
+  test("the first request goes to the head of the chain", async () => {
+    const hits = await run([ok()]);
+    assert.equal(hits[0], modelChain(process.env.GEMINI_MODEL)[0]);
+  });
+
+  test("a non-retryable status stops the chain immediately", async () => {
+    const hits = await run([err(403), ok()]);
+    assert.equal(hits.length, 1, "403 is ours, not theirs — must not retry");
   });
 });

@@ -861,7 +861,15 @@ export function ChatContainer() {
         open={settingsOpen}
         onClose={() => setSettingsOpen(false)}
         spendLimit={spendLimit}
-        onSave={setSpendLimit}
+        /* Also marks the budget as SET. Saving through the gear used to move
+           spendLimit only, so the engine enforced her number while the whole
+           interface still insisted she had not chosen one — and the budget
+           chips stayed up, where one tap would silently overwrite the figure
+           she had just deliberately set. */
+        onSave={(amount) => {
+          setSpendLimit(amount);
+          setBudget(amount);
+        }}
       />
     </div>
   );

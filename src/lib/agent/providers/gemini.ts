@@ -1,5 +1,5 @@
 // ============================================================
-// Gemini provider — gemini-3.6-flash on the free tier.
+// Gemini provider — a chain of models on the free tier, first healthy wins.
 // ============================================================
 // Verified Sep 2: function calling works, Marathi in → Marathi out, and the
 // guardrail refusal reads warm rather than robotic.
@@ -33,9 +33,9 @@ const ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models";
    Pinning one model makes someone else's capacity a single point of failure.
    Ordered fastest-measured first. */
 const FALLBACK_MODELS = [
-  "gemini-3.7-flash",
-  "gemini-3.1-flash-lite",
-  "gemini-3.6-flash",
+  "gemini-3.1-flash-lite", // 1.9s measured — fastest of the six
+  "gemini-3.7-flash", //     6.5s
+  "gemini-3.6-flash", //     ~30s, but up when the others were not
   "gemini-3.5-flash",
 ];
 
@@ -57,13 +57,19 @@ export function modelChain(configured: string | undefined): string[] {
  * Is this worth trying on the next model?
  *
  * 429 and 5xx are Google's capacity, and the next model may well be fine.
- * 400/403/404 are ours — a malformed request, a bad key, a wrong model name —
- * and they fail identically on every model, so retrying only burns time.
+ * 400/401/403 are ours — a malformed request or a bad key — and they fail
+ * identically on every model, so retrying only burns time.
+ *
+ * 404 IS retryable, which the first version got wrong. A 404 means *this
+ * model name* does not exist: Google retires and renames models, and a
+ * retired head-of-chain is precisely the case the chain exists to survive.
+ * Treating it as ours aborted the whole chain over one dead name.
+ *
  * No status at all means a timeout or a dropped connection: worth one more.
  */
 export function isRetryableStatus(status: number | undefined): boolean {
   if (status === undefined) return true;
-  return status === 429 || status >= 500;
+  return status === 404 || status === 429 || status >= 500;
 }
 
 const MODELS = modelChain(process.env.GEMINI_MODEL);
@@ -194,7 +200,7 @@ export function geminiProvider(): LlmProvider {
       let lastError: ProviderError | undefined;
       for (const model of MODELS) {
         try {
-          return await callModel(model, key, req);
+          return await callModel(model, key, req, model === MODELS[0]);
         } catch (e) {
           const err =
             e instanceof ProviderError
@@ -208,18 +214,18 @@ export function geminiProvider(): LlmProvider {
           );
         }
       }
-      throw (
-        lastError ??
-        new ProviderError("Every Gemini model in the chain was unavailable.")
-      );
+      /* Non-null: MODELS always holds at least the four fallbacks, so the loop
+         body runs and assigns lastError before we ever get here. */
+      throw lastError!;
     },
   };
 }
 
 async function callModel(
-  MODEL: string,
+  model: string,
   key: string,
   req: CompletionRequest,
+  isFirst = true,
 ): Promise<CompletionResult> {
   const body = {
     systemInstruction: { parts: [{ text: req.system }] },
@@ -237,14 +243,20 @@ async function callModel(
 
   let res: Response;
   try {
-    res = await fetch(`${ENDPOINT}/${MODELS[0]}:generateContent`, {
+    /* `model`, NOT MODELS[0].
+       This line read MODELS[0] for one release: the extraction that created
+       this function renamed the parameter to match the deleted module
+       constant, a sed rewrote both call sites, and the loop above then
+       retried the same model on every pass while logging that it had moved
+       on. tsc passed, 295 tests passed, and the fallback never once worked. */
+    res = await fetch(`${ENDPOINT}/${model}:generateContent`, {
       method: "POST",
       headers: { "x-goog-api-key": key, "Content-Type": "application/json" },
       body: JSON.stringify(body),
-      /* Warm, this model answers in ~300ms. Cold, the free tier can take
-         ~30s to schedule the first request. warmUp() below hides that;
-         this ceiling exists so a genuine stall still fails cleanly. */
-      signal: AbortSignal.timeout(45_000),
+      /* First model gets the full ceiling. Later ones get less, because the
+         client aborts the whole turn at 30s — a chain that spends 45s per
+         model can never rescue anything. */
+      signal: AbortSignal.timeout(isFirst ? 20_000 : 8_000),
     });
   } catch (e) {
     throw new ProviderError(

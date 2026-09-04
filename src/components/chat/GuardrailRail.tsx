@@ -59,7 +59,11 @@ export function GuardrailRail({
   }, [sessionId, turn]);
 
   const blocked = entries.filter((e) => e.guardrail_status === "blocked").length;
-  const over = attempted !== null && attempted > spendLimit;
+  /* Never "over" before a limit is set. A first message that trips the default
+     cap made the rail draw the overshoot hatch, the cap marker and
+     "asked for ₹8,999" beside the words "not set yet" — the panel claiming a
+     limit was exceeded and that none existed, in the same eight pixels. */
+  const over = budgetSet && attempted !== null && attempted > spendLimit;
   /* The cap always occupies the full track when nothing has exceeded it; once
      something has, the track becomes the attempt and the cap a fraction of it —
      the same geometry the block card uses. */
@@ -83,7 +87,7 @@ export function GuardrailRail({
             what she wants to spend says the limit is ours. It is not, and the
             whole argument depends on that. The engine still holds the default
             cap the moment a tool is called — this is display only. */}
-        <div className={styles.track} data-over={over} data-unset={!budgetSet || undefined}>
+        <div className={styles.track} data-over={over || undefined}>
           {budgetSet && (
             <span
               className={styles.within}

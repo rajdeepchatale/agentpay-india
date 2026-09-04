@@ -141,30 +141,34 @@ export function ChatInput({
         </Button>
       </div>
 
-      {spendLimit !== undefined && (
-        <p className={styles.guardrail}>
+      {/* Only the AMOUNT waits for the buyer to name one. Gating this whole
+          row on `spendLimit` also hid "Change" and the Enter-to-send hint —
+          two unrelated affordances gone from the first screen every visitor
+          sees, as collateral of a display decision. */}
+      <p className={styles.guardrail}>
+        {spendLimit !== undefined && (
           <span className={styles.tag}>
             <span className={styles.limitValue}>
               ₹{spendLimit.toLocaleString("en-IN")}
             </span>
             <span className={styles.limitWord}>{t.limitLabel}</span>
           </span>
+        )}
 
-          {onEditLimit && (
-            <button
-              type="button"
-              className={styles.editLimit}
-              onClick={onEditLimit}
-            >
-              {t.change}
-            </button>
-          )}
+        {onEditLimit && spendLimit !== undefined && (
+          <button
+            type="button"
+            className={styles.editLimit}
+            onClick={onEditLimit}
+          >
+            {t.change}
+          </button>
+        )}
 
-          <span className={styles.hintKeys}>
-            <kbd className={styles.key}>Enter</kbd> {t.enterToSend}
-          </span>
-        </p>
-      )}
+        <span className={styles.hintKeys}>
+          <kbd className={styles.key}>Enter</kbd> {t.enterToSend}
+        </span>
+      </p>
 
     </div>
   );
