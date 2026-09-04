@@ -13,6 +13,20 @@ import styles from "./CatalogStrip.module.css";
  * Devanagari names cannot drift from what the agent actually sells, and any
  * saree still missing a photograph shows its woven cloth instead of a gap.
  */
+
+/* Cheapest first, so the rail delivers the sentence above it: the heading
+   promises "₹499 to ₹78,000" and the eye now actually lands on ₹499 and ends
+   on ₹78,000. In catalog order it opened on ₹599 and left ₹1,299 and ₹949
+   stranded past the ₹78,000 bridal Paithani, which read as no order at all.
+
+   It also draws the guardrail: the ₹1,000 cap falls in a visible place, right
+   after the seventh saree, so the ladder shows what the agent will and will
+   not spend on.
+
+   Copied before sorting — `products` is the array the agent searches, and
+   sort() mutates in place. */
+const byPrice = [...products].sort((a, b) => a.price - b.price);
+
 export function CatalogStrip() {
   return (
     <section className={styles.strip} aria-label="The catalog">
@@ -26,7 +40,7 @@ export function CatalogStrip() {
       </div>
 
       <ul className={styles.rail}>
-        {products.map((p) => (
+        {byPrice.map((p) => (
           <li key={p.id} className={styles.item}>
             <SareeThumb product={p} className={styles.photo} />
             <p className={styles.name}>{p.name.split("—")[0].trim()}</p>
