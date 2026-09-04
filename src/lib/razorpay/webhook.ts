@@ -61,6 +61,29 @@ export interface PaymentEvent {
    * the short_url is the only thing both sides share.
    */
   paymentLink?: string;
+  /**
+   * The conversation this payment belongs to, read from the payment's notes.
+   *
+   * The webhook subscription on the live key carries payment.captured and
+   * payment.failed only — `payment_link.paid` is never delivered, so the
+   * branch above cannot fire in production. What arrives instead is a
+   * payment whose `order_id` is the LINK's own internal order, which matches
+   * no row we hold: eleven real captured payments settled nothing.
+   *
+   * We set these notes ourselves when minting the order, and Razorpay copies
+   * them onto the payment. They are the only identifier both sides share
+   * that does not depend on which Razorpay object the buyer happened to pay.
+   */
+  sessionId?: string;
+  /** The saree, from the same notes — what the shop thanks her for. */
+  productId?: string;
+}
+
+/** A note we wrote ourselves, only if it came back as a usable string. */
+function note(notes: unknown, key: string): string | undefined {
+  if (!notes || typeof notes !== "object") return undefined;
+  const value = (notes as Record<string, unknown>)[key];
+  return typeof value === "string" && value ? value : undefined;
 }
 
 /** Events that change an order's status. Everything else is ignored. */
@@ -92,7 +115,7 @@ export function parsePaymentEvent(rawBody: string): PaymentEvent | null {
   const b = body as {
     event?: string;
     payload?: {
-      payment?: { entity?: { id?: string; order_id?: string } };
+      payment?: { entity?: { id?: string; order_id?: string; notes?: unknown } };
       payment_link?: { entity?: { short_url?: string } };
     };
   };
@@ -103,13 +126,17 @@ export function parsePaymentEvent(rawBody: string): PaymentEvent | null {
   const payment = b?.payload?.payment?.entity;
   const paymentId = payment?.id ?? "";
 
+  /* Our own notes, carried on the payment whichever object was paid. */
+  const sessionId = note(payment?.notes, "session_id");
+  const productId = note(payment?.notes, "product_id");
+
   /* A link event identifies itself by its short_url, which is what we stored
      alongside the order. */
   const shortUrl = b?.payload?.payment_link?.entity?.short_url;
-  if (shortUrl) return { status, paymentId, paymentLink: shortUrl };
+  if (shortUrl) return { status, paymentId, paymentLink: shortUrl, sessionId, productId };
 
   const razorpayOrderId = payment?.order_id;
   if (!razorpayOrderId) return null;
 
-  return { status, paymentId, razorpayOrderId };
+  return { status, paymentId, razorpayOrderId, sessionId, productId };
 }

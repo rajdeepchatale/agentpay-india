@@ -20,7 +20,12 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { verifyWebhookSignature, parsePaymentEvent } from "@/lib/razorpay/webhook";
-import { markOrderStatus, markOrderStatusByLink, logDecision } from "@/lib/audit/logger";
+import {
+  markOrderStatus,
+  markOrderStatusByLink,
+  markOrderStatusBySession,
+  logDecision,
+} from "@/lib/audit/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -48,9 +53,18 @@ export async function POST(request: NextRequest) {
   /* A link event identifies the order by the link the buyer opened; a payment
      event identifies it by the order id. Both end at the same row. */
   const subject = event.razorpayOrderId ?? event.paymentLink ?? "";
-  const result = event.paymentLink
+  let result = event.paymentLink
     ? await markOrderStatusByLink(event.paymentLink, event.status)
     : await markOrderStatus(event.razorpayOrderId!, event.status);
+
+  /* Neither id matched a row we hold. That is the normal case, not an edge
+     one: the buyer paid a payment link, so the order id on this event is the
+     link's internal order and never ours. The session in our own notes is the
+     one identifier that survives, so try it before giving up — otherwise the
+     money arrives and the conversation never learns. */
+  if (result === "unchanged" && event.sessionId) {
+    result = await markOrderStatusBySession(event.sessionId, event.status);
+  }
 
   /* The audit trail is the point of this project, so a payment outcome belongs
      in it as much as a guardrail decision does. Never let logging break the
@@ -62,6 +76,7 @@ export async function POST(request: NextRequest) {
       input: {
         ...(event.razorpayOrderId ? { razorpay_order_id: event.razorpayOrderId } : {}),
         ...(event.paymentLink ? { payment_link: event.paymentLink } : {}),
+        ...(event.sessionId ? { buyer_session_id: event.sessionId } : {}),
         payment_id: event.paymentId,
       },
       output: { status: event.status, db: result },

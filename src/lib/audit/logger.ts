@@ -184,6 +184,49 @@ export async function paidProductFor(sessionId: string): Promise<string | null> 
 }
 
 /**
+ * Settle an order by the CONVERSATION it belongs to.
+ *
+ * The last resort, and in practice the only one that fires. Our flow creates
+ * two Razorpay objects — an order, and a payment link carrying an internal
+ * order of its own — and the buyer pays the link. The live webhook
+ * subscription delivers payment.captured only, whose `order_id` is that
+ * internal one, so it matches no row we hold; and payment_link.paid, which
+ * the link matcher was written for, is never sent. Measured on the live key:
+ * eleven captured payments, eleven rows left at `created`, and therefore
+ * eleven buyers the shop never thanked.
+ *
+ * The session id travels in the notes we set ourselves, so it survives that
+ * whole mismatch. Newest created row for the session, because a session that
+ * asked twice is settling the order it just made.
+ */
+export async function markOrderStatusBySession(
+  sessionId: string,
+  status: "paid" | "failed",
+): Promise<"updated" | "unchanged" | "unavailable"> {
+  const db = supabase();
+  if (!db) return "unavailable";
+
+  try {
+    const { data, error } = await db
+      .from("orders")
+      .select("id")
+      .eq("session_id", sessionId)
+      .eq("status", "created")
+      .order("created_at", { ascending: false })
+      .limit(1);
+    if (error || !data?.length) return "unchanged";
+
+    const { error: updateError } = await db
+      .from("orders")
+      .update({ status })
+      .eq("id", (data[0] as { id: string }).id);
+    return updateError ? "unavailable" : "updated";
+  } catch {
+    return "unavailable";
+  }
+}
+
+/**
  * Move an order to its settled state, found by the link the buyer actually used.
  *
  * Takes the status rather than assuming "paid": Razorpay raises

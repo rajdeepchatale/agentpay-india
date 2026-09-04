@@ -283,7 +283,7 @@ export default function LandingPage() {
               <span className={styles.prompt}>$ </span>curl
               https://agentpay-india.vercel.app/api/catalog?max_price=1000
               {"\n\n"}
-              {`{ "products": [ { "id": "prod_001",\n    "name": "Handloom Cotton Saree — Mango Motif",\n    "name_hindi": "हातमाग कॉटन साडी — आंबा मोटिफ",\n    "price": 599, "in_stock": true } ... ] }`}
+              {`{ "products": [ { "id": "prod_003",\n    "name": "Khadi Cotton Saree — Block Print",\n    "name_hindi": "खादी कॉटन साडी — ब्लॉक प्रिंट",\n    "price": 499, "in_stock": true } ... ] }`}
             </code>
           </pre>
         </section>
@@ -338,7 +338,10 @@ export default function LandingPage() {
               <p className={styles.checkHead}>The order is real</p>
               <p className={styles.checkBody}>
                 Paste <code>order_TXB1BtoaX8629G</code> into the Razorpay test
-                dashboard. It is there, at ₹499, marked paid by a signed webhook.
+                dashboard: the order the agent created, at ₹499. A payment link
+                carries an order of its own, so the one that shows{" "}
+                <i>captured</i> is <code>order_TXe7JwyOqdEfaT</code> — same test
+                key, same ₹499, settled into our database by a signed webhook.
               </p>
             </li>
             <li>

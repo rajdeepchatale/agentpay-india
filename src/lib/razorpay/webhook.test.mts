@@ -174,3 +174,75 @@ describe("parsePaymentEvent — a payment LINK being paid", () => {
     assert.equal(parsePaymentEvent(JSON.stringify({ event: "payment_link.cancelled" })), null);
   });
 });
+
+/* ------------------------------------------------------------------
+   The buyer pays a LINK, and only `payment.captured` ever arrives.
+
+   Verified against the live key: the webhook subscription carries
+   payment.captured and payment.failed only, so `payment_link.paid` — which
+   the parser above handles — is never delivered. What does arrive is a
+   payment whose order_id belongs to the LINK's own internal order, which is
+   not the order we created and matches no row we hold. Eleven real captured
+   payments settled nothing for exactly this reason.
+
+   The payment entity does carry the notes we set when minting the order, and
+   those hold the session. That is the one identifier both sides share.
+   ------------------------------------------------------------------ */
+describe("parsePaymentEvent — a link payment identified by its notes", () => {
+  const linkPayment = (notes: unknown = {
+    source: "agentpay",
+    product_id: "prod_003",
+    session_id: "70eff2a3-bd3a-4365-94b8-f3a46a041dcf",
+  }) =>
+    JSON.stringify({
+      event: "payment.captured",
+      payload: {
+        payment: {
+          entity: {
+            id: "pay_TXhE8U2zknYHjK",
+            /* The LINK's internal order — deliberately not one of ours. */
+            order_id: "order_TXhDrCOIygBvYL",
+            status: "captured",
+            amount: 49900,
+            notes,
+          },
+        },
+      },
+    });
+
+  test("carries the session id, which is what our rows are keyed by", () => {
+    assert.equal(
+      parsePaymentEvent(linkPayment())?.sessionId,
+      "70eff2a3-bd3a-4365-94b8-f3a46a041dcf",
+    );
+  });
+
+  test("carries the product id alongside it", () => {
+    assert.equal(parsePaymentEvent(linkPayment())?.productId, "prod_003");
+  });
+
+  test("still reports the order id, so the existing match is tried first", () => {
+    assert.equal(
+      parsePaymentEvent(linkPayment())?.razorpayOrderId,
+      "order_TXhDrCOIygBvYL",
+    );
+  });
+
+  test("a payment with no notes at all is still a valid event", () => {
+    /* Built here rather than through the helper: passing `undefined` to a
+       parameter with a default gets the default back, which quietly tested
+       nothing. */
+    const e = parsePaymentEvent(
+      JSON.stringify({
+        event: "payment.captured",
+        payload: { payment: { entity: { id: "pay_1", order_id: "order_1" } } },
+      }),
+    );
+    assert.equal(e?.razorpayOrderId, "order_1");
+    assert.equal(e?.sessionId, undefined);
+  });
+
+  test("ignores a non-string session id rather than trusting it", () => {
+    assert.equal(parsePaymentEvent(linkPayment({ session_id: 42 }))?.sessionId, undefined);
+  });
+});
