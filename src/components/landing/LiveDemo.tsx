@@ -33,6 +33,21 @@ type Beat =
    query is a preference, a figure the shop asked her for is her word being
    kept. It also no longer matched /chat, so a judge who watched this and then
    clicked through met a different opening. */
+/* The silk turn in the middle is the reason the refusal reads as a shopkeeper
+   rather than a filter.
+
+   The rail used to be followed straight by "authentic Paithani silk saree",
+   which is a search query, not a person — and it made the block her FIRST
+   answer to silk. What she actually does is offer the silk she has inside the
+   cap; only when the buyer says no to that does the guardrail fire. The
+   refusal then lands as her keeping a promise after trying to help, and the
+   buyer chose it with the cheaper option already in front of her.
+
+   Her line is a real reply, taken verbatim from the deployed agent asked
+   "silk saree chahiye" at a ₹1,000 cap (first sentence of it; the second
+   admired the peacock border). She names Chanderi Cotton Silk ₹799 — already
+   the middle card in the rail above, so she is pointing at something the
+   viewer has just seen. */
 const SCRIPT: Beat[] = [
   { kind: "agent", text: "Namaste! Aapka budget kitna hai?" },
   { kind: "budget" },
@@ -40,7 +55,15 @@ const SCRIPT: Beat[] = [
   { kind: "user", text: "cotton saree dikhao" },
   { kind: "thinking" },
   { kind: "products" },
-  { kind: "user", text: "authentic Paithani silk saree" },
+  { kind: "user", text: "silk saree chahiye" },
+  { kind: "thinking" },
+  {
+    kind: "agent",
+    text: "Aapke budget mein hamare paas ye pyari si Chanderi Cotton Silk Saree hai, sirf ₹799 mein.",
+  },
+  /* "nahi" is doing the work: she was offered a saree inside the cap and
+     turned it down. Without it the next line is just a second search. */
+  { kind: "user", text: "nahi, authentic Paithani silk saree" },
   { kind: "thinking" },
   { kind: "block" },
 ];
