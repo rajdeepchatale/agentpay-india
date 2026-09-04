@@ -39,7 +39,7 @@ import styles from "./page.module.css";
 export const metadata: Metadata = {
   title: "AgentPay India — Agentic Commerce for Bharat Merchants",
   description:
-    "Her Instagram Reel gets 50,000 views. She can answer 30 DMs. AgentPay answers all of them — in Hindi, Marathi, Hinglish or English — with spending limits enforced in code, not in a prompt.",
+    "An Instagram Reel gets 50,000 views. One person can answer 30 DMs. AgentPay answers all of them — in Hindi, Marathi, Hinglish or English — with spending limits enforced in code, not in a prompt.",
 };
 
 /* The surface contract, greppable in the production build. A comment the build
@@ -72,11 +72,21 @@ export default function LandingPage() {
             AI-transactable
           </h1>
 
+          {/* Generic, not Sakhi's. These are the typical figures from the
+              cheat-sheet in PROBLEM_STATEMENT.md, and stating them as facts
+              about a shop the footer calls a demo merchant was the one place
+              the page presented invented data as real.
+
+              It also removes the trap VIDEO.md names — "60 million merchants"
+              in the headline directly above, then "her" in the next breath.
+              The scope now matches: a headline about 60 million is followed by
+              a sentence about any of them. Section 2 is where one specific
+              woman enters, and she stays there on purpose. */}
           <p className={styles.sub}>
-            Her Instagram Reel gets 50,000 views. She can answer 30 DMs. AgentPay
-            answers all of them, 24/7 — typed or spoken, in Hindi, Marathi,
-            Hinglish or English — and creates a real Razorpay order inside the
-            conversation.
+            An Instagram Reel gets 50,000 views. One person can answer 30 DMs.
+            AgentPay answers all of them, 24/7 — typed or spoken, in Hindi,
+            Marathi, Hinglish or English — and creates a real Razorpay order
+            inside the conversation.
           </p>
 
           <div className={styles.actions}>
@@ -294,7 +304,7 @@ export default function LandingPage() {
               page on one story instead of implying a second product. */}
           <h2 className={styles.motifHead}>One catalog, two readers</h2>
           <p className={styles.motifBody}>
-            Her buyer talks to the agent. An autonomous assistant wants the same
+            A human buyer talks to the agent. An autonomous assistant wants the same
             catalog as JSON, not a carousel — and reads the identical source the
             agent quotes its prices from, so neither can be shown a saree that
             is not really there. That endpoint is live right now — call it
@@ -375,10 +385,23 @@ export default function LandingPage() {
             </li>
             <li>
               <p className={styles.checkHead}>The reasoning was logged</p>
+              {/* "Ask for a Paithani" did not do it. Tested four phrasings,
+                  including the Devanagari this page prints in "How it works":
+                  every one returned PRODUCTS, because the ₹899 Paithani Print
+                  is inside the ₹1,000 cap. A judge following the instruction
+                  literally got a saree offered, opened the audit trail, found
+                  no refusal — on the page that says nothing here asks to be
+                  taken on trust. It also contradicted the audit sample two
+                  sections up, which correctly shows that search returning
+                  "1 shown, 4 withheld". Only the expensive one blocks. */}
               <p className={styles.checkBody}>
-                Open the chat, ask for a Paithani, then open the audit trail. The
-                refusal is written there with the rule and both amounts — recorded
-                as it happened, not narrated afterwards.
+                Open the chat and ask for the ₹8,999 Pure Silk Paithani —{" "}
+                <i>authentic Paithani silk saree</i> does it. Then open the audit
+                trail: the refusal is there with the rule and both amounts,
+                recorded as it happened, not narrated afterwards. A plain
+                &ldquo;Paithani&rdquo; is answered rather than refused — the
+                ₹899 print is inside the cap, which is the guardrail being
+                precise rather than blunt.
               </p>
             </li>
           </ol>
