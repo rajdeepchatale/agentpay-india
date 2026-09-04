@@ -449,3 +449,54 @@ multilingual claim demonstrated rather than asserted.
 the fix was better writing: *"सुन रही हूँ"* rather than *"सुन रही हैं"*. That is
 her own status, so first person is what a shopkeeper says; the third person
 reads as a caption describing one.
+
+## 18. The webhook fired, verified, and settled nothing — eleven times
+
+Entry 16 found the two Razorpay objects and taught the webhook to match a
+purchase by the payment link's `short_url`. That fix was correct and it never
+ran once in production.
+
+Checking a claim on the landing page — *paste this order into the dashboard, it
+is marked paid* — turned up an order still sitting at `created`. It always
+would be. Reading the live key rather than the code:
+
+| Measured on the live test key | |
+|---|---|
+| Payment links | 30 (the test-mode cap) |
+| Links actually paid | 11 |
+| `payment_link.paid` events received | **0** |
+| Webhook rows reading *"no order was in 'created' state"* | 11 |
+
+The webhook subscription carries `payment.captured` and `payment.failed` —
+**not** `payment_link.paid`. The branch entry 16 added could never fire. What
+does arrive is a captured payment whose `order_id` belongs to the *link's* own
+internal order, which matches no row we hold. So the signature verified, the
+handler ran, the audit row was written, and the order stayed `created`.
+
+Every one of those eleven buyers had their money taken and was never thanked —
+unless Razorpay's redirect happened to bring them back, which is exactly why
+nobody noticed. The redirect carries `?paid=` and covers the common case; the
+webhook is the backstop for when Razorpay leaves the buyer on its own receipt
+page, and the backstop was dead.
+
+**Fixed** by settling on the one identifier that survives the mismatch: the
+`session_id` we write into the order's `notes` ourselves, which Razorpay copies
+onto the payment whichever object gets paid. Tried only after both id matches
+fail, so nothing that already worked changed.
+
+**Verified by replaying a real captured payment against production**, signed
+with the live secret. The first attempt hit the old deploy and returned
+`unchanged` — the bug, reproduced on demand. The second returned `updated`, and
+the buyer's session flipped from `{"paid":false}` to
+`{"paid":true,"product_id":"prod_003"}`.
+
+The lesson is the one this build keeps relearning in new clothes: **the code was
+right and the configuration was not, and no test could tell us.** Entry 15 was a
+verification that made a gesture no real buyer makes. This was a verification
+that never asked the payment processor what it had actually agreed to send.
+
+**Still true, and stated rather than hidden:** because links are reused once the
+30-link cap is hit, a reused link carries the notes of the session that *minted*
+it. The redirect is keyed on the product and stays correct; the webhook backstop
+can credit the earlier session. Bounded, known, and not worth a schema change
+the day before submission.
