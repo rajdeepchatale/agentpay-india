@@ -69,11 +69,15 @@ export interface LlmProvider {
  * so the buyer sees an ErrorCard instead of a blank screen.
  */
 export class ProviderError extends Error {
-  constructor(
-    message: string,
-    readonly status?: number,
-  ) {
+  /* Assigned in the body, not as a constructor parameter property: Node's
+     --test runs TypeScript in strip-only mode, which rejects parameter
+     properties outright. Written this way, anything importing a provider is
+     testable without a build step. */
+  readonly status?: number;
+
+  constructor(message: string, status?: number) {
     super(message);
     this.name = "ProviderError";
+    this.status = status;
   }
 }

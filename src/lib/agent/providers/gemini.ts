@@ -20,8 +20,53 @@ import type {
 } from "../provider.ts";
 import { ProviderError } from "../provider.ts";
 
-const MODEL = process.env.GEMINI_MODEL ?? "gemini-3.6-flash";
 const ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models";
+
+/* Tried in order when one is unavailable.
+
+   On 4 Sep, four hours before the deadline, Google returned 503 UNAVAILABLE —
+   "this model is currently experiencing high demand" — on the pinned model,
+   and the chat answered every buyer with a connection error. Measured on the
+   key that afternoon: flash-lite 503, 3.5-flash-lite 503, 3.8-flash 503,
+   flash-latest 503, 3.6-flash up but ~30s, 3.7-flash 6.5s.
+
+   Pinning one model makes someone else's capacity a single point of failure.
+   Ordered fastest-measured first. */
+const FALLBACK_MODELS = [
+  "gemini-3.7-flash",
+  "gemini-3.1-flash-lite",
+  "gemini-3.6-flash",
+  "gemini-3.5-flash",
+];
+
+/**
+ * The models to try, in order. `GEMINI_MODEL` may name one or a
+ * comma-separated chain; whatever it names is tried first, then the
+ * built-in fallbacks. Never repeats a model — a retry against one that just
+ * failed is a wasted second on camera.
+ */
+export function modelChain(configured: string | undefined): string[] {
+  const preferred = (configured ?? "")
+    .split(",")
+    .map((m) => m.trim())
+    .filter(Boolean);
+  return [...new Set([...preferred, ...FALLBACK_MODELS])];
+}
+
+/**
+ * Is this worth trying on the next model?
+ *
+ * 429 and 5xx are Google's capacity, and the next model may well be fine.
+ * 400/403/404 are ours — a malformed request, a bad key, a wrong model name —
+ * and they fail identically on every model, so retrying only burns time.
+ * No status at all means a timeout or a dropped connection: worth one more.
+ */
+export function isRetryableStatus(status: number | undefined): boolean {
+  if (status === undefined) return true;
+  return status === 429 || status >= 500;
+}
+
+const MODELS = modelChain(process.env.GEMINI_MODEL);
 
 /* Gemini wants SCREAMING type names in its schema dialect. */
 function toGeminiSchema(spec: ToolSpec) {
@@ -120,7 +165,7 @@ export async function warmUp(): Promise<void> {
   const key = process.env.GEMINI_API_KEY;
   if (!key) return;
   try {
-    await fetch(`${ENDPOINT}/${MODEL}:generateContent`, {
+    await fetch(`${ENDPOINT}/${MODELS[0]}:generateContent`, {
       method: "POST",
       headers: { "x-goog-api-key": key, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -143,9 +188,41 @@ export function geminiProvider(): LlmProvider {
   }
 
   return {
-    id: `gemini:${MODEL}`,
+    id: `gemini:${MODELS[0]}`,
 
     async complete(req: CompletionRequest): Promise<CompletionResult> {
+      let lastError: ProviderError | undefined;
+      for (const model of MODELS) {
+        try {
+          return await callModel(model, key, req);
+        } catch (e) {
+          const err =
+            e instanceof ProviderError
+              ? e
+              : new ProviderError((e as Error).message);
+          /* Ours, not theirs — the next model fails the same way. */
+          if (!isRetryableStatus(err.status)) throw err;
+          lastError = err;
+          console.warn(
+            `[gemini] ${model} unavailable (${err.status ?? "timeout"}); trying next model`,
+          );
+        }
+      }
+      throw (
+        lastError ??
+        new ProviderError("Every Gemini model in the chain was unavailable.")
+      );
+    },
+  };
+}
+
+async function callModel(
+  MODEL: string,
+  key: string,
+  req: CompletionRequest,
+): Promise<CompletionResult> {
+  {
+    {
       const body = {
         systemInstruction: { parts: [{ text: req.system }] },
         contents: toGeminiContents(req.messages),
@@ -162,7 +239,7 @@ export function geminiProvider(): LlmProvider {
 
       let res: Response;
       try {
-        res = await fetch(`${ENDPOINT}/${MODEL}:generateContent`, {
+        res = await fetch(`${ENDPOINT}/${MODELS[0]}:generateContent`, {
           method: "POST",
           headers: { "x-goog-api-key": key, "Content-Type": "application/json" },
           body: JSON.stringify(body),
@@ -226,6 +303,6 @@ export function geminiProvider(): LlmProvider {
           ? { input: um.promptTokenCount ?? 0, output: um.candidatesTokenCount ?? 0 }
           : undefined,
       };
-    },
-  };
+    }
+  }
 }
