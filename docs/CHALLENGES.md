@@ -230,7 +230,7 @@ without any assertion about model behaviour.
 
 **`test/alias-hooks.mjs`, `*.test.mts`**
 
-282 tests run with **zero test dependencies** — Node's native `--test` runner over
+295 tests run with **zero test dependencies** — Node's native `--test` runner over
 TypeScript type-stripping, with a small resolver hook mapping the `@/*` alias and
 stubbing `server-only`.
 
@@ -500,3 +500,51 @@ that never asked the payment processor what it had actually agreed to send.
 it. The redirect is keyed on the product and stays correct; the webhook backstop
 can credit the earlier session. Bounded, known, and not worth a schema change
 the day before submission.
+
+## 19. Google took the model away, four hours before the deadline
+
+The chat started answering every buyer with *"connection problem."* Nothing had
+been deployed. Nothing in the repo had changed.
+
+`gemini-flash-lite-latest`, the model pinned in the environment, was returning
+**503 UNAVAILABLE — "this model is currently experiencing high demand."** The
+route waits 45 seconds before giving up, so every buyer sat through 45 seconds
+of nothing and then got an apology.
+
+Measured across the key that afternoon, rather than guessed:
+
+| Model | Result |
+|---|---|
+| `gemini-flash-lite-latest` | 503 |
+| `gemini-3.5-flash-lite` | 503 |
+| `gemini-3.8-flash` | 503 |
+| `gemini-flash-latest` | 503 |
+| `gemini-3.6-flash` | up, but ~30s per reply |
+| `gemini-3.1-flash-lite` | up, 1.9s, tool calling intact |
+
+**The bug was not the outage. The bug was pinning one model** and making
+someone else's capacity a single point of failure for the whole product.
+
+**Fixed** in [`gemini.ts`](../src/lib/agent/providers/gemini.ts): `complete()`
+now walks a chain, falling through on 429, 5xx and timeouts — the failures that
+are *theirs* — and failing fast on 400, 403 and 404, which are *ours* and would
+fail identically on every model. `GEMINI_MODEL` still wins and may name a
+comma-separated chain.
+
+**Two things this cost, both worth recording.**
+
+Fixing it exposed why no test had ever imported a provider: `ProviderError`
+used a TypeScript **parameter property**, which Node's strip-only test runner
+rejects outright. Assigned in the constructor body instead, and providers
+became testable — 13 new tests.
+
+And the model swap **silently broke the demo's most important line.** The
+scripted Marathi phrase *"पैठणी सिल्क साडी"* had resolved to the ₹8,999 Pure
+Silk Paithani and triggered the block. On the new model it resolves to the
+₹899 Paithani *Print* — inside the cap — so the agent cheerfully sold it
+instead of refusing. Zero out of three. *"मला शुद्ध रेशमी पैठणी दाखवा"* blocks
+three out of three, and the script now says so.
+
+Which phrase fires a guardrail is **model-dependent**, and nothing in the test
+suite could have told us. That is now written down as a rule: change the model,
+re-run the phrase table.

@@ -23,7 +23,7 @@
 
 ## The Problem
 
-India has **60 million+ small merchants**. Zomato, Swiggy, Zepto are already AI-transactable. But the neighborhood saree seller? The handloom artisan? Still stuck in manual WhatsApp DMs.
+India has **60 million+ small merchants**. Zomato, PVR INOX and Vodafone Idea already have conversational checkout built into their apps. But the neighborhood saree seller? The handloom artisan? Still stuck in manual WhatsApp DMs.
 
 > A Pune saree boutique posts an Instagram Reel → it goes viral → **200+ DMs flood in** → she can reply to 30 → **most high-intent buyers drop off** → revenue lost forever.
 
@@ -61,6 +61,7 @@ The agent answers every DM in the buyer's own language, takes the payment inside
 | Deterministic guardrail engine, outside the LLM | `src/lib/guardrails/` |
 | Real Razorpay test-mode orders and payment links | `src/lib/razorpay/` |
 | Voice in and out — the agent listens, and answers aloud unprompted | Sarvam saarika + bulbul |
+| Model fallback — one model 503s, the next answers, the chat never sees it | `src/lib/agent/providers/gemini.ts` |
 | Language picker — pin one, and the whole shop speaks it | header |
 | Supabase audit trail, with the reasoning behind each decision | `/dashboard?session_id=…` |
 | Signed payment webhook, settled by the session in the payment's own notes | `/api/razorpay/webhook` |
@@ -458,7 +459,7 @@ Create `.env.local`:
 # Gemini (agent brain) — free tier at aistudio.google.com
 GEMINI_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxx
 AGENT_PROVIDER=gemini
-GEMINI_MODEL=gemini-flash-lite-latest
+GEMINI_MODEL=gemini-3.1-flash-lite   # optional — may be a comma-separated chain
 
 # Razorpay — TEST MODE ONLY. The client refuses any key not starting rzp_test_
 RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxxxxxx
@@ -476,7 +477,7 @@ Initialize the database by running `supabase/schema.sql` in the Supabase SQL edi
 
 ```bash
 npm run dev     # http://localhost:3000/chat
-npm test        # 282 tests, zero test dependencies
+npm test        # 295 tests, zero test dependencies
 ```
 
 | Page | URL |
