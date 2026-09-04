@@ -49,7 +49,18 @@ type Beat =
    the middle card in the rail above, so she is pointing at something the
    viewer has just seen. */
 const SCRIPT: Beat[] = [
-  { kind: "agent", text: "Namaste! Aapka budget kitna hai?" },
+  /* Her real opening line, verbatim from opening.ts. The replay used to trim
+     it to "Namaste! Aapka budget kitna hai?", so a judge who watched this and
+     clicked through was greeted with different words — the same mismatch the
+     budget opening was fixed for.
+
+     The half that was missing is the half that matters: she says she is an AI
+     assistant. Shortening the product to match the replay would have been the
+     wrong repair, because it would drop a disclosure to tidy a demo. */
+  {
+    kind: "agent",
+    text: "Namaste! Main Sakhi Sarees ki AI assistant hoon. Aapka budget kitna hai?",
+  },
   { kind: "budget" },
   { kind: "agent", text: "Theek hai — ₹1,000 tak. Kaisi saree dikhaun?" },
   { kind: "user", text: "cotton saree dikhao" },

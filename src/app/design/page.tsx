@@ -50,7 +50,12 @@ export default function DesignSystemPage() {
               <Badge tone="neutral" mono>
                 seed a527c7f3
               </Badge>
-              <Badge tone="accent">Step 2 — design system</Badge>
+              {/* Was "Step 2 — design system". A build-plan step number is
+                  internal scaffolding, and the README links this page
+                  publicly — the same objection that took the step tracker out
+                  of the README. The seed and the world name above are
+                  provenance the system is meant to carry; they stay. */}
+              <Badge tone="accent">specimen sheet</Badge>
             </div>
             <p className={styles.lede}>
               Surfaces are cloth, not glass. Hairlines are zari — the gold
