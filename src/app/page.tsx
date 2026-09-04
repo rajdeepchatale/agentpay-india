@@ -403,11 +403,18 @@ export default function LandingPage() {
             who don&rsquo;t have an app.
           </h2>
           {/* The obvious next question, answered before it is asked: this is a
-              link she pastes, not a site she builds. */}
+              link merchants paste, not a site they build.
+
+              "They", not "she". VIDEO.md names this exact trap — saying "60
+              million merchants" and then "she" in the next breath — because
+              60 million people are not all women. Sakhi, the agent, stays
+              deliberately female; the merchants she works for do not inherit
+              it. README.md models the correct form: our demo merchant is one
+              OF the 60 million, which is membership, not identity. */}
           <p className={styles.closeSub}>
-            She builds nothing. Razorpay already hands merchants a hosted
+            They build nothing. Razorpay already hands merchants a hosted
             Payment Page; this works the same way, and talks back. The link
-            below is the kind of link she would paste in her bio.
+            below is the kind of link they would paste in their bio.
           </p>
           <Link className={styles.cta} href="/chat">
             Try the demo
