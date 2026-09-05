@@ -3,10 +3,13 @@
 // ============================================================
 // Everything that matters to this product — guardrails, consent gating, the
 // audit trail, the API contract — sits ABOVE this line and never learns which
-// model is underneath. Switching providers is an env var, not a rewrite.
+// model is underneath. Adding a second provider is a new file behind this
+// interface, not a rewrite of anything above it.
 //
-//   AGENT_PROVIDER=gemini      (default, free tier)
-//   AGENT_PROVIDER=anthropic   (if quality ever demands it)
+//   AGENT_PROVIDER=gemini   — the only implementation today. `core.ts` falls
+//                             back to it for any other value, so a typo in the
+//                             env var degrades to the working model rather
+//                             than to nothing.
 // ============================================================
 
 /** A tool the model may call. Provider-neutral JSON-Schema-ish shape. */

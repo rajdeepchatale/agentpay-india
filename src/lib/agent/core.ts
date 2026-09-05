@@ -37,7 +37,9 @@ const MERCHANT = { name: "Sakhi Sarees", city: "Pune" };
 const MAX_TOOL_ROUNDS = 4;
 
 function provider(): LlmProvider {
-  /* One switch, one env var. Anthropic slots in here when it earns its keep. */
+  /* Gemini is the only provider built. A second one is a new case here and a
+     new file behind LlmProvider — nothing above this function changes. Any
+     unrecognised value falls through to the working model on purpose. */
   switch (process.env.AGENT_PROVIDER ?? "gemini") {
     case "gemini":
     default:
