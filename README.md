@@ -13,7 +13,7 @@
 
 <br />
 
-**Making 60 Million Bharat Merchants AI-Transactable — in Hindi, Marathi, Hinglish & English**
+**Voice-first conversational checkout in Hindi, Marathi, Hinglish & English — every money action bounded, gated and logged**
 
 [🎯 Scored against the bar](#scored-against-the-tracks-bar) · [✨ What it does](#what-it-does) · [🏗️ Architecture](ARCHITECTURE.md) · [🛡️ Guardrails](#-deterministic-guardrails-first-engine) · [📊 Audit Trail](#-immutable-audit-trail) · [🐛 What broke, and how](CHALLENGES.md)
 
