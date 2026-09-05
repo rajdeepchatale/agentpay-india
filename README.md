@@ -459,7 +459,7 @@ Create `.env.local`:
 # Gemini (agent brain) — free tier at aistudio.google.com
 GEMINI_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxx
 AGENT_PROVIDER=gemini
-GEMINI_MODEL=gemini-3.1-flash-lite   # optional — may be a comma-separated chain
+GEMINI_MODEL=gemini-flash-lite-latest   # optional — may be a comma-separated chain
 
 # Razorpay — TEST MODE ONLY. The client refuses any key not starting rzp_test_
 RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxxxxxx
