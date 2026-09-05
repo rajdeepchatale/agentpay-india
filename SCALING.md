@@ -193,8 +193,8 @@ no deploy, no code change. Measured across the key that afternoon, four of six
 models were unavailable and one was ten times slower than usual. The fix was a
 fallback chain in
 [`gemini.ts`](src/lib/agent/providers/gemini.ts) that walks models on 429,
-5xx and timeouts, and fails fast on 400/403/404 where the next model would fail
-identically. Full write-up: [`CHALLENGES.md`](CHALLENGES.md) #19.
+5xx, 404 and timeouts — a retired model name is per-model, not per-request —
+and fails fast on 400 and 403, where the next model would fail identically. Full write-up: [`CHALLENGES.md`](CHALLENGES.md) #19.
 
 Neither of these appears in an architecture diagram. Both would have taken a
 merchant's shop offline.
