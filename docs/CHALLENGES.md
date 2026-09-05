@@ -230,7 +230,7 @@ without any assertion about model behaviour.
 
 **`test/alias-hooks.mjs`, `*.test.mts`**
 
-295 tests run with **zero test dependencies** — Node's native `--test` runner over
+300 tests run with **zero test dependencies** — Node's native `--test` runner over
 TypeScript type-stripping, with a small resolver hook mapping the `@/*` alias and
 stubbing `server-only`.
 

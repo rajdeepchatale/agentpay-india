@@ -477,7 +477,7 @@ Initialize the database by running `supabase/schema.sql` in the Supabase SQL edi
 
 ```bash
 npm run dev     # http://localhost:3000/chat
-npm test        # 295 tests, zero test dependencies
+npm test        # 300 tests, zero test dependencies
 ```
 
 | Page | URL |

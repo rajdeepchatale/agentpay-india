@@ -33,10 +33,13 @@ const ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models";
    Pinning one model makes someone else's capacity a single point of failure.
    Ordered fastest-measured first. */
 const FALLBACK_MODELS = [
-  "gemini-3.1-flash-lite", // 1.9s measured — fastest of the six
-  "gemini-3.7-flash", //     6.5s
-  "gemini-3.6-flash", //     ~30s, but up when the others were not
-  "gemini-3.5-flash",
+  /* Measured 5 Sep, four calls each with tools. The head of the chain is set
+     by GEMINI_MODEL and is currently gemini-flash-lite-latest at 1.1s — these
+     are what stands behind it, fastest first. */
+  "gemini-3.1-flash-lite", // 2.2s
+  "gemini-3.7-flash", //     1.5s when quota allows
+  "gemini-3.6-flash", //     1.9s when quota allows
+  "gemini-3.5-flash", //     11.7s — last resort, but it was up when others were not
 ];
 
 /**
