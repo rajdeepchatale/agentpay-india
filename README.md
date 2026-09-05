@@ -214,7 +214,7 @@ product.
 - Real test-mode order IDs (`order_TXB1BtoaX8629G`) and clickable `rzp.io` payment links
 - **Two Razorpay objects per purchase, and it matters.** We create an order; the buyer pays
   a *payment link*, which carries an internal order of its own. So the id above stays
-  `created` forever and `order_TXe7JwyOqdEfaT` is the one that shows `captured`. Both are on
+  `created` forever and `order_TXe7JwyOqdEfaT` is the one that shows `paid`. Both are on
   the same test key — paste either
 - **Test mode caps payment links at 30** (orders are uncapped). Links are therefore reused
   while still unpaid, and an order created past that ceiling comes back without a Pay Now
@@ -557,8 +557,8 @@ redirect.
 
 ### `POST /api/feedback`
 `{ session_id, rating: "good" | "ok" | "poor", product_id? }`. Written into the audit trail
-rather than a table of its own, so a judge sees the agent asking and the buyer answering
-beside the decisions the agent made.
+rather than a table of its own, so the agent asking and the buyer answering sit beside
+the decisions the agent made.
 
 ### `GET /api/audit?session_id=xxx`
 Returns the decision timeline with per-entry reasoning and guardrail status.
