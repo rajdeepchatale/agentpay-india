@@ -440,7 +440,7 @@ agentpay-india/
 ### Prerequisites
 
 - **Node.js** v20.9.0+ (required by Next.js 16)
-- API keys for: Razorpay (test mode), Google Gemini, Supabase
+- API keys for: Razorpay (test mode), Google Gemini, Sarvam AI, Supabase
 
 ### Setup
 
@@ -461,6 +461,10 @@ GEMINI_MODEL=gemini-flash-lite-latest   # optional — may be a comma-separated 
 # Razorpay — TEST MODE ONLY. The client refuses any key not starting rzp_test_
 RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxxxxxx
 RAZORPAY_KEY_SECRET=xxxxxxxxxxxxxxxxxxxxxxxx
+
+# Sarvam (voice in and out) — sarvam.ai
+# Without this the app runs, but she cannot hear or speak.
+SARVAM_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxx
 
 # Supabase (audit trail & orders)
 NEXT_PUBLIC_SUPABASE_URL=https://xxxxxxxx.supabase.co
