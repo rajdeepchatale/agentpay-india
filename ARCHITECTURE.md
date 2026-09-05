@@ -47,21 +47,21 @@ flowchart LR
 
 | Layer | Does | Code |
 |---|---|---|
-| **Voice** | Sarvam `saarika` transcribes in the language spoken; `bulbul` reads the reply back in the same one | [`src/lib/voice/sarvam.ts`](../src/lib/voice/sarvam.ts) · [`/api/voice/stt`](../src/app/api/voice/stt/route.ts) · [`/api/voice/tts`](../src/app/api/voice/tts/route.ts) |
-| **Model** | Gemini picks a tool and a `product_id`. Falls through a chain of models when one is rate-limited or unavailable | [`src/lib/agent/providers/gemini.ts`](../src/lib/agent/providers/gemini.ts) |
-| **Turn loop** | Runs the tool calls, decides the reply language, holds consent state | [`src/lib/agent/core.ts`](../src/lib/agent/core.ts) · [`/api/agent/chat`](../src/app/api/agent/chat/route.ts) |
-| **Tools** | The only actions the model can request. None takes an amount | [`src/lib/agent/tools.ts`](../src/lib/agent/tools.ts) |
-| **Guardrail engine** | Cap, consent, rate limit, stock, category — checked *before* any Razorpay call | [`src/lib/guardrails/engine.ts`](../src/lib/guardrails/engine.ts) · [`config.ts`](../src/lib/guardrails/config.ts) |
-| **Money** | Orders and payment links, paise-accurate. Refuses any key not starting `rzp_test_` | [`src/lib/razorpay/`](../src/lib/razorpay/) |
-| **Settlement** | Signed webhook moves an order to `paid` | [`src/lib/razorpay/webhook.ts`](../src/lib/razorpay/webhook.ts) · [`/api/razorpay/webhook`](../src/app/api/razorpay/webhook/route.ts) |
-| **Audit trail** | Every decision with its reasoning, in Supabase | [`src/lib/audit/logger.ts`](../src/lib/audit/logger.ts) · [`/dashboard`](../src/app/dashboard) |
-| **Agent-readable catalog** | The same catalog as JSON, for an autonomous buyer | [`/api/catalog`](../src/app/api/catalog/route.ts) |
+| **Voice** | Sarvam `saarika` transcribes in the language spoken; `bulbul` reads the reply back in the same one | [`src/lib/voice/sarvam.ts`](src/lib/voice/sarvam.ts) · [`/api/voice/stt`](src/app/api/voice/stt/route.ts) · [`/api/voice/tts`](src/app/api/voice/tts/route.ts) |
+| **Model** | Gemini picks a tool and a `product_id`. Falls through a chain of models when one is rate-limited or unavailable | [`src/lib/agent/providers/gemini.ts`](src/lib/agent/providers/gemini.ts) |
+| **Turn loop** | Runs the tool calls, decides the reply language, holds consent state | [`src/lib/agent/core.ts`](src/lib/agent/core.ts) · [`/api/agent/chat`](src/app/api/agent/chat/route.ts) |
+| **Tools** | The only actions the model can request. None takes an amount | [`src/lib/agent/tools.ts`](src/lib/agent/tools.ts) |
+| **Guardrail engine** | Cap, consent, rate limit, stock, category — checked *before* any Razorpay call | [`src/lib/guardrails/engine.ts`](src/lib/guardrails/engine.ts) · [`config.ts`](src/lib/guardrails/config.ts) |
+| **Money** | Orders and payment links, paise-accurate. Refuses any key not starting `rzp_test_` | [`src/lib/razorpay/`](src/lib/razorpay/) |
+| **Settlement** | Signed webhook moves an order to `paid` | [`src/lib/razorpay/webhook.ts`](src/lib/razorpay/webhook.ts) · [`/api/razorpay/webhook`](src/app/api/razorpay/webhook/route.ts) |
+| **Audit trail** | Every decision with its reasoning, in Supabase | [`src/lib/audit/logger.ts`](src/lib/audit/logger.ts) · [`/dashboard`](src/app/dashboard) |
+| **Agent-readable catalog** | The same catalog as JSON, for an autonomous buyer | [`/api/catalog`](src/app/api/catalog/route.ts) |
 
 ---
 
 ## The three guardrails
 
-Defaults live in [`src/lib/guardrails/config.ts`](../src/lib/guardrails/config.ts).
+Defaults live in [`src/lib/guardrails/config.ts`](src/lib/guardrails/config.ts).
 
 | Rule | Value | Why |
 |---|---|---|

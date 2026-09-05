@@ -15,7 +15,7 @@
 
 **Making 60 Million Bharat Merchants AI-Transactable — in Hindi, Marathi, Hinglish & English**
 
-[🎯 Scored against the bar](#scored-against-the-tracks-bar) · [✨ What it does](#what-it-does) · [🏗️ Architecture](docs/ARCHITECTURE.md) · [🛡️ Guardrails](#-deterministic-guardrails-first-engine) · [📊 Audit Trail](#-immutable-audit-trail) · [🐛 What broke, and how](docs/CHALLENGES.md)
+[🎯 Scored against the bar](#scored-against-the-tracks-bar) · [✨ What it does](#what-it-does) · [🏗️ Architecture](ARCHITECTURE.md) · [🛡️ Guardrails](#-deterministic-guardrails-first-engine) · [📊 Audit Trail](#-immutable-audit-trail) · [🐛 What broke, and how](CHALLENGES.md)
 
 </div>
 
@@ -168,11 +168,11 @@ Being precise about what that does and does not mean: a Payment Page is
 something a merchant creates herself, from a dashboard Razorpay hosts. This is
 one merchant's shop, hosted here, with a seeded catalog. **The distribution
 model is the argument; the dashboard and the self-serve creation are argued in
-[`docs/SCALING.md`](docs/SCALING.md), not built.**
+[`SCALING.md`](SCALING.md), not built.**
 
 The one thing she supplies is her catalog. Reading it out of her Instagram
 captions or her WhatsApp price list is **argued in
-[`docs/SCALING.md`](docs/SCALING.md), not built** — for this demo the catalog is
+[`SCALING.md`](SCALING.md), not built** — for this demo the catalog is
 seeded. And the end state needs no link at all: the agent runs inside her
 existing WhatsApp number, where the DMs already arrive.
 
@@ -429,10 +429,9 @@ agentpay-india/
 │   │   └── db/                      # Supabase client
 │   └── types/index.ts               # Shared TypeScript interfaces
 ├── supabase/schema.sql              # Database schema
-├── docs/
-│   ├── ARCHITECTURE.md              # The flow, drawn — model proposes, engine disposes
-│   ├── CHALLENGES.md                # Engineering challenges & resolutions
-│   └── SCALING.md                   # One merchant → sixty million
+├── ARCHITECTURE.md                  # The flow, drawn — model proposes, engine disposes
+├── CHALLENGES.md                    # Engineering challenges & resolutions
+├── SCALING.md                       # One merchant → sixty million
 └── DESIGN.md                        # The design system, as built
 ```
 
@@ -570,7 +569,7 @@ Returns the decision timeline with per-entry reasoning and guardrail status.
 
 ## 🔧 Engineering Challenges
 
-> Full deep-dive in [`docs/CHALLENGES.md`](docs/CHALLENGES.md)
+> Full deep-dive in [`CHALLENGES.md`](CHALLENGES.md)
 
 | Challenge | What went wrong | How it was fixed |
 |---|---|---|
@@ -585,7 +584,7 @@ Returns the decision timeline with per-entry reasoning and guardrail status.
 
 ## 🔮 Roadmap
 
-> Full architecture in [`docs/SCALING.md`](docs/SCALING.md) — how one merchant becomes
+> Full architecture in [`SCALING.md`](SCALING.md) — how one merchant becomes
 > sixty million, and why guardrails-as-architecture is what lets a regulated payments
 > company ship agentic commerce at all.
 

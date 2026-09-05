@@ -349,7 +349,7 @@ search, no consent request, so no rule ran and the refusal quietly did not
 happen. Whether the spending limit applied depended on how the model felt like
 replying, which is not a limit.
 
-**Fixed** in [`core.ts`](../src/lib/agent/core.ts): a turn that ends in prose
+**Fixed** in [`core.ts`](src/lib/agent/core.ts): a turn that ends in prose
 with no tool call has the buyer's own message put through the same engine, and
 a block is returned with real alternatives at her cap.
 
@@ -406,7 +406,7 @@ paid — meaning the polling close, built specifically to survive Razorpay not
 redirecting the buyer back, could not fire from a real payment. The redirect
 was carrying the entire post-payment experience alone.
 
-**Fixed** in [`webhook.ts`](../src/lib/razorpay/webhook.ts): `payment_link.paid`
+**Fixed** in [`webhook.ts`](src/lib/razorpay/webhook.ts): `payment_link.paid`
 is handled too, matched on `short_url` — the one identifier both sides share,
 because it is stored when the order is recorded. Links are reused, so one
 `short_url` can belong to several rows; the **oldest still-unpaid** row is
@@ -435,7 +435,7 @@ inline in the header, errors written at the call site, tour wording in its own
 component — each authored in whatever language its writer had in mind. Fixing
 them one at a time is how it got that way.
 
-**Fixed** with one table, [`ui-text.ts`](../src/lib/chat/ui-text.ts), and a test
+**Fixed** with one table, [`ui-text.ts`](src/lib/chat/ui-text.ts), and a test
 that fails if any language is missing a key another has — so a string added in
 English only cannot ship and be discovered by a judge switching to Marathi.
 
@@ -525,7 +525,7 @@ Measured across the key that afternoon, rather than guessed:
 **The bug was not the outage. The bug was pinning one model** and making
 someone else's capacity a single point of failure for the whole product.
 
-**Fixed** in [`gemini.ts`](../src/lib/agent/providers/gemini.ts): `complete()`
+**Fixed** in [`gemini.ts`](src/lib/agent/providers/gemini.ts): `complete()`
 now walks a chain, falling through on 429, 5xx and timeouts — the failures that
 are *theirs* — and failing fast on 400, 403 and 404, which are *ours* and would
 fail identically on every model. `GEMINI_MODEL` still wins and may name a

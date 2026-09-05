@@ -192,7 +192,7 @@ was not compute or tokens, it was a quota nobody had read.**
 no deploy, no code change. Measured across the key that afternoon, four of six
 models were unavailable and one was ten times slower than usual. The fix was a
 fallback chain in
-[`gemini.ts`](../src/lib/agent/providers/gemini.ts) that walks models on 429,
+[`gemini.ts`](src/lib/agent/providers/gemini.ts) that walks models on 429,
 5xx and timeouts, and fails fast on 400/403/404 where the next model would fail
 identically. Full write-up: [`CHALLENGES.md`](CHALLENGES.md) #19.
 
