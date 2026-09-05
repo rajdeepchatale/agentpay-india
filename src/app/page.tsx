@@ -73,12 +73,12 @@ export default function LandingPage() {
           </h1>
 
           {/* Generic, not Sakhi's. These are the typical figures from the
-              cheat-sheet in PROBLEM_STATEMENT.md, and stating them as facts
+              research notes for the segment, and stating them as facts
               about a shop the footer calls a demo merchant was the one place
               the page presented invented data as real.
 
-              It also removes the trap VIDEO.md names — "60 million merchants"
-              in the headline directly above, then "her" in the next breath.
+              It also avoids a scope trap: "60 million merchants" in the
+              headline directly above, then "her" in the next breath.
               The scope now matches: a headline about 60 million is followed by
               a sentence about any of them. Section 2 is where one specific
               woman enters, and she stays there on purpose. */}
@@ -108,9 +108,9 @@ export default function LandingPage() {
         {/* ---- Motif: the DM bottleneck ---- */}
         <section className={styles.motif}>
           <h2 className={styles.motifHead}>The 500-metre trap</h2>
-          {/* The heading is from PROBLEM_STATEMENT.md and the page used to
-              borrow it without ever explaining what 500 metres referred to.
-              This is the sharpest idea in that document; it costs a sentence. */}
+          {/* The page used to carry this heading without ever explaining
+              what 500 metres referred to. It is the sharpest idea here and it
+              costs one sentence to make it land. */}
           <p className={styles.motifBody}>
             A physical UPI QR code reaches 500 metres. An Instagram Reel reaches
             millions. The gap between what her marketing reaches and what her
@@ -436,12 +436,12 @@ export default function LandingPage() {
           {/* The obvious next question, answered before it is asked: this is a
               link merchants paste, not a site they build.
 
-              "They", not "she". VIDEO.md names this exact trap — saying "60
-              million merchants" and then "she" in the next breath — because
-              60 million people are not all women. Sakhi, the agent, stays
-              deliberately female; the merchants she works for do not inherit
-              it. README.md models the correct form: our demo merchant is one
-              OF the 60 million, which is membership, not identity. */}
+              "They", not "she". Saying "60 million merchants" and then
+              "she" in the next breath is an easy trap, because 60 million
+              people are not all women. Sakhi, the agent, stays deliberately
+              female; the merchants she works for do not inherit it. The
+              README models the correct form: our demo merchant is one OF the
+              60 million, which is membership, not identity. */}
           <p className={styles.closeSub}>
             They build nothing. Razorpay already hands merchants a hosted
             Payment Page; this works the same way, and talks back. The link
