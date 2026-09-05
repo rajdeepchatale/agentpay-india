@@ -461,6 +461,9 @@ GEMINI_MODEL=gemini-flash-lite-latest   # optional — may be a comma-separated 
 # Razorpay — TEST MODE ONLY. The client refuses any key not starting rzp_test_
 RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxxxxxx
 RAZORPAY_KEY_SECRET=xxxxxxxxxxxxxxxxxxxxxxxx
+# From the webhook you create in the Razorpay dashboard. Without it the
+# handler fails closed, so a paid order never settles from `created`.
+RAZORPAY_WEBHOOK_SECRET=xxxxxxxxxxxxxxxxxxxxxxxx
 
 # Sarvam (voice in and out) — sarvam.ai
 # Without this the app runs, but she cannot hear or speak.
@@ -469,6 +472,12 @@ SARVAM_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxx
 # Supabase (audit trail & orders)
 NEXT_PUBLIC_SUPABASE_URL=https://xxxxxxxx.supabase.co
 SUPABASE_SERVICE_KEY=xxxxxxxxxxxxxxxxxxxxxxxx
+
+# Optional. On Vercel this is derived automatically. Locally, set it to a
+# publicly reachable origin before creating a payment link — without one the
+# link is minted with no callback, so the buyer is never returned to the chat
+# and the link cannot be reused later.
+NEXT_PUBLIC_SITE_URL=https://your-deployment.vercel.app
 ```
 
 > `SUPABASE_SERVICE_KEY` is server-side only. **Never** prefix it with
