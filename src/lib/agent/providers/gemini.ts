@@ -74,6 +74,73 @@ export function isRetryableStatus(status: number | undefined): boolean {
 
 const MODELS = modelChain(process.env.GEMINI_MODEL);
 
+/* How long the head of the chain gets before the next model is started
+   alongside it.
+
+   The chain already replaces a model that ERRORS. It could not react to one
+   that was merely slow — and slow is the failure a buyer actually feels.
+   gemini-3.5-flash returned healthy 200s at 11.7s on 5 Sep; nothing in the
+   chain noticed, because nothing was wrong.
+
+   2.5s is chosen from measurement, not taste: the head answers in ~1.1s and
+   a whole turn is ~1.9s, so a healthy model is never hedged and the second
+   request is never sent. It only fires when something has genuinely stalled. */
+const HEDGE_AFTER_MS = 2_500;
+
+type Settled =
+  | { ok: true; value: CompletionResult }
+  | { ok: false; error: unknown };
+
+const settle = (p: Promise<CompletionResult>): Promise<Settled> =>
+  p.then(
+    (value) => ({ ok: true, value }) as Settled,
+    (error) => ({ ok: false, error }) as Settled,
+  );
+
+const asProviderError = (e: unknown): ProviderError =>
+  e instanceof ProviderError ? e : new ProviderError((e as Error).message);
+
+/**
+ * Run the head of the chain, hedged against the model behind it.
+ *
+ * A healthy head answers well inside HEDGE_AFTER_MS and `second` is never
+ * called. A stalled head is overtaken: both run, and the first SUCCESS wins.
+ * A head that fails fast throws straight away, so the caller's sequential
+ * walk picks up from `second` as it always did.
+ */
+async function raceHead(
+  head: string,
+  second: string | undefined,
+  key: string,
+  req: CompletionRequest,
+): Promise<CompletionResult> {
+  if (!second) return callModel(head, key, req, true);
+
+  const a = settle(callModel(head, key, req, true));
+  const slow = Symbol("slow");
+  const firstUp = await Promise.race([
+    a,
+    new Promise<typeof slow>((r) => setTimeout(() => r(slow), HEDGE_AFTER_MS)),
+  ]);
+
+  /* The head resolved on its own — success or failure, that is the answer. */
+  if (firstUp !== slow) {
+    if (firstUp.ok) return firstUp.value;
+    throw firstUp.error;
+  }
+
+  /* Stalled. Start the second alongside and take whichever succeeds first;
+     the loser is left to settle and ignored. */
+  const b = settle(callModel(second, key, req, false));
+  const winner = await Promise.race([a, b]);
+  if (winner.ok) return winner.value;
+
+  const both = await Promise.all([a, b]);
+  const good = both.find((r) => r.ok);
+  if (good?.ok) return good.value;
+  throw (both[1] as { error: unknown }).error;
+}
+
 /* Gemini wants SCREAMING type names in its schema dialect. */
 function toGeminiSchema(spec: ToolSpec) {
   const upper = (node: unknown): unknown => {
@@ -197,16 +264,29 @@ export function geminiProvider(): LlmProvider {
     id: `gemini:${MODELS[0]}`,
 
     async complete(req: CompletionRequest): Promise<CompletionResult> {
+      const [head, second, ...rest] = MODELS;
       let lastError: ProviderError | undefined;
-      for (const model of MODELS) {
+
+      /* The head, hedged against the model behind it. */
+      try {
+        return await raceHead(head, second, key, req);
+      } catch (e) {
+        const err = asProviderError(e);
+        if (!isRetryableStatus(err.status)) throw err;
+        lastError = err;
+        console.warn(
+          `[gemini] ${head} unavailable (${err.status ?? "timeout"}); trying next model`,
+        );
+      }
+
+      /* Everything behind it, one at a time. `second` is retried here when the
+         head failed fast — the hedge never started it in that case — and the
+         repeat when it did is a rare, cheap price for never skipping a model. */
+      for (const model of [second, ...rest].filter(Boolean)) {
         try {
-          return await callModel(model, key, req, model === MODELS[0]);
+          return await callModel(model, key, req, false);
         } catch (e) {
-          const err =
-            e instanceof ProviderError
-              ? e
-              : new ProviderError((e as Error).message);
-          /* Ours, not theirs — the next model fails the same way. */
+          const err = asProviderError(e);
           if (!isRetryableStatus(err.status)) throw err;
           lastError = err;
           console.warn(

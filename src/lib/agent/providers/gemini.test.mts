@@ -137,3 +137,58 @@ describe("complete — the fallback actually walks the chain", () => {
     assert.equal(hits.length, 1, "403 is ours, not theirs — must not retry");
   });
 });
+
+/* ------------------------------------------------------------------
+   Slow is not the same as broken.
+
+   The chain falls through on 404/429/5xx/timeout — a model that ERRORS is
+   replaced instantly. But a model that simply takes 12 seconds is not an
+   error, so nothing reacted to it, and the buyer waited. gemini-3.5-flash
+   measured 11.7s on 5 Sep while returning 200s.
+
+   So the head of the chain is now hedged: if it has not answered within
+   HEDGE_AFTER_MS, the second model is started alongside it and whichever
+   answers first wins. A healthy first model never triggers it.
+   ------------------------------------------------------------------ */
+describe("complete — a slow first model is raced, not waited on", () => {
+  const body = JSON.stringify({ candidates: [{ content: { parts: [{ text: "hi" }] } }] });
+  const okAfter = (ms: number) => new Promise<Response>((r) =>
+    setTimeout(() => r(new Response(body, { status: 200 })), ms));
+
+  async function race(delays: Record<string, number>) {
+    const realFetch = globalThis.fetch;
+    const realKey = process.env.GEMINI_API_KEY;
+    const hits: string[] = [];
+    process.env.GEMINI_API_KEY = "k";
+    globalThis.fetch = (async (url: string) => {
+      const m = String(url).split("/models/")[1].split(":")[0];
+      hits.push(m);
+      return okAfter(delays[m] ?? 0);
+    }) as unknown as typeof fetch;
+    const t0 = Date.now();
+    try {
+      const { geminiProvider } = await import(`./gemini.ts?hedge=${Math.random()}`);
+      await geminiProvider()
+        .complete({ system: "s", messages: [], tools: [], maxTokens: 16 })
+        .catch(() => {});
+    } finally {
+      globalThis.fetch = realFetch;
+      if (realKey === undefined) delete process.env.GEMINI_API_KEY;
+      else process.env.GEMINI_API_KEY = realKey;
+    }
+    return { hits, ms: Date.now() - t0 };
+  }
+
+  test("a healthy first model answers alone — no second request", async () => {
+    const chain = modelChain(process.env.GEMINI_MODEL);
+    const { hits } = await race({ [chain[0]]: 5 });
+    assert.equal(hits.length, 1, "hedged a model that was already fast");
+  });
+
+  test("a stalled first model does not hold the buyer — the second is raced", async () => {
+    const chain = modelChain(process.env.GEMINI_MODEL);
+    const { hits, ms } = await race({ [chain[0]]: 4000, [chain[1]]: 10 });
+    assert.ok(hits.length >= 2, "never started the second model");
+    assert.ok(ms < 3500, `waited ${ms}ms for a stalled model instead of racing`);
+  });
+});
