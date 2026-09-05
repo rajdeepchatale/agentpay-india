@@ -59,7 +59,7 @@ flowchart LR
 
 ---
 
-## The three guardrails
+## The guardrails
 
 Defaults live in [`src/lib/guardrails/config.ts`](src/lib/guardrails/config.ts).
 
@@ -68,6 +68,8 @@ Defaults live in [`src/lib/guardrails/config.ts`](src/lib/guardrails/config.ts).
 | `maxSpend` | **₹1,000** by default — *and the buyer is asked to set it before anything is shown* | A limit she did not choose is not a limit she agreed to |
 | `maxOrdersPerHour` | **3** per session | A runaway autonomous loop stops itself |
 | Consent | No order without *"Haan"* / *"Ho"* / *"Yes"* | It never auto-purchases |
+
+Stock and category are checked by the same engine, on the same path.
 
 The cap is enforced on the **catalog price**, never on a number supplied by the
 model. Raise the cap to ₹25,000 and the same ₹8,999 saree goes straight
@@ -81,7 +83,7 @@ Worth knowing before you paste an ID into the dashboard:
 
 - We create an **order** — that one stays `created`.
 - The buyer pays a **payment link**, which carries an internal order of its own
-  — *that* is the one that shows `captured`.
+  — *that* is the one that shows `paid`.
 
 Both live on the same test key. The webhook settles our row using the
 `session_id` we write into the payment's own notes, because the order id on a
