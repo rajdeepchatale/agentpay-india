@@ -47,8 +47,6 @@ before showing anything. That one question is the difference between a demo and 
 a cap we chose makes a later refusal *our rule imposed on a stranger*, while a figure the
 buyer named makes the identical refusal **the agent keeping her word**.
 
-*The pitch: "An AI shopkeeper for the 60 million merchants who don't have an app."*
-
 The agent answers every DM in the buyer's own language, takes the payment inside the conversation, and holds a spending limit nobody can talk her out of.
 
 ---
@@ -315,7 +313,7 @@ engine. Whether the limit applies never depends on how the model felt like reply
 
 ---
 
-### Flow 3 — The close, in her voice
+### Flow 3 — After payment, in her voice
 
 ```
 [Buyer]   pays on Razorpay
@@ -554,7 +552,7 @@ stream, so it is decoded server-side before the browser sees it.
 
 ### `GET /api/orders/status?session_id=…`
 `{ paid: boolean, product_id?: string }`. The conversation polls this after an order
-exists, so the close fires when the webhook confirms payment — with or without Razorpay's
+exists, so the confirmation fires when the webhook confirms payment — with or without Razorpay's
 redirect.
 
 ### `POST /api/feedback`
