@@ -1,6 +1,13 @@
-# Design
+# Design system — AgentPay India
 
-Recorded from the built system, not from intention.
+> **Project**: AgentPay India (Razorpay AI Buildathon 2026 — Track 01)
+> **Author**: Rajdeep Chatale
+
+What the interface is made of, and the rules it holds to. Recorded from the
+built system rather than from intention: every token below ships in
+[`src/app/globals.css`](src/app/globals.css), and every rule here is one the
+screens already obey.
+
 World: **woven / zari**.
 
 ## The idea
